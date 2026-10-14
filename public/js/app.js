@@ -54,28 +54,355 @@ function formatINR(val) {
   }
 }
 
-// API Fetch Helper with Authorization header
-async function apiFetch(url, options = {}) {
-  const headers = options.headers || {};
-  if (currentToken) {
-    headers['Authorization'] = `Bearer ${currentToken}`;
-  }
-  if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
-    headers['Content-Type'] = 'application/json';
-    options.body = JSON.stringify(options.body);
-  }
-  options.headers = headers;
+// Static / GitHub Pages Mode State
+const IS_STATIC_HOST = window.location.hostname.includes('github.io') || window.location.protocol === 'file:' || !window.location.port;
+let staticDataLoaded = false;
+let staticPetitions = [];
+let staticStations = [];
+let staticUsers = [];
 
-  const res = await fetch(url, options);
-  if (res.status === 401) {
-    logout();
-    throw new Error('Session expired, please login again');
+async function ensureStaticData() {
+  if (staticDataLoaded) return;
+  try {
+    const basePath = window.location.pathname.includes('/NCRP-1930-Petitions') ? './data/' : './data/';
+    const [pRes, sRes, uRes] = await Promise.all([
+      fetch(basePath + 'petitions.json').then(r => r.json()),
+      fetch(basePath + 'stations.json').then(r => r.json()),
+      fetch(basePath + 'users.json').then(r => r.json())
+    ]);
+    staticPetitions = pRes;
+    staticStations = sRes;
+    staticUsers = uRes;
+
+    // Apply any saved local edits from browser localStorage
+    const savedEdits = JSON.parse(localStorage.getItem('ncrp_local_edits') || '{}');
+    staticPetitions.forEach(p => {
+      if (savedEdits[p.id]) {
+        Object.assign(p, savedEdits[p.id]);
+      }
+    });
+
+    const addedPetitions = JSON.parse(localStorage.getItem('ncrp_local_added') || '[]');
+    staticPetitions = [...addedPetitions, ...staticPetitions];
+
+    staticDataLoaded = true;
+  } catch (err) {
+    console.warn('Could not load static data JSON:', err);
   }
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error || 'Server request failed');
+}
+
+// Client-side router for GitHub Pages
+async function handleStaticApi(url, options = {}) {
+  await ensureStaticData();
+  const parsed = new URL(url, 'http://localhost');
+  const pathname = parsed.pathname;
+  const searchParams = parsed.searchParams;
+  const method = (options.method || 'GET').toUpperCase();
+  const body = options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : {};
+
+  // 1. Login
+  if (pathname === '/api/auth/login' && method === 'POST') {
+    let username = (body.username || '').trim().toLowerCase();
+    const password = body.password || '';
+
+    const aliases = {
+      'srikakulamitown': 'srikakulam1town',
+      'srikakulamiitown': 'srikakulam2town',
+      'tekkali': 'tekkalips',
+      'itchapuram': 'itchapuramtown',
+      'mahilaps': 'mahilapssrikakulam',
+      'traffic': 'srikakulamtraffic'
+    };
+    if (aliases[username]) username = aliases[username];
+
+    const user = staticUsers.find(u => u.username.toLowerCase() === username);
+    if (!user) {
+      throw new Error('Invalid User ID / తప్పు యూజర్ ఐడీ');
+    }
+
+    // Default password checks
+    let validPass = false;
+    if (user.role === 'admin') {
+      validPass = (password === 'Admin@SklmNCRP2026!' || password === 'Cyber@Sklm2026!');
+    } else {
+      validPass = (password === `${username}@skl26` || password === 'Sklm@PS2026!');
+    }
+
+    if (!validPass && password.length >= 6) {
+      // allow custom password if changed in localStorage
+      const savedPass = localStorage.getItem(`pass_${username}`);
+      if (savedPass && savedPass === password) validPass = true;
+    }
+
+    if (!validPass) {
+      throw new Error('Invalid Password / తప్పు పాస్‌వర్డ్');
+    }
+
+    const token = 'gh_token_' + Date.now();
+    const sessionUser = {
+      username: user.username,
+      displayName: user.display_name,
+      role: user.role,
+      psName: user.ps_name,
+      circle: user.circle,
+      subDivision: user.sub_division,
+      stationCode: user.station_code
+    };
+    localStorage.setItem('ncrp_session_user', JSON.stringify(sessionUser));
+
+    return {
+      success: true,
+      token,
+      user: sessionUser
+    };
   }
-  return data;
+
+  // 2. Me
+  if (pathname === '/api/auth/me') {
+    const saved = localStorage.getItem('ncrp_session_user');
+    if (!saved) throw new Error('Not authenticated');
+    return { user: JSON.parse(saved) };
+  }
+
+  // 3. Logout
+  if (pathname === '/api/auth/logout') {
+    localStorage.removeItem('ncrp_session_user');
+    return { success: true };
+  }
+
+  // 4. Stations
+  if (pathname === '/api/stations') {
+    const stationsWithCounts = staticStations.map(st => {
+      const psPets = staticPetitions.filter(p => p.ps_name === st.name);
+      return {
+        ...st,
+        petition_count: psPets.length,
+        fir_count: psPets.filter(p => p.status === 'FIR Registered').length,
+        closed_count: psPets.filter(p => p.status === 'Closed').length,
+        under_process_count: psPets.filter(p => p.status === 'Under Process').length,
+        total_lost: psPets.reduce((acc, p) => acc + (p.lost_amount || 0), 0),
+        total_hold: psPets.reduce((acc, p) => acc + (p.hold_amount || 0), 0)
+      };
+    });
+    return { stations: stationsWithCounts };
+  }
+
+  // 5. KPI
+  if (pathname === '/api/reports/kpi') {
+    const savedUser = JSON.parse(localStorage.getItem('ncrp_session_user') || '{}');
+    let pets = staticPetitions;
+    if (savedUser.role === 'station') {
+      pets = pets.filter(p => p.ps_name === savedUser.psName);
+    }
+
+    return {
+      stats: {
+        total_petitions: pets.length,
+        total_lost: pets.reduce((acc, p) => acc + (p.lost_amount || 0), 0),
+        total_hold: pets.reduce((acc, p) => acc + (p.hold_amount || 0), 0),
+        total_refund: pets.reduce((acc, p) => acc + (p.refund_amount || 0), 0),
+        fir_count: pets.filter(p => p.status === 'FIR Registered').length,
+        closed_count: pets.filter(p => p.status === 'Closed').length,
+        under_process_count: pets.filter(p => p.status === 'Under Process').length,
+        withdrawal_count: pets.filter(p => p.status === 'Withdrawal').length,
+        rejected_count: pets.filter(p => p.status === 'Rejected').length,
+        hold_cases_count: pets.filter(p => p.hold_amount > 0).length
+      }
+    };
+  }
+
+  // 6. Petitions List
+  if (pathname === '/api/petitions' && method === 'GET') {
+    const savedUser = JSON.parse(localStorage.getItem('ncrp_session_user') || '{}');
+    let pets = [...staticPetitions];
+
+    let psName = searchParams.get('ps_name') || '';
+    if (savedUser.role === 'station') {
+      psName = savedUser.psName;
+    }
+    if (psName) {
+      pets = pets.filter(p => p.ps_name === psName);
+    }
+
+    const status = searchParams.get('status');
+    if (status) pets = pets.filter(p => p.status === status);
+
+    const mo = searchParams.get('mo');
+    if (mo) pets = pets.filter(p => p.mo === mo);
+
+    const search = (searchParams.get('search') || '').toLowerCase().trim();
+    if (search) {
+      pets = pets.filter(p =>
+        (p.ack_no && p.ack_no.toLowerCase().includes(search)) ||
+        (p.complainant_name && p.complainant_name.toLowerCase().includes(search)) ||
+        (p.complainant_phone && p.complainant_phone.includes(search)) ||
+        (p.fir_number && p.fir_number.toLowerCase().includes(search)) ||
+        (p.action_taken && p.action_taken.toLowerCase().includes(search))
+      );
+    }
+
+    const total = pets.length;
+    const totalLost = pets.reduce((acc, p) => acc + (p.lost_amount || 0), 0);
+    const totalHold = pets.reduce((acc, p) => acc + (p.hold_amount || 0), 0);
+
+    const page = Math.max(1, parseInt(searchParams.get('page')) || 1);
+    const limit = Math.min(1000, parseInt(searchParams.get('limit')) || 25);
+    const offset = (page - 1) * limit;
+
+    const sliced = pets.slice(offset, offset + limit);
+
+    return {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit) || 1,
+      totalLost,
+      totalHold,
+      petitions: sliced
+    };
+  }
+
+  // 7. Single Petition
+  if (pathname.match(/^\/api\/petitions\/(\d+)$/) && method === 'GET') {
+    const id = parseInt(pathname.split('/')[3]);
+    const petition = staticPetitions.find(p => p.id === id);
+    if (!petition) throw new Error('Petition not found');
+    return { petition };
+  }
+
+  // 8. Update Petition
+  if (pathname.match(/^\/api\/petitions\/(\d+)$/) && method === 'PUT') {
+    const id = parseInt(pathname.split('/')[3]);
+    const pet = staticPetitions.find(p => p.id === id);
+    if (!pet) throw new Error('Petition not found');
+
+    Object.assign(pet, {
+      status: body.status !== undefined ? body.status : pet.status,
+      mo: body.mo !== undefined ? body.mo : pet.mo,
+      action_taken: body.action_taken !== undefined ? body.action_taken : pet.action_taken,
+      date_of_action: body.date_of_action !== undefined ? body.date_of_action : pet.date_of_action,
+      fir_number: body.fir_number !== undefined ? body.fir_number : pet.fir_number,
+      court_memo_filed: body.court_memo_filed !== undefined ? body.court_memo_filed : pet.court_memo_filed,
+      court_order_obtained: body.court_order_obtained !== undefined ? body.court_order_obtained : pet.court_order_obtained,
+      hold_amount: body.hold_amount !== undefined ? parseFloat(body.hold_amount) || 0 : pet.hold_amount,
+      refund_amount: body.refund_amount !== undefined ? parseFloat(body.refund_amount) || 0 : pet.refund_amount,
+      remarks: body.remarks !== undefined ? body.remarks : pet.remarks
+    });
+
+    // Save in localStorage
+    const savedEdits = JSON.parse(localStorage.getItem('ncrp_local_edits') || '{}');
+    savedEdits[id] = pet;
+    localStorage.setItem('ncrp_local_edits', JSON.stringify(savedEdits));
+
+    return { success: true, petition: pet, message: 'Petition updated successfully / పిటిషన్ విజయవంతంగా అప్‌డేట్ చేయబడింది' };
+  }
+
+  // 9. Abstract Report
+  if (pathname === '/api/reports/abstract') {
+    const rows = staticStations.map(st => {
+      const psPets = staticPetitions.filter(p => p.ps_name === st.name);
+      return {
+        sl_no: st.sl_no,
+        ps_name: st.name,
+        circle: st.circle,
+        sub_division: st.sub_division,
+        total_cases: psPets.length,
+        fir_count: psPets.filter(p => p.status === 'FIR Registered').length,
+        nc_count: psPets.filter(p => p.status === 'NC Registered').length,
+        closed_count: psPets.filter(p => p.status === 'Closed').length,
+        no_action_count: psPets.filter(p => p.status === 'No Action').length,
+        withdrawal_count: psPets.filter(p => p.status === 'Withdrawal').length,
+        under_process_count: psPets.filter(p => p.status === 'Under Process').length,
+        rejected_count: psPets.filter(p => p.status === 'Rejected').length,
+        total_lost: psPets.reduce((acc, p) => acc + (p.lost_amount || 0), 0),
+        total_hold: psPets.reduce((acc, p) => acc + (p.hold_amount || 0), 0)
+      };
+    });
+    return { rows };
+  }
+
+  // 10. Hold Refund Report
+  if (pathname === '/api/reports/hold-refund') {
+    const rows = staticStations.map(st => {
+      const psPets = staticPetitions.filter(p => p.ps_name === st.name);
+      return {
+        sl_no: st.sl_no,
+        ps_name: st.name,
+        circle: st.circle,
+        sub_division: st.sub_division,
+        total_cases: psPets.length,
+        total_lost: psPets.reduce((acc, p) => acc + (p.lost_amount || 0), 0),
+        hold_cases_count: psPets.filter(p => p.hold_amount > 0).length,
+        total_hold: psPets.reduce((acc, p) => acc + (p.hold_amount || 0), 0),
+        refund_cases_count: psPets.filter(p => p.refund_amount > 0).length,
+        total_refund: psPets.reduce((acc, p) => acc + (p.refund_amount || 0), 0)
+      };
+    });
+    return { rows };
+  }
+
+  // 11. MO Wise Report
+  if (pathname === '/api/reports/mo-wise') {
+    const moMap = {};
+    staticPetitions.forEach(p => {
+      const m = p.mo || 'Other';
+      if (!moMap[m]) moMap[m] = { mo: m, count: 0, total_lost: 0, total_hold: 0, fir_count: 0, closed_count: 0, under_process_count: 0 };
+      moMap[m].count++;
+      moMap[m].total_lost += (p.lost_amount || 0);
+      moMap[m].total_hold += (p.hold_amount || 0);
+      if (p.status === 'FIR Registered') moMap[m].fir_count++;
+      if (p.status === 'Closed') moMap[m].closed_count++;
+      if (p.status === 'Under Process') moMap[m].under_process_count++;
+    });
+    const rows = Object.values(moMap).sort((a, b) => b.count - a.count);
+    return { rows };
+  }
+
+  // 12. Admin users
+  if (pathname === '/api/admin/users') {
+    return { users: staticUsers };
+  }
+
+  // Fallback
+  return { success: true };
+}
+
+// API Fetch Helper with Hybrid Static / Server Support
+async function apiFetch(url, options = {}) {
+  // If running on GitHub Pages or file: protocol, route directly to static engine
+  if (IS_STATIC_HOST) {
+    return handleStaticApi(url, options);
+  }
+
+  try {
+    const headers = options.headers || {};
+    if (currentToken) {
+      headers['Authorization'] = `Bearer ${currentToken}`;
+    }
+    if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+      options.body = JSON.stringify(options.body);
+    }
+    options.headers = headers;
+
+    const res = await fetch(url, options);
+    if (res.status === 401) {
+      logout();
+      throw new Error('Session expired, please login again');
+    }
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Server request failed');
+    }
+    return data;
+  } catch (err) {
+    // If backend is unreachable, gracefully fall back to static engine!
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+      console.warn('Backend server unreachable, falling back to client-side data engine...');
+      return handleStaticApi(url, options);
+    }
+    throw err;
+  }
 }
 
 // App Initialization
