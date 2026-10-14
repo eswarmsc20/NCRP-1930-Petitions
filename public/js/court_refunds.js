@@ -6609,48 +6609,157 @@ function openAddCaseModal() {
   modal.style.display = 'flex';
 }
 
+
+function jumpToCol(colNum) {
+  const el = document.getElementById('card_col_' + colNum);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.style.borderColor = '#d97706';
+    el.style.boxShadow = '0 0 0 4px rgba(217, 119, 6, 0.3)';
+    setTimeout(() => {
+      el.style.borderColor = '';
+      el.style.boxShadow = '';
+    }, 1500);
+    const inp = el.querySelector('input, select, textarea');
+    if (inp) inp.focus();
+  }
+}
+
 function openEditCaseModal(sNo) {
   if (!courtData || !courtData.cases) return;
-  const c = courtData.cases.find(x => Number(x.s_no) === Number(sNo));
+  const c = courtData.cases.find(x => Number(x.s_no) === Number(sNo) || Number(x['S No']) === Number(sNo));
   if (!c) return;
 
   const modal = document.getElementById('caseFormModal');
   if (!modal) return;
 
-  document.getElementById('form_edit_s_no').value = c.s_no;
-  document.getElementById('caseFormBadge').textContent = `✏️ Edit Case #${c.s_no}`;
-  document.getElementById('caseFormTitle').textContent = `Edit Case #${c.s_no} - FIR ${c.fir_no} (${c.police_station})`;
+  // Helper to extract value safely from either snake_case or exact Excel key
+  const getVal = (snake, original) => {
+    if (c[snake] !== undefined && c[snake] !== null && c[snake] !== '') return c[snake];
+    if (c[original] !== undefined && c[original] !== null && c[original] !== '') return c[original];
+    return '';
+  };
 
-  document.getElementById('form_s_no').value = c.s_no;
-  document.getElementById('form_police_station').value = c.police_station || '';
-  document.getElementById('form_circle').value = c.circle || '';
-  document.getElementById('form_fir_no').value = c.fir_no || '';
-  document.getElementById('form_year').value = c.year || '2026';
-  document.getElementById('form_sub_category').value = c.sub_category || '';
-  document.getElementById('form_lost').value = c.lost || '';
-  document.getElementById('form_lien').value = c.lien || '';
-  document.getElementById('form_memo_filed').value = (c.memo_filed && c.memo_filed.toLowerCase() === 'no') ? 'No' : 'Yes';
-  document.getElementById('form_memo_filed_amount').value = c.memo_filed_amount || '';
-  document.getElementById('form_memo_filed_date_or_reason').value = c.memo_filed_date_or_reason || '';
-  document.getElementById('form_court_order_received').value = (c.court_order_received && c.court_order_received.toLowerCase() === 'no') ? 'No' : 'Yes';
-  
-  let refStat = 'Yes';
-  if (c.amount_refunded_status) {
-    const s = c.amount_refunded_status.toLowerCase();
-    if (s.includes('part')) refStat = 'Partial';
-    else if (s === 'no') refStat = 'No';
+  const currentSNo = getVal('s_no', 'S No');
+  const psName = getVal('police_station', 'POLICE STATION');
+  const firNumber = getVal('fir_no', 'FIR NO');
+
+  document.getElementById('form_edit_s_no').value = currentSNo;
+  document.getElementById('caseFormBadge').textContent = `✏️ Edit Case #${currentSNo}`;
+  document.getElementById('caseFormTitle').textContent = `Edit Case #${currentSNo} - FIR ${firNumber} (${psName})`;
+
+  // Ensure police station option exists in dropdown
+  const psSelect = document.getElementById('form_police_station');
+  if (psSelect && psName) {
+    let exists = false;
+    for (let i = 0; i < psSelect.options.length; i++) {
+      if (psSelect.options[i].value.toLowerCase() === String(psName).trim().toLowerCase()) {
+        psSelect.selectedIndex = i;
+        exists = true;
+        break;
+      }
+    }
+    if (!exists) {
+      const newOpt = document.createElement('option');
+      newOpt.value = psName;
+      newOpt.textContent = psName;
+      newOpt.selected = true;
+      psSelect.appendChild(newOpt);
+    }
   }
+
+  // Populate ALL 23 Columns in exact sequential order:
+  // Col 1: S No
+  document.getElementById('form_s_no').value = currentSNo;
+
+  // Col 2: Circle
+  document.getElementById('form_circle').value = getVal('circle', 'Circle');
+
+  // Col 3: Police Station already selected above
+
+  // Col 4: FIR No
+  document.getElementById('form_fir_no').value = firNumber;
+
+  // Col 5: Year
+  const yearVal = String(getVal('year', 'Year') || '2026').trim();
+  const yearSelect = document.getElementById('form_year');
+  if (yearSelect) {
+    let yExists = false;
+    for (let i = 0; i < yearSelect.options.length; i++) {
+      if (yearSelect.options[i].value === yearVal) {
+        yearSelect.selectedIndex = i;
+        yExists = true;
+        break;
+      }
+    }
+    if (!yExists && yearVal) {
+      const opt = document.createElement('option');
+      opt.value = yearVal;
+      opt.textContent = yearVal;
+      opt.selected = true;
+      yearSelect.appendChild(opt);
+    }
+  }
+
+  // Col 6: Sub-Category
+  document.getElementById('form_sub_category').value = getVal('sub_category', 'Sub-Category');
+
+  // Col 7: Lost
+  document.getElementById('form_lost').value = getVal('lost', 'Lost');
+
+  // Col 8: Lien
+  document.getElementById('form_lien').value = getVal('lien', 'Lien');
+
+  // Col 9: Memo Filed Yes or No?
+  const memoVal = String(getVal('memo_filed', 'Memo Filed Yes or No?')).trim().toLowerCase();
+  document.getElementById('form_memo_filed').value = (memoVal === 'no') ? 'No' : 'Yes';
+
+  // Col 10: Memo Filed Amount
+  document.getElementById('form_memo_filed_amount').value = getVal('memo_filed_amount', 'Memo Filed Amount');
+
+  // Col 11: Memo Filed date / Reason
+  document.getElementById('form_memo_filed_date_or_reason').value = getVal('memo_filed_date_or_reason', 'Memo Filed date / If Not Filed Reason for not filiing');
+
+  // Col 12: Court order Recieved Yes or No?
+  const orderVal = String(getVal('court_order_received', 'Court order Recieved Yes or No?')).trim().toLowerCase();
+  document.getElementById('form_court_order_received').value = (orderVal === 'no') ? 'No' : 'Yes';
+
+  // Col 13: Amount Refunded Yes or No or Partial ?
+  const refStatus = String(getVal('amount_refunded_status', 'Amount Refunded Yes or No or Partial ?')).trim().toLowerCase();
+  let refStat = 'Yes';
+  if (refStatus.includes('part')) refStat = 'Partial';
+  else if (refStatus === 'no') refStat = 'No';
   document.getElementById('form_amount_refunded_status').value = refStat;
-  document.getElementById('form_court_order_amount').value = c.court_order_amount || '';
-  document.getElementById('form_refund_from_bank').value = c.refund_from_bank_display || (c.refund_from_bank || '');
-  document.getElementById('form_funds_not_available').value = c.funds_not_available || '';
-  document.getElementById('form_to_be_refunded_from_bank').value = c.to_be_refunded_from_bank_display || (c.to_be_refunded_from_bank || '');
-  document.getElementById('form_court_order_date').value = c.court_order_date || '';
-  document.getElementById('form_reasons_not_received').value = c.reasons_not_received || '';
-  document.getElementById('form_technical_asst').value = c.technical_asst || '';
-  document.getElementById('form_court_name').value = c.court_name || '';
-  document.getElementById('form_judge_name').value = c.judge_name || '';
-  document.getElementById('form_stage_of_case').value = c.stage_of_case || '';
+
+  // Col 14: Amount for Which Court Order Was Issued
+  document.getElementById('form_court_order_amount').value = getVal('court_order_amount', 'Amount for Which Court Order Was Issued');
+
+  // Col 15: Refund From bank
+  document.getElementById('form_refund_from_bank').value = c.refund_from_bank_display || getVal('refund_from_bank', 'Refund From bank');
+
+  // Col 16: Funds not availble in banks
+  document.getElementById('form_funds_not_available').value = getVal('funds_not_available', 'Funds not availble in banks');
+
+  // Col 17: To be refunded from Bank
+  document.getElementById('form_to_be_refunded_from_bank').value = c.to_be_refunded_from_bank_display || getVal('to_be_refunded_from_bank', 'To be refunded from Bank');
+
+  // Col 18: COURT ORDER RECEIVED DATE
+  document.getElementById('form_court_order_date').value = getVal('court_order_date', 'COURT ORDER RECEIVED DATE');
+
+  // Col 19: Reasons for not Receving Court orders
+  document.getElementById('form_reasons_not_received').value = getVal('reasons_not_received', 'Reasons for not Receving Court orders');
+
+  // Col 20: Technical asst
+  document.getElementById('form_technical_asst').value = getVal('technical_asst', 'Technical asst');
+
+  // Col 21: Court name
+  document.getElementById('form_court_name').value = getVal('court_name', 'Court name');
+
+  // Col 22: Judge Name
+  document.getElementById('form_judge_name').value = getVal('judge_name', 'Judge Name');
+
+  // Col 23: Stage of the case
+  document.getElementById('form_stage_of_case').value = getVal('stage_of_case', 'Stage of the case');
 
   modal.style.display = 'flex';
 }
