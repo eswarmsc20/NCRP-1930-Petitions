@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Srikakulam District Police | NCRP & 1930 Management System</title>
-  <link rel="stylesheet" href="./css/style.css?v=4.1">
+  <link rel="stylesheet" href="./css/style.css?v=4.2">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="./js/xlsx.full.min.js"></script>
 </head>
@@ -98,49 +98,49 @@
         <div class="kpi-card kpi-blue">
           <div class="kpi-label">Total Petitions</div>
           <div class="kpi-telugu">మొత్తం పిటిషన్లు</div>
-          <div class="kpi-value" id="kpiTotalPetitions">1,913</div>
+          <div class="kpi-value" id="kpiTotalPetitions">1,886</div>
           <div class="kpi-sub">NCRP & 1930 Helpline</div>
         </div>
 
         <div class="kpi-card kpi-red">
           <div class="kpi-label">Total Lost Amount</div>
           <div class="kpi-telugu">కోల్పోయిన మొత్తం</div>
-          <div class="kpi-value" id="kpiTotalLost">₹11.47 Cr</div>
+          <div class="kpi-value" id="kpiTotalLost">₹10.44 Cr</div>
           <div class="kpi-sub">Across All Cases</div>
         </div>
 
         <div class="kpi-card kpi-green">
           <div class="kpi-label">Hold / Frozen Amount</div>
           <div class="kpi-telugu">హోల్డ్ చేయబడిన సొమ్ము</div>
-          <div class="kpi-value" id="kpiTotalHold">₹1.61 Cr</div>
+          <div class="kpi-value" id="kpiTotalHold">₹1.56 Cr</div>
           <div class="kpi-sub" id="kpiHoldCases">417 Accounts Secured</div>
         </div>
 
         <div class="kpi-card kpi-gold">
           <div class="kpi-label">Refunded to Victims</div>
           <div class="kpi-telugu">బాధితులకు రీఫండ్ చేసినవి</div>
-          <div class="kpi-value" id="kpiTotalRefund">₹15.09 L</div>
+          <div class="kpi-value" id="kpiTotalRefund">₹6.79 L</div>
           <div class="kpi-sub">Via Court Orders</div>
         </div>
 
         <div class="kpi-card kpi-red">
           <div class="kpi-label">FIR Registered</div>
           <div class="kpi-telugu">ఎఫ్‌ఐఆర్ నమోదైనవి</div>
-          <div class="kpi-value" id="kpiFIRCount">28</div>
+          <div class="kpi-value" id="kpiFIRCount">29</div>
           <div class="kpi-sub">Crime Numbers Issued</div>
         </div>
 
         <div class="kpi-card kpi-amber">
           <div class="kpi-label">Under Process</div>
           <div class="kpi-telugu">విచారణలో ఉన్నవి</div>
-          <div class="kpi-value" id="kpiUnderProcess">1,374</div>
+          <div class="kpi-value" id="kpiUnderProcess">1,375</div>
           <div class="kpi-sub">Active Investigation</div>
         </div>
 
         <div class="kpi-card kpi-green">
           <div class="kpi-label">Closed Cases</div>
           <div class="kpi-telugu">పరిష్కరించినవి</div>
-          <div class="kpi-value" id="kpiClosed">437</div>
+          <div class="kpi-value" id="kpiClosed">436</div>
           <div class="kpi-sub">Resolved / Settled</div>
         </div>
       </div>
@@ -152,7 +152,7 @@
       <nav class="nav-tabs-wrapper">
         <button class="nav-tab active" onclick="switchTab('petitionsTab')">
           📋 Master Petitions (24 కాలమ్స్)
-          <span class="tab-badge" id="tabBadgePetitions">1,913</span>
+          <span class="tab-badge" id="tabBadgePetitions">1,886</span>
         </button>
         <button class="nav-tab" onclick="switchTab('abstractTab')">
           📑 Abstract (అబ్‌స్ట్రాక్ట్)
@@ -245,7 +245,7 @@
             </select>
 
             <select id="sortByFilter" class="select-filter" onchange="applyFilters()">
-              <option value="sl_asc" selected>🔢 Sort: S.No 1 to 1913 (ఆరోహణ)</option>
+              <option value="sl_asc" selected>🔢 Sort: S.No 1 to 1886 (ఆరోహణ)</option>
               <option value="sl_desc">🔢 Sort: S.No High to Low (తాజా S.No ముందుగా)</option>
               <option value="date_desc">📅 Sort: Date Newest First (తాజా తేదీలు ముందుగా)</option>
               <option value="date_asc">📅 Sort: Date Oldest First (పాత తేదీలు ముందుగా)</option>
@@ -1238,6 +1238,6 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="./js/app.js?v=4.1"></script>
+  <script src="./js/app.js?v=4.2"></script>
 </body>
 </html>
