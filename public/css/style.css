@@ -628,6 +628,11 @@ body {
   color: #16a34a;
 }
 
+.amount-refund {
+  font-weight: 700;
+  color: #059669;
+}
+
 .action-btn-sm {
   background: var(--primary-navy);
   color: white;

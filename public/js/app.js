@@ -302,6 +302,7 @@ async function handleStaticApi(url, options = {}) {
     const total = pets.length;
     const totalLost = pets.reduce((acc, p) => acc + (p.lost_amount || 0), 0);
     const totalHold = pets.reduce((acc, p) => acc + (p.hold_amount || 0), 0);
+    const totalRefund = pets.reduce((acc, p) => acc + (p.refund_amount || 0), 0);
 
     const sortBy = searchParams.get('sort_by') || 'sl_no';
     const sortOrder = (searchParams.get('sort_order') || 'asc').toLowerCase();
@@ -312,7 +313,7 @@ async function handleStaticApi(url, options = {}) {
       if (valA === undefined || valA === null) valA = '';
       if (valB === undefined || valB === null) valB = '';
 
-      if (sortBy === 'lost_amount' || sortBy === 'hold_amount' || sortBy === 'sl_no' || sortBy === 'id') {
+      if (sortBy === 'lost_amount' || sortBy === 'hold_amount' || sortBy === 'refund_amount' || sortBy === 'sl_no' || sortBy === 'id') {
         const numA = parseFloat(valA) || 0;
         const numB = parseFloat(valB) || 0;
         return sortOrder === 'desc' ? numB - numA : numA - numB;
@@ -347,6 +348,7 @@ async function handleStaticApi(url, options = {}) {
       totalPages: Math.ceil(total / limit) || 1,
       totalLost,
       totalHold,
+      totalRefund,
       petitions: sliced
     };
   }
@@ -997,7 +999,7 @@ function sortTableBy(col) {
     currentSortOrder = (currentSortOrder === 'asc') ? 'desc' : 'asc';
   } else {
     currentSortColumn = col;
-    currentSortOrder = (col === 'lost_amount' || col === 'hold_amount' || col === 'petition_date') ? 'desc' : 'asc';
+    currentSortOrder = (col === 'lost_amount' || col === 'hold_amount' || col === 'refund_amount' || col === 'petition_date') ? 'desc' : 'asc';
   }
 
   const sortByEl = document.getElementById('sortByFilter');
@@ -1006,6 +1008,7 @@ function sortTableBy(col) {
     else if (col === 'petition_date') sortByEl.value = currentSortOrder === 'desc' ? 'date_desc' : 'date_asc';
     else if (col === 'lost_amount') sortByEl.value = currentSortOrder === 'desc' ? 'lost_desc' : 'lost_asc';
     else if (col === 'hold_amount') sortByEl.value = 'hold_desc';
+    else if (col === 'refund_amount') sortByEl.value = 'refund_desc';
     else if (col === 'ps_name') sortByEl.value = 'ps_asc';
     else if (col === 'ack_no') sortByEl.value = 'ack_asc';
     else if (col === 'status') sortByEl.value = 'status_asc';
@@ -1025,7 +1028,7 @@ function getSortHeaderIndicator(col) {
 async function loadPetitions(page = 1) {
   currentPetitionsPage = page;
   const tbody = document.getElementById('petitionsTableBody');
-  const colSpanCount = (currentTableViewMode === 'full') ? 25 : 12;
+  const colSpanCount = (currentTableViewMode === 'full') ? 26 : 13;
   tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align: center; padding: 40px; color: #64748b;">Loading petitions... / డేటా లోడ్ అవుతోంది...</td></tr>`;
 
   const search = document.getElementById('searchInput').value.trim();
@@ -1043,6 +1046,7 @@ async function loadPetitions(page = 1) {
   else if (sortVal === 'lost_desc') { currentSortColumn = 'lost_amount'; currentSortOrder = 'desc'; }
   else if (sortVal === 'lost_asc') { currentSortColumn = 'lost_amount'; currentSortOrder = 'asc'; }
   else if (sortVal === 'hold_desc') { currentSortColumn = 'hold_amount'; currentSortOrder = 'desc'; }
+  else if (sortVal === 'refund_desc') { currentSortColumn = 'refund_amount'; currentSortOrder = 'desc'; }
   else if (sortVal === 'ps_asc') { currentSortColumn = 'ps_name'; currentSortOrder = 'asc'; }
   else if (sortVal === 'ack_asc') { currentSortColumn = 'ack_no'; currentSortOrder = 'asc'; }
   else if (sortVal === 'status_asc') { currentSortColumn = 'status'; currentSortOrder = 'asc'; }
@@ -1078,6 +1082,7 @@ function renderPetitionsTable(data) {
   document.getElementById('filteredAmounts').innerHTML = `
     | Total Lost: <span class="amount-loss">${formatINR(data.totalLost)}</span>
     | Total Hold: <span class="amount-hold">${formatINR(data.totalHold)}</span>
+    | Total Refund: <span class="amount-refund">${formatINR(data.totalRefund || 0)}</span>
   `;
 
   document.getElementById('currentPageNum').textContent = data.page;
@@ -1105,6 +1110,7 @@ function renderPetitionsTable(data) {
           <th style="min-width: 180px;">Sub Category of Complaint</th>
           <th style="min-width: 120px; cursor: pointer; user-select: none;" onclick="sortTableBy('lost_amount')" title="Click to sort">Lost Amount (₹)${getSortHeaderIndicator('lost_amount')}</th>
           <th style="min-width: 120px; cursor: pointer; user-select: none;" onclick="sortTableBy('hold_amount')" title="Click to sort">Hold Amount (₹)${getSortHeaderIndicator('hold_amount')}</th>
+          <th class="th-refund" style="min-width: 125px; cursor: pointer; user-select: none;" onclick="sortTableBy('refund_amount')" title="Click to sort">Refund Amount (₹)${getSortHeaderIndicator('refund_amount')}</th>
           <th class="th-process" style="min-width: 110px; cursor: pointer; user-select: none;" onclick="sortTableBy('status')" title="Click to sort">Status${getSortHeaderIndicator('status')}</th>
           <th style="min-width: 220px;">Action taken by PS</th>
           <th style="min-width: 95px;">Date of Action</th>
@@ -1130,6 +1136,7 @@ function renderPetitionsTable(data) {
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('mo')" title="Click to sort">Modus Operandi (MO)${getSortHeaderIndicator('mo')}</th>
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('lost_amount')" title="Click to sort">Lost Amount (₹)${getSortHeaderIndicator('lost_amount')}</th>
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('hold_amount')" title="Click to sort">Hold Amount (₹)${getSortHeaderIndicator('hold_amount')}</th>
+          <th class="th-refund" style="cursor: pointer; user-select: none;" onclick="sortTableBy('refund_amount')" title="Click to sort">Refund Amount (₹)${getSortHeaderIndicator('refund_amount')}</th>
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('status')" title="Click to sort">Status${getSortHeaderIndicator('status')}</th>
           <th>FIR / Cr. No</th>
           <th>Action Taken</th>
@@ -1139,7 +1146,7 @@ function renderPetitionsTable(data) {
     }
   }
 
-  const colSpanCount = isFullMode ? 25 : 12;
+  const colSpanCount = isFullMode ? 26 : 13;
 
   if (data.petitions.length === 0) {
     tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align: center; padding: 40px; color: #64748b;">No petitions found matching the criteria. / ఫలితాలు లేవు.</td></tr>`;
@@ -1175,6 +1182,7 @@ function renderPetitionsTable(data) {
         <td style="font-size: 0.75rem;">${p.sub_category || '-'}</td>
         <td class="amount-loss" style="font-weight: 700;">${p.lost_amount > 0 ? '₹' + p.lost_amount.toLocaleString('en-IN') : '-'}</td>
         <td class="amount-hold" style="font-weight: 700;">${p.hold_amount > 0 ? '₹' + p.hold_amount.toLocaleString('en-IN') : '-'}</td>
+        <td class="amount-refund" style="font-weight: 700; color: #059669;">${p.refund_amount > 0 ? '₹' + p.refund_amount.toLocaleString('en-IN') : '-'}</td>
         <td><span class="badge ${badgeClass}">${p.status}</span></td>
         <td style="max-width: 250px; font-size: 0.75rem; color: #334155;" title="${p.action_taken || ''}">
           ${p.action_taken ? (p.action_taken.length > 50 ? p.action_taken.slice(0, 50) + '...' : p.action_taken) : '<em style="color:#94a3b8">Pending</em>'}
@@ -1211,6 +1219,7 @@ function renderPetitionsTable(data) {
         <td><span style="font-weight: 600; color: #334155;">${p.mo || 'Other'}</span></td>
         <td class="amount-loss">${p.lost_amount > 0 ? '₹' + p.lost_amount.toLocaleString('en-IN') : '-'}</td>
         <td class="amount-hold">${p.hold_amount > 0 ? '₹' + p.hold_amount.toLocaleString('en-IN') : '-'}</td>
+        <td class="amount-refund" style="font-weight: 700; color: #059669;">${p.refund_amount > 0 ? '₹' + p.refund_amount.toLocaleString('en-IN') : '-'}</td>
         <td><span class="badge ${badgeClass}">${p.status}</span></td>
         <td><span style="font-weight: 600; color: #dc2626;">${p.fir_number || '-'}</span></td>
         <td style="max-width: 220px; font-size: 0.78rem; color: #475569;" title="${p.action_taken || ''}">
@@ -1300,7 +1309,7 @@ function exportCSV() {
   const headers = [
     'SL NO', 'Date', 'Name of the PS', 'Circle Name', 'NCRP/1930', 'Acknowledgement No',
     'Complaint name & Ph no', 'Victim Age', 'Complainant Address', 'Category of Complaint',
-    'Sub Category of Complaint', 'Lost Amount', 'Hold Amount', 'Status', 'Action taken by PS',
+    'Sub Category of Complaint', 'Lost Amount', 'Hold Amount', 'Refund Amount', 'Status', 'Action taken by PS',
     'Date of Action', 'Whether FIR is Registered (Cr. No.)', 'Court Memo Filed for Refund in FIR Cases (Yes/No)',
     'Court Order Obtained or Not', 'No. of Days', 'Lost Amount Details', 'Hold Amount Details', 'Time Line', 'case type'
   ];
@@ -1319,6 +1328,7 @@ function exportCSV() {
     p.sub_category || 'UPI Related Frauds',
     p.lost_amount || 0,
     p.hold_amount || 0,
+    p.refund_amount || 0,
     p.status || 'Under Process',
     p.action_taken || '',
     p.date_of_action || '',
@@ -2562,11 +2572,11 @@ function exportExcelAllSheets() {
   const wb = XLSX.utils.book_new();
   const dateStr = new Date().toISOString().slice(0, 10);
 
-  // 1. Total (24 Columns)
+  // 1. Total (24 Columns + Refund)
   const totalHeaders = [
     'SL NO', 'Date', 'Name of the PS', 'Circle Name', 'NCRP/1930', 'Acknowledgement No',
     'Complaint name & Ph no', 'Victim Age', 'Complainant Address', 'Category of Complaint',
-    'Sub Category of Complaint', 'Lost Amount', 'Hold Amount', 'Status', 'Action taken by PS',
+    'Sub Category of Complaint', 'Lost Amount', 'Hold Amount', 'Refund Amount', 'Status', 'Action taken by PS',
     'Date of Action', 'Whether FIR is Registered (Cr. No.)', 'Court Memo Filed for Refund in FIR Cases (Yes/No)',
     'Court Order Obtained or Not', 'No. of Days', 'Lost Amount Details', 'Hold Amount Details', 'Time Line', 'case type'
   ];
@@ -2574,7 +2584,7 @@ function exportExcelAllSheets() {
     p.sl_no || (i + 1), p.petition_date || '', p.ps_name || '', p.circle_name || '', p.portal_type || 'NCRP', p.ack_no || '',
     ((p.complainant_name || '') + '\n' + (p.complainant_phone || '')).trim(), p.victim_age || '', p.complainant_address || '',
     p.category || 'Online Financial Fraud', p.sub_category || 'UPI Related Frauds',
-    p.lost_amount || 0, p.hold_amount || 0, p.status || 'Under Process', p.action_taken || '', p.date_of_action || '',
+    p.lost_amount || 0, p.hold_amount || 0, p.refund_amount || 0, p.status || 'Under Process', p.action_taken || '', p.date_of_action || '',
     p.fir_number || '', p.court_memo_filed || 'No', p.court_order_obtained || 'No',
     p.no_of_days !== undefined ? p.no_of_days : '', p.loss_bucket || '', p.hold_bucket || '',
     p.timeline_status || '', p.mo || 'Other'

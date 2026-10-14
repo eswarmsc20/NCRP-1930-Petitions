@@ -377,13 +377,13 @@ const server = http.createServer(async (req, res) => {
       const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
 
       // Count query
-      const countRow = db.prepare(`SELECT count(*) as total, sum(lost_amount) as total_lost, sum(hold_amount) as total_hold FROM petitions ${whereSql}`).get(...params);
+      const countRow = db.prepare(`SELECT count(*) as total, sum(lost_amount) as total_lost, sum(hold_amount) as total_hold, sum(refund_amount) as total_refund FROM petitions ${whereSql}`).get(...params);
       const total = countRow.total;
 
       // Data query
       const sortField = searchParams.get('sort_by') || 'sl_no';
       const sortOrder = (searchParams.get('sort_order') || 'asc').toLowerCase() === 'desc' ? 'DESC' : 'ASC';
-      const allowedSortFields = ['sl_no', 'petition_date', 'ps_name', 'ack_no', 'lost_amount', 'hold_amount', 'status', 'mo'];
+      const allowedSortFields = ['sl_no', 'petition_date', 'ps_name', 'circle_name', 'ack_no', 'complainant_name', 'lost_amount', 'hold_amount', 'refund_amount', 'status', 'mo'];
       const safeSort = allowedSortFields.includes(sortField) ? sortField : 'sl_no';
 
       const dataQuery = `
@@ -401,6 +401,7 @@ const server = http.createServer(async (req, res) => {
         totalPages: Math.ceil(total / limit),
         totalLost: countRow.total_lost || 0,
         totalHold: countRow.total_hold || 0,
+        totalRefund: countRow.total_refund || 0,
         petitions
       });
     }
