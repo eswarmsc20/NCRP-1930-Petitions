@@ -1,0 +1,21 @@
+{
+  "name": "srikakulam-ncrp-portal",
+  "version": "1.0.0",
+  "description": "Srikakulam District Police - NCRP & 1930 Cyber Fraud Complaints Management System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node scripts/seed_database.js",
+    "test": "node scripts/test_in_memory.js"
+  },
+  "keywords": [
+    "srikakulam-police",
+    "ncrp",
+    "1930-helpline",
+    "cyber-crime",
+    "police-portal",
+    "andhra-pradesh-police"
+  ],
+  "author": "Srikakulam District Police Cyber Cell",
+  "license": "ISC"
+}

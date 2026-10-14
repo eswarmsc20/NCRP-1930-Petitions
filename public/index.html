@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Srikakulam District Police | NCRP & 1930 Management System</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ==================== LOGIN SCREEN ==================== -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,5 92,20 85,75 50,95 15,75 8,20" fill="#0b1e3f" stroke="#c59b27" stroke-width="4"/>
+            <polygon points="50,12 85,24 79,70 50,88 21,70 15,24" fill="#152c5b"/>
+            <circle cx="50" cy="48" r="22" fill="#c59b27"/>
+            <path d="M50 32 L54 44 L66 44 L56 52 L60 64 L50 56 L40 64 L44 52 L34 44 L46 44 Z" fill="#0b1e3f"/>
+          </svg>
+        </div>
+        <h2>SRIKAKULAM DISTRICT POLICE</h2>
+        <div style="font-size: 0.82rem; color: #b45309; font-weight: 600;">శ్రీకాకుళం జిల్లా పోలీస్ - సైబర్ క్రైమ్ విభాగం</div>
+        <p>National Cyber Crime Reporting Portal (NCRP) & 1930</p>
+      </div>
+
+      <div class="login-body">
+        <form id="loginForm">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label">Police Station / Admin User ID</label>
+            <input type="text" id="loginUsername" class="form-input" placeholder="e.g. srikakulam1town or admin" required autocomplete="username">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label class="form-label">Password / పాస్‌వర్డ్</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="Enter password" required autocomplete="current-password">
+          </div>
+
+          <button type="submit" id="loginBtn" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+            Secure Station Login / లాగిన్ అవ్వండి
+          </button>
+        </form>
+
+        <div class="demo-credentials-box">
+          <h4>⚡ Quick Demonstration Logins (క్లిక్ చేసి లాగిన్ అవ్వండి):</h4>
+          <div class="demo-pills">
+            <span class="demo-pill" onclick="quickFill('admin', 'Admin@SklmNCRP2026!')">🛡️ DPO Admin</span>
+            <span class="demo-pill" onclick="quickFill('cybercell_sklm', 'Cyber@Sklm2026!')">💻 District Cyber PS</span>
+            <span class="demo-pill" onclick="quickFill('srikakulam1town', 'srikakulam1town@skl26')">👮 Srikakulam I Town</span>
+            <span class="demo-pill" onclick="quickFill('srikakulam2town', 'srikakulam2town@skl26')">👮 Srikakulam II Town</span>
+            <span class="demo-pill" onclick="quickFill('kasibugga', 'kasibugga@skl26')">👮 Kasibugga PS</span>
+            <span class="demo-pill" onclick="quickFill('tekkalips', 'tekkalips@skl26')">👮 Tekkali PS</span>
+            <span class="demo-pill" onclick="quickFill('sompeta', 'sompeta@skl26')">👮 Sompeta PS</span>
+            <span class="demo-pill" onclick="quickFill('baruva', 'baruva@skl26')">👮 Baruva PS</span>
+          </div>
+          <div style="font-size: 0.7rem; color: #78716c; margin-top: 6px;">
+            All 36 stations format: <code>username@skl26</code> (e.g. <code>amadalavalasa@skl26</code>, <code>gara@skl26</code>, etc.)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN APPLICATION ==================== -->
+  <div id="appScreen" style="display: none;">
+    <!-- Police Header -->
+    <header class="police-header">
+      <div class="header-container">
+        <div class="police-branding">
+          <div class="police-emblem">
+            <svg viewBox="0 0 100 100" fill="none">
+              <polygon points="50,5 92,20 85,75 50,95 15,75 8,20" fill="#0b1e3f" stroke="#c59b27" stroke-width="4"/>
+              <polygon points="50,12 85,24 79,70 50,88 21,70 15,24" fill="#152c5b"/>
+              <circle cx="50" cy="48" r="22" fill="#c59b27"/>
+              <path d="M50 32 L54 44 L66 44 L56 52 L60 64 L50 56 L40 64 L44 52 L34 44 L46 44 Z" fill="#0b1e3f"/>
+            </svg>
+          </div>
+          <div class="police-titles">
+            <h1>
+              SRIKAKULAM DISTRICT POLICE
+              <span class="portal-tag">NCRP & 1930 PORTAL</span>
+            </h1>
+            <div class="telugu-sub">శ్రీకాకుళం జిల్లా పోలీస్ - సైబర్ పిటిషన్ల నిర్వహణ & రిపోర్టింగ్ వ్యవస్థ</div>
+          </div>
+        </div>
+
+        <div class="header-user-panel">
+          <div class="station-badge">
+            <div class="badge-icon"></div>
+            <span id="userDisplayName">Srikakulam I Town PS</span>
+            <span id="userCircleLabel" style="font-size: 0.72rem; color: #fde047;">(Srikakulam Rural Circle)</span>
+          </div>
+          <button class="btn-header" onclick="openChangePasswordModal()">
+            🔑 Password
+          </button>
+          <button class="btn-header btn-logout" onclick="logout()">
+            ⏻ Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- KPI Ribbon -->
+    <div class="kpi-ribbon">
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-blue">
+          <div class="kpi-label">Total Petitions</div>
+          <div class="kpi-telugu">మొత్తం పిటిషన్లు</div>
+          <div class="kpi-value" id="kpiTotalPetitions">1,885</div>
+          <div class="kpi-sub">NCRP & 1930 Helpline</div>
+        </div>
+
+        <div class="kpi-card kpi-red">
+          <div class="kpi-label">Total Lost Amount</div>
+          <div class="kpi-telugu">కోల్పోయిన మొత్తం</div>
+          <div class="kpi-value" id="kpiTotalLost">₹10.43 Cr</div>
+          <div class="kpi-sub">Across All Cases</div>
+        </div>
+
+        <div class="kpi-card kpi-green">
+          <div class="kpi-label">Hold / Frozen Amount</div>
+          <div class="kpi-telugu">హోల్డ్ చేయబడిన సొమ్ము</div>
+          <div class="kpi-value" id="kpiTotalHold">₹1.56 Cr</div>
+          <div class="kpi-sub" id="kpiHoldCases">417 Accounts Secured</div>
+        </div>
+
+        <div class="kpi-card kpi-gold">
+          <div class="kpi-label">Refunded to Victims</div>
+          <div class="kpi-telugu">బాధితులకు రీఫండ్ చేసినవి</div>
+          <div class="kpi-value" id="kpiTotalRefund">₹1.56 L</div>
+          <div class="kpi-sub">Via Court Orders</div>
+        </div>
+
+        <div class="kpi-card kpi-red">
+          <div class="kpi-label">FIR Registered</div>
+          <div class="kpi-telugu">ఎఫ్‌ఐఆర్ నమోదైనవి</div>
+          <div class="kpi-value" id="kpiFIRCount">28</div>
+          <div class="kpi-sub">Crime Numbers Issued</div>
+        </div>
+
+        <div class="kpi-card kpi-amber">
+          <div class="kpi-label">Under Process</div>
+          <div class="kpi-telugu">విచారణలో ఉన్నవి</div>
+          <div class="kpi-value" id="kpiUnderProcess">1,374</div>
+          <div class="kpi-sub">Active Investigation</div>
+        </div>
+
+        <div class="kpi-card kpi-green">
+          <div class="kpi-label">Closed Cases</div>
+          <div class="kpi-telugu">పరిష్కరించినవి</div>
+          <div class="kpi-value" id="kpiClosed">437</div>
+          <div class="kpi-sub">Resolved / Settled</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Application Body -->
+    <main class="app-container">
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs-wrapper">
+        <button class="nav-tab active" onclick="switchTab('petitionsTab')">
+          📋 Petitions Management (పిటిషన్లు)
+          <span class="tab-badge" id="tabBadgePetitions">1,885</span>
+        </button>
+        <button class="nav-tab" onclick="switchTab('analyticsTab')">
+          📊 Analytics & Charts (విశ్లేషణ)
+        </button>
+        <button class="nav-tab" onclick="switchTab('abstractTab')">
+          📑 Abstract Report (అబ్‌స్ట్రాక్ట్ నివేదిక)
+        </button>
+        <button class="nav-tab" onclick="switchTab('holdRefundTab')">
+          💰 Hold & Refund (హోల్డ్ & రీఫండ్)
+        </button>
+        <button class="nav-tab" onclick="switchTab('moGuideTab')">
+          🏷️ Modus Operandi Guide (మోసాల రకాలు)
+        </button>
+        <button class="nav-tab" onclick="switchTab('timelineTab')">
+          ⏳ Timeline & Aging (కాలపరిమితి పెండెన్సీ)
+        </button>
+        <button class="nav-tab" id="adminUsersTabBtn" style="display: none;" onclick="switchTab('adminUsersTab')">
+          🛡️ Station Logins & Settings (అడ్మిన్)
+        </button>
+      </nav>
+
+      <!-- TAB 1: PETITIONS MANAGEMENT -->
+      <section id="petitionsTab" class="tab-content">
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-row">
+            <div class="search-input-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="searchInput" class="search-input" placeholder="Search Ack No, Complainant Name, Phone, FIR No...">
+            </div>
+
+            <div id="psFilterWrapper">
+              <select id="filterPS" class="select-filter">
+                <option value="">All Police Stations (అన్ని స్టేషన్లు)</option>
+              </select>
+            </div>
+
+            <select id="filterStatus" class="select-filter">
+              <option value="">All Statuses (అన్ని దశలు)</option>
+              <option value="Under Process">Under Process (విచారణలో ఉన్నవి)</option>
+              <option value="Closed">Closed (పరిష్కరించినవి)</option>
+              <option value="FIR Registered">FIR Registered (ఎఫ్‌ఐఆర్ నమోదైనవి)</option>
+              <option value="Withdrawal">Withdrawal (ఉపసంహరించినవి)</option>
+              <option value="Rejected">Rejected (తిరస్కరించినవి)</option>
+              <option value="No Action">No Action</option>
+            </select>
+
+            <select id="filterMO" class="select-filter">
+              <option value="">All MO (మోడస్ ఆపరాండీ)</option>
+              <option value="UPI Fraud">UPI Fraud</option>
+              <option value="Job">Job Fraud</option>
+              <option value="OTP">OTP Fraud</option>
+              <option value="Loan">Loan App</option>
+              <option value="Investment fraud">Investment Fraud</option>
+              <option value="Sextortion">Cyber Sextortion</option>
+              <option value="Digital Arrest">Digital Arrest</option>
+              <option value="Screen Sharing">Screen Sharing</option>
+              <option value="Fake Customer Care">Fake Customer Care</option>
+              <option value="Fake Website">Fake Website</option>
+              <option value="E-Commerce">E-Commerce</option>
+              <option value="Credit/Debit Card Fraud">Credit/Debit Card</option>
+              <option value="Social media">Social Media</option>
+              <option value="Matrimonial/Dating">Matrimonial / Dating</option>
+              <option value="Other">Other</option>
+            </select>
+
+            <button class="btn-primary" onclick="applyFilters()">
+              Filter / శోధించండి
+            </button>
+            <button class="btn-secondary" onclick="resetFilters()">
+              Reset
+            </button>
+          </div>
+
+          <div class="filter-row" style="justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+            <div style="font-size: 0.85rem; color: #475569;">
+              Showing <span id="showingCount" style="font-weight: 700; color: #0b1e3f;">0</span> petitions
+              <span id="filteredAmounts" style="margin-left: 12px; font-weight: 600;"></span>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-gold" onclick="openNewPetitionModal()">
+                ➕ New Complaint (కొత్త పిటిషన్)
+              </button>
+              <button class="btn-secondary" onclick="exportCSV()">
+                📥 Export CSV
+              </button>
+              <button class="btn-secondary" onclick="window.print()">
+                🖨️ Print View
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-responsive">
+          <table class="data-table" id="petitionsTable">
+            <thead>
+              <tr>
+                <th style="width: 50px;">S.No</th>
+                <th>Date</th>
+                <th>Ack Number</th>
+                <th>Police Station</th>
+                <th>Complainant Details</th>
+                <th>Modus Operandi (MO)</th>
+                <th>Lost Amount (₹)</th>
+                <th>Hold Amount (₹)</th>
+                <th>Status</th>
+                <th>FIR / Cr. No</th>
+                <th>Action Taken</th>
+                <th style="text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="petitionsTableBody">
+              <tr>
+                <td colspan="12" style="text-align: center; padding: 40px; color: #64748b;">
+                  Loading petitions data... / డేటా లోడ్ అవుతోంది...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-bar">
+          <div style="font-size: 0.85rem; color: #64748b;">
+            Page <span id="currentPageNum">1</span> of <span id="totalPagesNum">1</span>
+          </div>
+          <div class="pagination-controls" id="paginationControls">
+            <!-- Dynamic pagination buttons -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: ANALYTICS & CHARTS -->
+      <section id="analyticsTab" class="tab-content" style="display: none;">
+        <h2 style="font-size: 1.2rem; color: #0b1e3f; margin-bottom: 6px;">Executive Cyber Crime Analytics (సైబర్ నేరాల విశ్లేషణ)</h2>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
+          Visual insights of cyber frauds across Srikakulam District based on 1930 & NCRP petitions
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px;">
+          <!-- Chart 1: Modus Operandi -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+            <h3 style="font-size: 1rem; color: #0b1e3f; margin-bottom: 14px;">Fraud Categories / Modus Operandi (MO)</h3>
+            <canvas id="moChart" height="250"></canvas>
+          </div>
+
+          <!-- Chart 2: Status Breakdown -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+            <h3 style="font-size: 1rem; color: #0b1e3f; margin-bottom: 14px;">Petition Status Distribution (స్టేటస్ విభజన)</h3>
+            <canvas id="statusChart" height="250"></canvas>
+          </div>
+
+          <!-- Chart 3: Top Stations by Complaints -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+            <h3 style="font-size: 1rem; color: #0b1e3f; margin-bottom: 14px;">Top Stations with Highest Petitions</h3>
+            <canvas id="stationVolumeChart" height="250"></canvas>
+          </div>
+
+          <!-- Chart 4: Financial Recovery -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+            <h3 style="font-size: 1rem; color: #0b1e3f; margin-bottom: 14px;">Lost vs Hold Amount by Sub-Division</h3>
+            <canvas id="financialChart" height="250"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: ABSTRACT REPORT -->
+      <section id="abstractTab" class="tab-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-size: 1.2rem; color: #0b1e3f;">District Abstract Report (అబ్‌స్ట్రాక్ట్ రిపోర్ట్)</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">Exact replica of Srikakulam District Police NCRP Abstract Sheet with Sub-Division & Circle rollups</p>
+          </div>
+          <button class="btn-secondary" onclick="window.print()">
+            🖨️ Print Official Abstract
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="abstractTable">
+            <thead>
+              <tr style="background: #0b1e3f; color: white;">
+                <th style="color: white;">S.No</th>
+                <th style="color: white;">Name of the PS</th>
+                <th style="color: white;">Total Petitions</th>
+                <th style="color: white; background: #dc2626;">FIR Registered</th>
+                <th style="color: white;">NC Registered</th>
+                <th style="color: white; background: #16a34a;">Closed</th>
+                <th style="color: white;">No Action</th>
+                <th style="color: white;">Withdrawal</th>
+                <th style="color: white; background: #d97706;">Under Process</th>
+                <th style="color: white;">Total Lost Amount (₹)</th>
+                <th style="color: white;">Hold Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="abstractTableBody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 4: HOLD & REFUND STATUS -->
+      <section id="holdRefundTab" class="tab-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-size: 1.2rem; color: #0b1e3f;">Status of Hold & Refund Report (హోల్డ్ & రీఫండ్ నివేదిక)</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">Station-wise tracking of money frozen in suspect accounts and amounts returned to victims via Court Memos</p>
+          </div>
+          <button class="btn-secondary" onclick="window.print()">
+            🖨️ Print Hold & Refund Statement
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="holdRefundTable">
+            <thead>
+              <tr style="background: #0b1e3f; color: white;">
+                <th style="color: white;">S.No</th>
+                <th style="color: white;">Name of the PS</th>
+                <th style="color: white;">Total Petitions</th>
+                <th style="color: white;">Total Lost Amount (₹)</th>
+                <th style="color: white; background: #1e3a8a;">Hold Cases Count</th>
+                <th style="color: white; background: #16a34a;">Total Hold Amount (₹)</th>
+                <th style="color: white; background: #c59b27; color: black;">% Amount Frozen</th>
+                <th style="color: white;">Refund Cases</th>
+                <th style="color: white; background: #059669;">Refund Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="holdRefundTableBody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 5: MODUS OPERANDI GUIDE -->
+      <section id="moGuideTab" class="tab-content" style="display: none;">
+        <h2 style="font-size: 1.2rem; color: #0b1e3f; margin-bottom: 6px;">NCRP Modus Operandi (MO) & Standard Operating Procedure</h2>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
+          Guide sheet for Police Station Investigating Officers (IOs) and Writers for updating petitions
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px;" id="moGuideGrid">
+          <!-- Dynamic MO Cards -->
+        </div>
+      </section>
+
+      <!-- TAB 6: TIMELINE & AGING -->
+      <section id="timelineTab" class="tab-content" style="display: none;">
+        <h2 style="font-size: 1.2rem; color: #0b1e3f; margin-bottom: 6px;">Petition Ageing & Pendency Analysis (కాలపరిమితి విశ్లేషణ)</h2>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
+          Cases requiring priority disposal: Petitions older than 90 days must be reviewed for immediate FIR registration or Closure.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+          <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; border-left: 4px solid #dc2626;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: #991b1b;">URGENT ATTENTION (అత్యవసరం)</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #dc2626; margin: 4px 0;">Above 3 Months (> 90 Days)</div>
+            <div style="font-size: 0.82rem; color: #b91c1c;">1,885 petitions pending from Jan-Oct 2026</div>
+          </div>
+
+          <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 16px; border-left: 4px solid #d97706;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: #92400e;">MODERATE (మధ్యస్థం)</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #d97706; margin: 4px 0;">1 to 3 Months (30 - 90 Days)</div>
+            <div style="font-size: 0.82rem; color: #b45309;">Requires regular follow-up with banks</div>
+          </div>
+
+          <div style="background: #f0fdf4; border: 1px solid #dcfce7; border-radius: 8px; padding: 16px; border-left: 4px solid #16a34a;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: #166534;">FRESH COMPLAINTS (తాజా పిటిషన్లు)</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #16a34a; margin: 4px 0;">Below 1 Month (< 30 Days)</div>
+            <div style="font-size: 0.82rem; color: #15803d;">Immediate 1930 freezing window</div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="timelineTable">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Ack Number</th>
+                <th>PS Name</th>
+                <th>Complainant</th>
+                <th>Date Received</th>
+                <th>Days Pending</th>
+                <th>Lost Amount (₹)</th>
+                <th>Hold Amount (₹)</th>
+                <th>Current Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="timelineTableBody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 7: ADMIN USERS MANAGEMENT -->
+      <section id="adminUsersTab" class="tab-content" style="display: none;">
+        <h2 style="font-size: 1.2rem; color: #0b1e3f; margin-bottom: 6px;">Station Credentials & Login Management (స్టేషన్ల సమాచారం)</h2>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
+          Manage all 36 Police Station logins, reset passwords, and audit officer access
+        </p>
+
+        <div class="table-responsive">
+          <table class="data-table" id="adminUsersTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Police Station</th>
+                <th>Circle</th>
+                <th>Sub-Division</th>
+                <th>Role</th>
+                <th>Last Login</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersTableBody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- 1. EDIT / SUBMIT PETITION MODAL -->
+  <div id="editPetitionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 id="modalEditTitle">Update Petition Action (పిటిషన్ చర్య నమోదు చేయండి)</h3>
+          <div style="font-size: 0.75rem; color: #fde047;" id="modalEditAckSub">Ack No: 20201260000105</div>
+        </div>
+        <button class="modal-close-btn" onclick="closeEditModal()">&times;</button>
+      </div>
+
+      <form id="editPetitionForm">
+        <input type="hidden" id="editPetitionId">
+
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Police Station</label>
+              <input type="text" id="editPSName" class="form-input" readonly>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Date of Complaint</label>
+              <input type="text" id="editDate" class="form-input" readonly>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Complainant Name & Phone</label>
+              <input type="text" id="editComplainant" class="form-input" readonly>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Address</label>
+              <input type="text" id="editAddress" class="form-input" readonly>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Lost Amount (₹)</label>
+              <input type="text" id="editLostAmount" class="form-input" readonly>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Hold / Frozen Amount (₹)</label>
+              <input type="number" id="editHoldAmount" class="form-input" placeholder="0">
+            </div>
+
+            <!-- Editable fields -->
+            <div class="form-group">
+              <label class="form-label">Status <span class="required">*</span> (పోర్టల్ స్టేటస్)</label>
+              <select id="editStatus" class="form-select" required>
+                <option value="Under Process">Under Process (విచారణలో ఉన్నది)</option>
+                <option value="Closed">Closed (పరిష్కరించబడినది)</option>
+                <option value="FIR Registered">FIR Registered (ఎఫ్‌ఐఆర్ నమోదైనది)</option>
+                <option value="NC Registered">NC Registered</option>
+                <option value="Withdrawal">Withdrawal (బాధితుడు విత్‌డ్రా చేసినది)</option>
+                <option value="Rejected">Rejected (తిరస్కరించబడినది)</option>
+                <option value="No Action">No Action (చర్య అవసరం లేనిది)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Modus Operandi (MO) <span class="required">*</span> (మోసం రకం)</label>
+              <select id="editMO" class="form-select" required>
+                <option value="UPI Fraud">UPI Fraud</option>
+                <option value="Job">Job Fraud (ఉద్యోగ మోసం)</option>
+                <option value="OTP">OTP Fraud</option>
+                <option value="Loan">Loan App (రుణ యాప్ మోసం)</option>
+                <option value="Investment fraud">Investment Fraud (ట్రేడింగ్/పెట్టుబడి మోసం)</option>
+                <option value="Sextortion">Cyber Sextortion (వీడియో కాల్ బెదిరింపు)</option>
+                <option value="Digital Arrest">Digital Arrest (డిజిటల్ అరెస్ట్)</option>
+                <option value="Screen Sharing">Screen Sharing (AnyDesk/TeamViewer)</option>
+                <option value="Fake Customer Care">Fake Customer Care</option>
+                <option value="Fake Website">Fake Website</option>
+                <option value="E-Commerce">E-Commerce Fraud</option>
+                <option value="Credit/Debit Card Fraud">Credit/Debit Card Fraud</option>
+                <option value="Social media">Social Media Harassment</option>
+                <option value="Matrimonial/Dating">Matrimonial / Dating Fraud</option>
+                <option value="KYC / SIM KYC">SIM / KYC Update</option>
+                <option value="Gift/Lottery">Gift / Lottery Fraud</option>
+                <option value="Other">Other Cyber Crime</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Date of Action Taken (చర్య తీసుకున్న తేదీ)</label>
+              <input type="text" id="editDateOfAction" class="form-input" placeholder="DD.MM.YYYY">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Whether FIR Registered (Cr. No.)</label>
+              <input type="text" id="editFIRNumber" class="form-input" placeholder="e.g. Cr.No. 41/2026 U/s 318(4) BNS">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Court Memo Filed for Refund? (FIR Cases)</label>
+              <select id="editCourtMemo" class="form-select">
+                <option value="No">No / దాఖలు చేయలేదు</option>
+                <option value="Yes">Yes / దాఖలు చేసినాము</option>
+                <option value="Nil">Nil</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Court Order Obtained?</label>
+              <select id="editCourtOrder" class="form-select">
+                <option value="No">No / రాలేదు</option>
+                <option value="Yes">Yes / కోర్టు ఉత్తర్వు వచ్చినది</option>
+                <option value="Nil">Nil</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Refund Amount Retrieved to Victim (₹)</label>
+              <input type="number" id="editRefundAmount" class="form-input" placeholder="0">
+            </div>
+
+            <div class="form-group form-full">
+              <label class="form-label">Action Taken by Police Station (స్టేషన్ ఆఫీసర్ నివేదిక) <span class="required">*</span></label>
+              <textarea id="editActionTaken" class="form-textarea" rows="4" placeholder="Enter investigation details, statements recorded, bank freeze status, reason for closure/FIR..."></textarea>
+            </div>
+
+            <div class="form-group form-full">
+              <label class="form-label">Remarks / Additional Notes</label>
+              <input type="text" id="editRemarks" class="form-input" placeholder="Any additional remarks">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn-primary" id="savePetitionBtn">
+            💾 Save & Submit Action (సమర్పించండి)
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. NEW PETITION MODAL -->
+  <div id="newPetitionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Register New NCRP / 1930 Petition (కొత్త పిటిషన్ నమోదు)</h3>
+        <button class="modal-close-btn" onclick="closeNewModal()">&times;</button>
+      </div>
+
+      <form id="newPetitionForm">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Acknowledgement No <span class="required">*</span></label>
+              <input type="text" id="newAckNo" class="form-input" placeholder="e.g. 20210260012345" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Portal Type</label>
+              <select id="newPortalType" class="form-select">
+                <option value="NCRP">NCRP Portal</option>
+                <option value="1930">1930 Helpline</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Police Station <span class="required">*</span></label>
+              <select id="newPSSelect" class="form-select" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Date of Complaint</label>
+              <input type="text" id="newPetitionDate" class="form-input" placeholder="DD-MM-YYYY" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Complainant Name <span class="required">*</span></label>
+              <input type="text" id="newCompName" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Phone Number <span class="required">*</span></label>
+              <input type="tel" id="newCompPhone" class="form-input" placeholder="10-digit mobile" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Victim Age</label>
+              <input type="number" id="newVictimAge" class="form-input" placeholder="Age in years">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Modus Operandi (MO)</label>
+              <select id="newMO" class="form-select">
+                <option value="UPI Fraud">UPI Fraud</option>
+                <option value="Job">Job Fraud</option>
+                <option value="OTP">OTP Fraud</option>
+                <option value="Loan">Loan App</option>
+                <option value="Investment fraud">Investment Fraud</option>
+                <option value="Sextortion">Cyber Sextortion</option>
+                <option value="Digital Arrest">Digital Arrest</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Lost Amount (₹)</label>
+              <input type="number" id="newLostAmount" class="form-input" placeholder="0">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Hold Amount (₹)</label>
+              <input type="number" id="newHoldAmount" class="form-input" placeholder="0">
+            </div>
+
+            <div class="form-group form-full">
+              <label class="form-label">Complainant Address</label>
+              <input type="text" id="newAddress" class="form-input" placeholder="Village / Street / Town">
+            </div>
+
+            <div class="form-group form-full">
+              <label class="form-label">Initial Action Taken / Notes</label>
+              <textarea id="newActionTaken" class="form-textarea" rows="3" placeholder="Initial action taken by police station..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeNewModal()">Cancel</button>
+          <button type="submit" class="btn-gold">Create Petition (నమోదు చేయండి)</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. CHANGE PASSWORD MODAL -->
+  <div id="changePasswordModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 450px;">
+      <div class="modal-header">
+        <h3>Change Password (పాస్‌వర్డ్ మార్చండి)</h3>
+        <button class="modal-close-btn" onclick="closePasswordModal()">&times;</button>
+      </div>
+
+      <form id="changePasswordForm">
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label">Current Password</label>
+            <input type="password" id="currentPassInput" class="form-input" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label">New Password (Min 6 characters)</label>
+            <input type="password" id="newPassInput" class="form-input" required minlength="6">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" id="confirmPassInput" class="form-input" required minlength="6">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closePasswordModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
