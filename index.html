@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Srikakulam District Police | NCRP & 1930 Management System</title>
-  <link rel="stylesheet" href="./css/style.css?v=3.5">
+  <link rel="stylesheet" href="./css/style.css?v=3.6">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="./js/xlsx.full.min.js"></script>
 </head>
@@ -14,7 +14,10 @@
   <div id="loginScreen" class="login-screen">
     <div class="login-card">
       <div class="login-header">
-        <img src="./images/srikakulam_police_logo.png" alt="Srikakulam District Police" class="login-emblem-img">
+        <div class="login-emblems-row">
+          <img src="./images/ap_police_logo.png" alt="Andhra Pradesh Police" class="login-emblem-img" title="Andhra Pradesh Police">
+          <img src="./images/srikakulam_police_logo.png" alt="Srikakulam District Police" class="login-emblem-img" title="Srikakulam District Police">
+        </div>
         <h2>SRIKAKULAM DISTRICT POLICE</h2>
         <div style="font-size: 0.85rem; color: #b45309; font-weight: 700;">శ్రీకాకుళం జిల్లా పోలీస్ - సైబర్ క్రైమ్ విభాగం</div>
         <p>National Cyber Crime Reporting Portal (NCRP) & 1930</p>
@@ -52,8 +55,8 @@
     <header class="police-header">
       <div class="header-container">
         <div class="police-branding">
-          <div class="police-emblem">
-            <img src="./images/srikakulam_police_logo.png" alt="Srikakulam District Police" class="police-emblem-img">
+          <div class="police-emblem emblem-left" title="Andhra Pradesh Police">
+            <img src="./images/ap_police_logo.png" alt="Andhra Pradesh Police" class="police-emblem-img">
           </div>
           <div class="police-titles">
             <h1>
@@ -61,6 +64,9 @@
               <span class="portal-tag">NCRP & 1930 PORTAL</span>
             </h1>
             <div class="telugu-sub">శ్రీకాకుళం జిల్లా పోలీస్ - సైబర్ పిటిషన్ల నిర్వహణ & రిపోర్టింగ్ వ్యవస్థ</div>
+          </div>
+          <div class="police-emblem emblem-right" title="Srikakulam District Police">
+            <img src="./images/srikakulam_police_logo.png" alt="Srikakulam District Police" class="police-emblem-img">
           </div>
         </div>
 
@@ -1057,12 +1063,17 @@
       <div class="modal-body" style="padding: 0;">
         <div class="statement-doc" id="printableStatementDoc">
           <div class="statement-header">
-            <img src="./images/srikakulam_police_logo.png" alt="Srikakulam District Police" class="statement-logo-img">
-            <div class="statement-title">GOVERNMENT OF ANDHRA PRADESH &bull; POLICE DEPARTMENT</div>
-            <div class="statement-subtitle" id="stmtStationTitle">OFFICE OF THE STATION HOUSE OFFICER, SRIKAKULAM DISTRICT</div>
-            <div class="statement-telugu" id="stmtTeluguSub">శ్రీకాకుళం జిల్లా పోలీస్ - సైబర్ పిటిషన్ల విచారణ & పరిష్కార నివేదిక</div>
-            <div style="font-size: 0.82rem; font-weight: 700; color: #334155; margin-top: 4px;">
-              NATIONAL CYBER CRIME REPORTING PORTAL (NCRP) & 1930 HELPLINE STATEMENT
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px;">
+              <img src="./images/ap_police_logo.png" alt="Andhra Pradesh Police" style="width: 70px; height: 70px; object-fit: contain;" title="Andhra Pradesh Police">
+              <div style="flex: 1; text-align: center;">
+                <div class="statement-title">GOVERNMENT OF ANDHRA PRADESH &bull; POLICE DEPARTMENT</div>
+                <div class="statement-subtitle" id="stmtStationTitle">OFFICE OF THE STATION HOUSE OFFICER, SRIKAKULAM DISTRICT</div>
+                <div class="statement-telugu" id="stmtTeluguSub">శ్రీకాకుళం జిల్లా పోలీస్ - సైబర్ పిటిషన్ల విచారణ & పరిష్కార నివేదిక</div>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #334155; margin-top: 4px;">
+                  NATIONAL CYBER CRIME REPORTING PORTAL (NCRP) & 1930 HELPLINE STATEMENT
+                </div>
+              </div>
+              <img src="./images/srikakulam_police_logo.png" alt="Srikakulam District Police" style="width: 70px; height: 70px; object-fit: contain;" title="Srikakulam District Police">
             </div>
           </div>
 
@@ -1162,6 +1173,6 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="./js/app.js?v=3.5"></script>
+  <script src="./js/app.js?v=3.6"></script>
 </body>
 </html>

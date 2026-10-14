@@ -64,6 +64,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .police-emblem-img {
@@ -71,15 +72,32 @@ body {
   height: 56px;
   object-fit: contain;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+  transition: transform 0.2s ease;
+}
+
+.police-emblem-img:hover {
+  transform: scale(1.05);
+}
+
+.login-emblems-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 14px;
 }
 
 .login-emblem-img {
-  width: 95px;
-  height: 95px;
+  width: 82px;
+  height: 82px;
   object-fit: contain;
-  margin: 0 auto 12px;
   display: block;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.2));
+  transition: transform 0.2s ease;
+}
+
+.login-emblem-img:hover {
+  transform: scale(1.05);
 }
 
 .police-titles h1 {
@@ -1006,3 +1024,28 @@ body {
     padding: 0 !important;
   }
 }
+
+@media (max-width: 768px) {
+  .police-branding {
+    gap: 8px;
+  }
+  .police-emblem {
+    width: 40px;
+    height: 40px;
+  }
+  .police-emblem-img {
+    width: 40px;
+    height: 40px;
+  }
+  .police-titles h1 {
+    font-size: 1.05rem;
+  }
+  .police-titles .telugu-sub {
+    font-size: 0.72rem;
+  }
+  .login-emblem-img {
+    width: 68px;
+    height: 68px;
+  }
+}
+
