@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="te-IN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Court Refund Memos & Orders (2021-2026) | Srikakulam District Police</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Specific styles for Court Refunds Portal */
+    :root {
+      --court-gold: #c59b27;
+      --court-blue: #0b1e3f;
+      --court-accent: #0284c7;
+    }
+
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+
+    .court-header {
+      background: linear-gradient(135deg, #0b1e3f 0%, #172554 100%);
+      color: white;
+      padding: 16px 24px;
+      border-bottom: 4px solid var(--court-gold);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .court-header-content {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .court-brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .court-brand img {
+      height: 64px;
+      width: auto;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .court-titles h1 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-court-tag {
+      background: #c59b27;
+      color: #0b1e3f;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .court-titles p {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      margin: 3px 0 0 0;
+    }
+
+    .court-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-court-nav {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-court-nav:hover {
+      background: rgba(255, 255, 255, 0.22);
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+
+    .btn-court-primary {
+      background: #c59b27;
+      border-color: #d4af37;
+      color: #0b1e3f;
+      font-weight: 700;
+    }
+
+    .btn-court-primary:hover {
+      background: #eab308;
+      color: #0b1e3f;
+    }
+
+    /* Executive KPI Grid */
+    .kpi-container-court {
+      max-width: 1440px;
+      margin: 20px auto 0 auto;
+      padding: 0 20px;
+    }
+
+    .kpi-grid-court {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .kpi-card-court {
+      background: white;
+      border-radius: 8px;
+      padding: 14px 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      border-left: 4px solid #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .kpi-card-court:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+    }
+
+    .kpi-card-court.kpi-blue { border-left-color: #2563eb; }
+    .kpi-card-court.kpi-red { border-left-color: #dc2626; }
+    .kpi-card-court.kpi-emerald { border-left-color: #059669; }
+    .kpi-card-court.kpi-indigo { border-left-color: #4f46e5; }
+    .kpi-card-court.kpi-purple { border-left-color: #7c3aed; }
+    .kpi-card-court.kpi-gold { border-left-color: #d97706; }
+    .kpi-card-court.kpi-amber { border-left-color: #ea580c; }
+
+    .kpi-card-court .label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.5px;
+    }
+
+    .kpi-card-court .telugu {
+      font-size: 0.75rem;
+      color: #475569;
+      margin-top: 1px;
+    }
+
+    .kpi-card-court .value {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 4px 0 2px 0;
+      font-family: inherit;
+    }
+
+    .kpi-card-court .sub {
+      font-size: 0.72rem;
+      color: #64748b;
+    }
+
+    /* Main Container & Tab Navigator */
+    .court-main {
+      max-width: 1440px;
+      margin: 20px auto 40px auto;
+      padding: 0 20px;
+    }
+
+    .view-tabs-bar {
+      display: flex;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 8px 8px 0 0;
+      gap: 6px;
+    }
+
+    .view-tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.88rem;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .view-tab-btn.active {
+      background: white;
+      color: #0b1e3f;
+      font-weight: 700;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+
+    .view-tab-btn .badge-pill {
+      background: #0284c7;
+      color: white;
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 12px;
+    }
+
+    .tab-content-panel {
+      background: white;
+      border-radius: 0 0 8px 8px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+      border-top: none;
+    }
+
+    /* Filter Bar */
+    .filter-panel {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .filter-group label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #475569;
+      letter-spacing: 0.4px;
+    }
+
+    .filter-input, .filter-select {
+      height: 38px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0 10px;
+      font-size: 0.82rem;
+      background: white;
+      color: #0f172a;
+      width: 100%;
+    }
+
+    .filter-input:focus, .filter-select:focus {
+      outline: none;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+
+    .filter-bar-footer {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #cbd5e1;
+    }
+
+    /* Responsive Data Tables */
+    .table-responsive-wrapper {
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: white;
+      max-height: 720px;
+    }
+
+    .court-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.82rem;
+    }
+
+    .court-table th {
+      background: #0b1e3f;
+      color: #ffffff;
+      padding: 10px 12px;
+      font-weight: 600;
+      text-align: left;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 2px solid var(--court-gold);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .court-table th:hover {
+      background: #172554;
+    }
+
+    .court-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+      vertical-align: middle;
+    }
+
+    .court-table tbody tr:hover {
+      background-color: #f1f5f9;
+      cursor: pointer;
+    }
+
+    .court-table tbody tr:nth-child(even) {
+      background-color: #fbfcfe;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .badge-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .badge-warning { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .badge-gold { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+    .badge-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+    .badge-primary { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+
+    .category-tag {
+      background: #eef2ff;
+      color: #4338ca;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .category-tag-large {
+      background: #eef2ff;
+      color: #4338ca;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    .btn-sm-view {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-sm-view:hover {
+      background: #0369a1;
+    }
+
+    /* Abstract Table Styling */
+    .row-subdivision td {
+      background: #e0f2fe !important;
+      font-weight: 700;
+      color: #0369a1;
+      border-top: 2px solid #38bdf8;
+    }
+
+    .row-circle td {
+      background: #f8fafc;
+      font-weight: 600;
+    }
+
+    .row-grand-total td {
+      background: #fef08a !important;
+      font-weight: 800;
+      color: #854d0e;
+      border-top: 3px solid #ca8a04;
+      border-bottom: 3px solid #ca8a04;
+      font-size: 0.88rem;
+    }
+
+    /* Case Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      padding: 20px;
+    }
+
+    .modal-dialog {
+      background: white;
+      border-radius: 12px;
+      max-width: 820px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+      border-top: 6px solid var(--court-gold);
+    }
+
+    .modal-case-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .modal-card {
+      padding: 24px;
+    }
+
+    .grid-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .stat-box {
+      border-radius: 8px;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      background: white;
+    }
+
+    .stat-box .stat-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; }
+    .stat-box .stat-val { font-size: 1.25rem; font-weight: 800; margin-top: 4px; }
+    .stat-box.stat-red { border-left: 4px solid #dc2626; background: #fff5f5; }
+    .stat-box.stat-red .stat-val { color: #dc2626; }
+    .stat-box.stat-green { border-left: 4px solid #16a34a; background: #f0fdf4; }
+    .stat-box.stat-green .stat-val { color: #16a34a; }
+    .stat-box.stat-blue { border-left: 4px solid #2563eb; background: #eff6ff; }
+    .stat-box.stat-blue .stat-val { color: #2563eb; }
+    .stat-box.stat-gold { border-left: 4px solid #d97706; background: #fffbeb; }
+    .stat-box.stat-gold .stat-val { color: #d97706; }
+
+    .detail-section {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .section-title {
+      background: #f1f5f9;
+      padding: 10px 16px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #0b1e3f;
+      margin: 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .detail-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .detail-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .detail-table .dt-label {
+      width: 32%;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .detail-table .dt-value {
+      color: #0f172a;
+    }
+
+    @media print {
+      .court-header, .kpi-container-court, .filter-panel, .view-tabs-bar, .court-actions, .btn-sm-view {
+        display: none !important;
+      }
+      .tab-content-panel {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+      }
+      .table-responsive-wrapper {
+        overflow: visible;
+        max-height: none;
+        border: none;
+      }
+      .court-table th {
+        background: #f1f5f9 !important;
+        color: #000000 !important;
+      }
+      .modal-overlay {
+        position: static;
+        background: none;
+        display: block !important;
+        padding: 0;
+      }
+      .modal-dialog {
+        box-shadow: none;
+        max-width: 100%;
+        border-top: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header class="court-header">
+    <div class="court-header-content">
+      <div class="court-brand">
+        <img src="images/ap_police_logo.png" alt="AP Police Logo">
+        <div class="court-titles">
+          <h1>
+            SRIKAKULAM DISTRICT POLICE
+            <span class="badge-court-tag">COURT REFUNDS TRACKER</span>
+          </h1>
+          <p>న్యాయస్థానాల్లో దాఖలు చేసిన రీఫండ్ మెమోలు & బాధితులకు జమ అయిన రికవరీ వివరాలు (2021 - 2026)</p>
+        </div>
+      </div>
+
+      <div class="court-actions">
+        <a href="index.html" class="btn-court-nav btn-court-primary">
+          ⬅️ Master NCRP Portal (1,886 Petitions)
+        </a>
+        <button class="btn-court-nav" onclick="exportCourtCasesToCSV()">
+          📥 Export CSV / Excel
+        </button>
+        <button class="btn-court-nav" onclick="window.print()">
+          🖨️ Print Report
+        </button>
+        <button class="btn-court-nav" onclick="location.reload()">
+          🔄 Refresh
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Executive KPI Summary Cards -->
+  <section class="kpi-container-court">
+    <div class="kpi-grid-court">
+      <div class="kpi-card-court kpi-blue">
+        <div class="label">Total FIR Cases</div>
+        <div class="telugu">మొత్తం నమోదు కేసులు</div>
+        <div class="value" id="kpiTotalCases">83</div>
+        <div class="sub">Across 15 Police Stations</div>
+      </div>
+
+      <div class="kpi-card-court kpi-red">
+        <div class="label">Total Defrauded (Lost)</div>
+        <div class="telugu">మోసపోయిన మొత్తం</div>
+        <div class="value" id="kpiTotalLost">₹10.53 Cr</div>
+        <div class="sub" id="kpiTotalLostExact">₹10,53,10,817</div>
+      </div>
+
+      <div class="kpi-card-court kpi-emerald">
+        <div class="label">Lien / Hold Amount</div>
+        <div class="telugu">హోల్డ్ చేయబడిన సొమ్ము</div>
+        <div class="value" id="kpiTotalHold">₹2.33 Cr</div>
+        <div class="sub" id="kpiTotalHoldExact">₹2,33,48,037</div>
+      </div>
+
+      <div class="kpi-card-court kpi-indigo">
+        <div class="label">Memos Filed in Court</div>
+        <div class="telugu">దాఖలు చేసిన మెమోలు</div>
+        <div class="value" id="kpiMemosFiled">68 / 83</div>
+        <div class="sub">Amount: <strong id="kpiMemoAmount">₹1.65 Cr</strong></div>
+      </div>
+
+      <div class="kpi-card-court kpi-purple">
+        <div class="label">Court Orders Issued</div>
+        <div class="telugu">కోర్టు ఉత్తర్వులు జారీ అయినవి</div>
+        <div class="value" id="kpiCourtOrders">44</div>
+        <div class="sub">Amount: <strong id="kpiCourtOrdersAmount">₹1.20 Cr</strong></div>
+      </div>
+
+      <div class="kpi-card-court kpi-gold">
+        <div class="label">Refunded to Victims</div>
+        <div class="telugu">బాధితులకు రీఫండ్ అయినవి</div>
+        <div class="value" id="kpiTotalRefunded" style="color: #15803d;">₹58.47 L</div>
+        <div class="sub" id="kpiRefundCases">34 Cases (17 Full, 17 Partial)</div>
+      </div>
+
+      <div class="kpi-card-court kpi-amber">
+        <div class="label">Pending Bank Refund</div>
+        <div class="telugu">బ్యాంకుల వద్ద పెండింగ్‌లో ఉన్నవి</div>
+        <div class="value" id="kpiRefundPending" style="color: #dc2626;">₹61.74 L</div>
+        <div class="sub" id="kpiPendingCases">27 Cases Awaiting Disbursement</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main View Area -->
+  <main class="court-main">
+    <div class="view-tabs-bar">
+      <button class="view-tab-btn active" id="tabCasesBtn" onclick="switchView('casesView')">
+        📋 Detailed 83 FIR Cases (కేసుల వారీ పూర్తి పట్టిక)
+        <span class="badge-pill" id="casesCountBadge">83 Cases</span>
+      </button>
+      <button class="view-tab-btn" id="tabAbstractBtn" onclick="switchView('abstractView')">
+        📑 Police Station & Sub-Division Abstract (అబ్‌స్ట్రాక్ట్ సారాంశం)
+      </button>
+    </div>
+
+    <!-- VIEW 1: DETAILED CASES TABLE -->
+    <section id="casesSection" class="tab-content-panel">
+      <!-- Filter Panel -->
+      <div class="filter-panel">
+        <div class="filter-grid">
+          <div class="filter-group" style="grid-column: span 2;">
+            <label>🔍 Quick Search / శోధించండి</label>
+            <input type="text" id="courtSearchInput" class="filter-input" placeholder="Search FIR No, Police Station, Crime Type, Court, Judge, Tech Asst...">
+          </div>
+
+          <div class="filter-group">
+            <label>Sub-Division</label>
+            <select id="filterSubDivision" class="filter-select">
+              <option value="all">All Sub-Divisions (అన్నీ)</option>
+              <option value="Srikakulam Sub-Division">Srikakulam Sub-Division (55)</option>
+              <option value="Tekkali Sub-Division">Tekkali Sub-Division (18)</option>
+              <option value="Kasibugga Sub-Division">Kasibugga Sub-Division (10)</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Police Station</label>
+            <select id="filterPS" class="filter-select">
+              <option value="all">All Police Stations (అన్ని పీఎస్‌లు)</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>FIR Year</label>
+            <select id="filterYear" class="filter-select">
+              <option value="all">All Years (2021-2026)</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Memo Filed Status</label>
+            <select id="filterMemo" class="filter-select">
+              <option value="all">All Memos (అన్నీ)</option>
+              <option value="yes">Filed (Yes)</option>
+              <option value="no">Not Filed (No)</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Court Order Received</label>
+            <select id="filterOrder" class="filter-select">
+              <option value="all">All Court Orders (అన్నీ)</option>
+              <option value="yes">Order Received (Yes)</option>
+              <option value="no">Order Pending (No)</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Refund Status</label>
+            <select id="filterRefund" class="filter-select">
+              <option value="all">All Refund Status (అన్నీ)</option>
+              <option value="yes">Full Refund (Yes)</option>
+              <option value="partial">Partial Refund</option>
+              <option value="no">No Refund / Pending</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Technical Assistant</label>
+            <select id="filterTech" class="filter-select">
+              <option value="all">All Tech Assistants (అందరూ)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filter-bar-footer">
+          <div style="font-size: 0.82rem; color: #64748b;">
+            💡 <em>Click any row to open the complete Case Particulars Sheet & Print order details.</em>
+          </div>
+          <div>
+            <button class="btn-court-nav" onclick="resetAllFilters()" style="color: #475569; background: #e2e8f0; border-color: #cbd5e1;">
+              ✕ Reset All Filters
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cases Data Table -->
+      <div class="table-responsive-wrapper">
+        <table class="court-table" id="casesTable">
+          <thead>
+            <tr>
+              <th onclick="handleSort('s_no')">S.No ⬍</th>
+              <th onclick="handleSort('police_station')">Police Station & Circle ⬍</th>
+              <th onclick="handleSort('fir_no')">FIR No & Year ⬍</th>
+              <th onclick="handleSort('sub_category')">Crime Sub-Category ⬍</th>
+              <th onclick="handleSort('lost')" style="text-align: right;">Lost Amount (₹) ⬍</th>
+              <th onclick="handleSort('lien')" style="text-align: right;">Lien / Hold (₹) ⬍</th>
+              <th onclick="handleSort('memo_filed')" style="text-align: center;">Memo Filed? ⬍</th>
+              <th onclick="handleSort('court_order_received')" style="text-align: center;">Court Order? ⬍</th>
+              <th onclick="handleSort('amount_refunded_status')" style="text-align: center;">Refund Status ⬍</th>
+              <th onclick="handleSort('refund_from_bank')" style="text-align: right;">Refunded (₹) ⬍</th>
+              <th onclick="handleSort('to_be_refunded_from_bank')" style="text-align: right;">To Be Refunded (₹) ⬍</th>
+              <th>Court & Judge</th>
+              <th>Tech Asst</th>
+              <th>Remarks / Stage</th>
+              <th style="text-align: center;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="casesTableBody">
+            <!-- Dynamic Content -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 2: STATION-WISE ABSTRACT SUMMARY -->
+    <section id="abstractSection" class="tab-content-panel" style="display: none;">
+      <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div>
+          <h2 style="font-size: 1.15rem; color: #0b1e3f; margin: 0;">
+            Financial Cases Refund Memos Filed in Hon'ble Courts (2021 to 2026)
+          </h2>
+          <p style="font-size: 0.8rem; color: #64748b; margin: 2px 0 0 0;">
+            పోలీస్ స్టేషన్, సర్కిల్ మరియు సబ్-డివిజన్ వారీగా పూర్తి గణాంకాల సారాంశం
+          </p>
+        </div>
+        <button class="btn-court-nav" onclick="window.print()" style="color: #0b1e3f; background: #e2e8f0; border-color: #cbd5e1;">
+          🖨️ Print Abstract Sheet
+        </button>
+      </div>
+
+      <div class="table-responsive-wrapper">
+        <table class="court-table" id="abstractTable">
+          <thead>
+            <tr>
+              <th rowspan="2" style="text-align: center; vertical-align: middle;">S.No</th>
+              <th rowspan="2" style="vertical-align: middle;">Name of the PS / Circle / Sub-Division</th>
+              <th rowspan="2" style="text-align: center; vertical-align: middle;">Total Cases</th>
+              <th rowspan="2" style="text-align: right; vertical-align: middle;">Lost Amount (₹)</th>
+              <th rowspan="2" style="text-align: right; vertical-align: middle;">Hold Amount (₹)</th>
+              <th colspan="3" style="text-align: center; background: #1e3a8a; border-bottom: 1px solid rgba(255,255,255,0.2);">Court Memos</th>
+              <th colspan="3" style="text-align: center; background: #4338ca; border-bottom: 1px solid rgba(255,255,255,0.2);">Court Orders</th>
+              <th colspan="3" style="text-align: center; background: #15803d; border-bottom: 1px solid rgba(255,255,255,0.2);">Refunded From Bank</th>
+              <th colspan="2" style="text-align: center; background: #b91c1c; border-bottom: 1px solid rgba(255,255,255,0.2);">Pending From Bank</th>
+            </tr>
+            <tr>
+              <th style="text-align: center; background: #1e3a8a; font-size: 0.74rem;">Filed</th>
+              <th style="text-align: right; background: #1e3a8a; font-size: 0.74rem;">Amount (₹)</th>
+              <th style="text-align: center; background: #1e3a8a; font-size: 0.74rem;">Yet to File</th>
+              <th style="text-align: center; background: #4338ca; font-size: 0.74rem;">Received</th>
+              <th style="text-align: right; background: #4338ca; font-size: 0.74rem;">Ordered (₹)</th>
+              <th style="text-align: center; background: #4338ca; font-size: 0.74rem;">Pending</th>
+              <th style="text-align: center; background: #15803d; font-size: 0.74rem;">Full</th>
+              <th style="text-align: center; background: #15803d; font-size: 0.74rem;">Partial</th>
+              <th style="text-align: right; background: #15803d; font-size: 0.74rem;">Total Refund (₹)</th>
+              <th style="text-align: center; background: #b91c1c; font-size: 0.74rem;">Cases</th>
+              <th style="text-align: right; background: #b91c1c; font-size: 0.74rem;">Balance (₹)</th>
+            </tr>
+          </thead>
+          <tbody id="abstractTableBody">
+            <!-- Dynamic Abstract Rows -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Detailed Case Particulars Modal -->
+  <div class="modal-overlay" id="caseModal" onclick="if(event.target === this) closeCaseModal()">
+    <div class="modal-dialog" id="caseModalBody">
+      <!-- Modal Content Populated Dynamically -->
+    </div>
+  </div>
+
+  <script src="js/court_refunds.js"></script>
+</body>
+</html>

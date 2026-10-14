@@ -109,7 +109,10 @@ function serveStatic(req, res, urlPath) {
   let safePath = path.normalize(urlPath).replace(/^(\.\.[\/\\])+/, '');
   if (safePath === '/' || safePath === '') safePath = '/index.html';
   
-  const filePath = path.join(PUBLIC_DIR, safePath);
+  let filePath = path.join(PUBLIC_DIR, safePath);
+  if (!fs.existsSync(filePath) && fs.existsSync(filePath + '.html')) {
+    filePath = filePath + '.html';
+  }
   
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     // Fallback to index.html for SPA
