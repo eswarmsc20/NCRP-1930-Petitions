@@ -70,14 +70,27 @@ function getDataBasePath() {
   return window.location.origin + path + "data/";
 }
 
-async function ensureStaticData() {
-  if (staticDataLoaded) return;
+const NCRP_APP_VERSION = '3.5';
+
+// Clear obsolete or corrupted localStorage caches on app version upgrade
+try {
+  if (localStorage.getItem('ncrp_app_version') !== NCRP_APP_VERSION) {
+    localStorage.removeItem('ncrp_local_added');
+    localStorage.removeItem('ncrp_local_edits');
+    localStorage.setItem('ncrp_app_version', NCRP_APP_VERSION);
+    console.log('[NCRP] Upgraded to version ' + NCRP_APP_VERSION + ' - local cache refreshed.');
+  }
+} catch (e) {}
+
+async function ensureStaticData(forceRefresh = false) {
+  if (staticDataLoaded && !forceRefresh) return;
   try {
     const base = getDataBasePath();
+    const cacheKey = '?v=' + NCRP_APP_VERSION + '&t=' + Date.now();
     const [pRes, sRes, uRes] = await Promise.all([
-      fetch(base + "petitions.json").then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); }).catch(() => fetch("./data/petitions.json").then(r => r.json())),
-      fetch(base + "stations.json").then(r => r.json()).catch(() => EMBEDDED_STATIONS),
-      fetch(base + "users.json").then(r => r.json()).catch(() => EMBEDDED_USERS)
+      fetch(base + "petitions.json" + cacheKey).then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); }).catch(() => fetch("./data/petitions.json" + cacheKey).then(r => r.json())),
+      fetch(base + "stations.json" + cacheKey).then(r => r.json()).catch(() => EMBEDDED_STATIONS),
+      fetch(base + "users.json" + cacheKey).then(r => r.json()).catch(() => EMBEDDED_USERS)
     ]);
     staticPetitions = pRes || [];
     staticStations = sRes || EMBEDDED_STATIONS;
@@ -85,14 +98,25 @@ async function ensureStaticData() {
 
     // Apply any saved local edits from browser localStorage
     const savedEdits = JSON.parse(localStorage.getItem("ncrp_local_edits") || "{}");
+    delete savedEdits[1886];
+    delete savedEdits['1886'];
+    delete savedEdits['20210260054770'];
+    localStorage.setItem("ncrp_local_edits", JSON.stringify(savedEdits));
+
     staticPetitions.forEach(p => {
       if (savedEdits[p.id]) {
         Object.assign(p, savedEdits[p.id]);
       }
     });
 
+    // Deduplicate addedPetitions against fetched staticPetitions by ack_no or id
     const addedPetitions = JSON.parse(localStorage.getItem("ncrp_local_added") || "[]");
-    staticPetitions = [...addedPetitions, ...staticPetitions];
+    const existingAckNos = new Set(staticPetitions.map(p => String(p.ack_no || p.sl_no).trim()));
+    const validAdded = addedPetitions.filter(p => !existingAckNos.has(String(p.ack_no || p.sl_no).trim()));
+    if (validAdded.length !== addedPetitions.length) {
+      localStorage.setItem("ncrp_local_added", JSON.stringify(validAdded));
+    }
+    staticPetitions = [...validAdded, ...staticPetitions];
 
     staticDataLoaded = true;
   } catch (err) {
@@ -101,6 +125,21 @@ async function ensureStaticData() {
     staticDataLoaded = true;
   }
 }
+
+window.forceRefreshDistrictData = async function() {
+  try {
+    localStorage.removeItem('ncrp_local_added');
+    localStorage.removeItem('ncrp_local_edits');
+    staticDataLoaded = false;
+    showToast('Refreshing district data from server... / డేటా రీఫ్రెష్ అవుతోంది...', 'info');
+    await ensureStaticData(true);
+    await loadDashboard();
+    await loadPetitions(1);
+    showToast('Successfully refreshed! Total ' + (staticPetitions.length) + ' petitions loaded.', 'success');
+  } catch (e) {
+    showToast('Refresh error: ' + e.message, 'error');
+  }
+};
 
 // Client-side router for GitHub Pages
 async function handleStaticApi(url, options = {}) {

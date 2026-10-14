@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Srikakulam District Police | NCRP & 1930 Management System</title>
-  <link rel="stylesheet" href="./css/style.css?v=3.0">
+  <link rel="stylesheet" href="./css/style.css?v=3.5">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="./js/xlsx.full.min.js"></script>
 </head>
@@ -70,6 +70,9 @@
             <span id="userDisplayName">Srikakulam I Town PS</span>
             <span id="userCircleLabel" style="font-size: 0.72rem; color: #fde047;">(Srikakulam Rural Circle)</span>
           </div>
+          <button class="btn-header" onclick="forceRefreshDistrictData()" style="background: rgba(59, 130, 246, 0.25); border-color: #60a5fa; color: #93c5fd; font-weight: 600;" title="Reload latest data from GitHub / కాష్ క్లియర్ చేసి రీఫ్రెష్ చేయండి">
+            🔄 Refresh / సింక్
+          </button>
           <button class="btn-header" onclick="openStationStatementModal()" style="background: rgba(197, 155, 39, 0.25); border-color: var(--accent-gold); color: #fde047; font-weight: 600;">
             📄 Statement (PDF/ప్రింట్)
           </button>
@@ -89,7 +92,7 @@
         <div class="kpi-card kpi-blue">
           <div class="kpi-label">Total Petitions</div>
           <div class="kpi-telugu">మొత్తం పిటిషన్లు</div>
-          <div class="kpi-value" id="kpiTotalPetitions">1,885</div>
+          <div class="kpi-value" id="kpiTotalPetitions">1,886</div>
           <div class="kpi-sub">NCRP & 1930 Helpline</div>
         </div>
 
@@ -143,7 +146,7 @@
       <nav class="nav-tabs-wrapper">
         <button class="nav-tab active" onclick="switchTab('petitionsTab')">
           📋 Master Petitions (24 కాలమ్స్)
-          <span class="tab-badge" id="tabBadgePetitions">1,885</span>
+          <span class="tab-badge" id="tabBadgePetitions">1,886</span>
         </button>
         <button class="nav-tab" onclick="switchTab('abstractTab')">
           📑 Abstract (అబ్‌స్ట్రాక్ట్)
@@ -944,7 +947,7 @@
         <!-- Progress Spinner / Note -->
         <div id="importLoading" style="display: none; text-align: center; padding: 20px;">
           <div style="font-size: 1rem; font-weight: 700; color: #0b1e3f;">⏳ Scanning petitions and comparing with database to prevent duplicates...</div>
-          <div style="font-size: 0.82rem; color: #64748b;">(మునుపటి 1,885+ పిటిషన్లతో డూప్లికేట్లు సరిచూస్తోంది...)</div>
+          <div style="font-size: 0.82rem; color: #64748b;">(మునుపటి 1,886+ పిటిషన్లతో డూప్లికేట్లు సరిచూస్తోంది...)</div>
         </div>
 
         <!-- Analysis & Duplicate Prevention Summary -->
@@ -1159,6 +1162,6 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="./js/app.js?v=3.0"></script>
+  <script src="./js/app.js?v=3.5"></script>
 </body>
 </html>
