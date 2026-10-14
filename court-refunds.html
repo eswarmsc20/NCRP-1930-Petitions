@@ -647,7 +647,7 @@
   <main class="court-main">
     <div class="view-tabs-bar">
       <button class="view-tab-btn active" id="tabCasesBtn" onclick="switchView('casesView')">
-        📋 Detailed 83 FIR Cases (కేసుల వారీ పూర్తి పట్టిక)
+        📋 Master 83 FIR Cases (All 23 Columns Sheet / పూర్తి 23 కాలమ్స్ పట్టిక)
         <span class="badge-pill" id="casesCountBadge">83 Cases</span>
       </button>
       <button class="view-tab-btn" id="tabAbstractBtn" onclick="switchView('abstractView')">
@@ -737,30 +737,39 @@
         </div>
       </div>
 
-      <!-- Cases Data Table -->
+      <!-- Cases Data Table (All 23 Official Columns) -->
       <div class="table-responsive-wrapper">
-        <table class="court-table" id="casesTable">
+        <table class="court-table table-sheet-view" id="casesTable">
           <thead>
             <tr>
-              <th onclick="handleSort('s_no')">S.No ⬍</th>
-              <th onclick="handleSort('police_station')">Police Station & Circle ⬍</th>
-              <th onclick="handleSort('fir_no')">FIR No & Year ⬍</th>
-              <th onclick="handleSort('sub_category')">Crime Sub-Category ⬍</th>
-              <th onclick="handleSort('lost')" style="text-align: right;">Lost Amount (₹) ⬍</th>
-              <th onclick="handleSort('lien')" style="text-align: right;">Lien / Hold (₹) ⬍</th>
-              <th onclick="handleSort('memo_filed')" style="text-align: center;">Memo Filed? ⬍</th>
-              <th onclick="handleSort('court_order_received')" style="text-align: center;">Court Order? ⬍</th>
-              <th onclick="handleSort('amount_refunded_status')" style="text-align: center;">Refund Status ⬍</th>
-              <th onclick="handleSort('refund_from_bank')" style="text-align: right;">Refunded (₹) ⬍</th>
-              <th onclick="handleSort('to_be_refunded_from_bank')" style="text-align: right;">To Be Refunded (₹) ⬍</th>
-              <th>Court & Judge</th>
-              <th>Tech Asst</th>
-              <th>Remarks / Stage</th>
-              <th style="text-align: center;">Action</th>
+              <th onclick="handleSort('s_no')" style="text-align: center; width: 45px;">1. S No ⬍</th>
+              <th onclick="handleSort('circle')">2. Circle ⬍</th>
+              <th onclick="handleSort('police_station')">3. Police Station ⬍</th>
+              <th onclick="handleSort('fir_no')">4. FIR No ⬍</th>
+              <th onclick="handleSort('year')" style="text-align: center; width: 55px;">5. Year ⬍</th>
+              <th onclick="handleSort('sub_category')">6. Sub-Category ⬍</th>
+              <th onclick="handleSort('lost')" style="text-align: right;">7. Lost (₹) ⬍</th>
+              <th onclick="handleSort('lien')" style="text-align: right;">8. Lien (₹) ⬍</th>
+              <th onclick="handleSort('memo_filed')" style="text-align: center;">9. Memo Filed? ⬍</th>
+              <th onclick="handleSort('memo_filed_amount')" style="text-align: right;">10. Memo Filed Amount (₹) ⬍</th>
+              <th>11. Memo Filed Date / Reason</th>
+              <th onclick="handleSort('court_order_received')" style="text-align: center;">12. Court Order Recd? ⬍</th>
+              <th onclick="handleSort('amount_refunded_status')" style="text-align: center;">13. Amount Refunded? ⬍</th>
+              <th onclick="handleSort('court_order_amount')" style="text-align: right;">14. Order Issued Amount (₹) ⬍</th>
+              <th onclick="handleSort('refund_from_bank')" style="text-align: right;">15. Refund From Bank (₹) ⬍</th>
+              <th onclick="handleSort('funds_not_available')" style="text-align: right;">16. Funds Not Available (₹) ⬍</th>
+              <th onclick="handleSort('to_be_refunded_from_bank')" style="text-align: right;">17. To Be Refunded (₹) ⬍</th>
+              <th>18. Order Received Date</th>
+              <th>19. Reasons for Not Receiving Order</th>
+              <th>20. Technical Asst</th>
+              <th>21. Court Name</th>
+              <th>22. Judge Name</th>
+              <th>23. Stage of the Case</th>
+              <th style="text-align: center; position: sticky; right: 0; background: #0b1e3f; z-index: 12;">Action</th>
             </tr>
           </thead>
           <tbody id="casesTableBody">
-            <!-- Dynamic Content -->
+            <!-- Dynamic Content (All 23 Columns) -->
           </tbody>
         </table>
       </div>

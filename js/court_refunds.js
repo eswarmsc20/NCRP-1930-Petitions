@@ -6192,7 +6192,7 @@ function renderCasesTable() {
   if (sorted.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="15" style="text-align: center; padding: 40px; color: #64748b;">
+        <td colspan="24" style="text-align: center; padding: 40px; color: #64748b;">
           🔍 No court refund cases matched your filters.<br>
           <button class="btn-action" onclick="resetAllFilters()" style="margin-top: 10px;">Clear Filters</button>
         </td>
@@ -6226,59 +6226,83 @@ function renderCasesTable() {
       refBadge = `<span class="badge badge-danger">✗ No</span>`;
     }
 
-    const subDiv = getSubDivisionForPS(c.police_station, c.circle).replace(' Sub-Division', '');
-
     html += `
       <tr class="case-row" onclick="openCaseModal(${c.s_no})">
+        <!-- 1. S No -->
         <td style="font-weight: 600; text-align: center;">${c.s_no}</td>
-        <td>
-          <div style="font-weight: 600; color: #0f172a;">${escapeHtml(c.police_station)}</div>
-          <div style="font-size: 0.73rem; color: #64748b;">${escapeHtml(c.circle || '')} • <span style="color:#0284c7; font-weight:600;">${subDiv}</span></div>
+
+        <!-- 2. Circle -->
+        <td style="font-size: 0.8rem; color: #475569; white-space: nowrap;">${escapeHtml(c.circle || '-')}</td>
+
+        <!-- 3. Police Station -->
+        <td style="font-weight: 700; color: #0f172a; white-space: nowrap;">${escapeHtml(c.police_station)}</td>
+
+        <!-- 4. FIR No -->
+        <td style="font-weight: 700; color: #1e3a8a; font-family: monospace; font-size: 0.88rem; white-space: nowrap;">${escapeHtml(c.fir_no)}</td>
+
+        <!-- 5. Year -->
+        <td style="text-align: center; font-weight: 600;">${c.year}</td>
+
+        <!-- 6. Sub-Category -->
+        <td><span class="category-tag">${escapeHtml(c.sub_category || '-')}</span></td>
+
+        <!-- 7. Lost -->
+        <td style="text-align: right; font-weight: 700; color: #b91c1c; font-family: monospace;">${formatINR(c.lost)}</td>
+
+        <!-- 8. Lien -->
+        <td style="text-align: right; font-weight: 700; color: #047857; font-family: monospace;">${formatINR(c.lien)}</td>
+
+        <!-- 9. Memo Filed Yes or No? -->
+        <td style="text-align: center;">${memoBadge}</td>
+
+        <!-- 10. Memo Filed Amount -->
+        <td style="text-align: right; font-weight: 600; color: #166534; font-family: monospace;">${c.memo_filed_amount ? formatINR(c.memo_filed_amount) : '-'}</td>
+
+        <!-- 11. Memo Filed date / If Not Filed Reason for not filiing -->
+        <td style="font-size: 0.78rem; max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(c.memo_filed_date_or_reason || '-')}">${escapeHtml(c.memo_filed_date_or_reason || '-')}</td>
+
+        <!-- 12. Court order Recieved Yes or No? -->
+        <td style="text-align: center;">${orderBadge}</td>
+
+        <!-- 13. Amount Refunded Yes or No or Partial ? -->
+        <td style="text-align: center;">${refBadge}</td>
+
+        <!-- 14. Amount for Which Court Order Was Issued -->
+        <td style="text-align: right; font-weight: 600; color: #1d4ed8; font-family: monospace;">${c.court_order_amount ? formatINR(c.court_order_amount) : '-'}</td>
+
+        <!-- 15. Refund From bank -->
+        <td style="text-align: right; font-weight: 700; color: #15803d; font-family: monospace; background: rgba(34, 197, 94, 0.05); white-space: nowrap;">
+          ${c.refund_from_bank_display || (c.refund_from_bank ? formatINR(c.refund_from_bank) : '-')}
         </td>
-        <td>
-          <div style="font-weight: 700; color: #1e3a8a; font-family: monospace; font-size: 0.9rem;">${escapeHtml(c.fir_no)}</div>
-          <div style="font-size: 0.72rem; color: #64748b;">Year: ${c.year}</div>
+
+        <!-- 16. Funds not availble in banks -->
+        <td style="text-align: right; font-weight: 600; color: #64748b; font-family: monospace;">${c.funds_not_available ? formatINR(c.funds_not_available) : '-'}</td>
+
+        <!-- 17. To be refunded from Bank -->
+        <td style="text-align: right; font-weight: 700; color: #dc2626; font-family: monospace; white-space: nowrap;">
+          ${c.to_be_refunded_from_bank_display || (c.to_be_refunded_from_bank ? formatINR(c.to_be_refunded_from_bank) : '0')}
         </td>
-        <td>
-          <span class="category-tag">${escapeHtml(c.sub_category || 'Cyber Fraud')}</span>
-        </td>
-        <td style="text-align: right; font-weight: 600; color: #b91c1c;">
-          ${formatINR(c.lost)}
-        </td>
-        <td style="text-align: right; font-weight: 600; color: #047857;">
-          ${formatINR(c.lien)}
-        </td>
-        <td style="text-align: center;">
-          ${memoBadge}
-          ${c.memo_filed_amount ? `<div style="font-size: 0.72rem; color: #166534; font-weight: 600;">${formatINR(c.memo_filed_amount)}</div>` : ''}
-        </td>
-        <td style="text-align: center;">
-          ${orderBadge}
-          ${c.court_order_amount ? `<div style="font-size: 0.72rem; color: #1e40af; font-weight: 600;">${formatINR(c.court_order_amount)}</div>` : ''}
-        </td>
-        <td style="text-align: center;">
-          ${refBadge}
-        </td>
-        <td style="text-align: right; font-weight: 700; color: #15803d; background: rgba(34, 197, 94, 0.04);">
-          ${formatINR(c.refund_from_bank)}
-          ${(c.refund_from_bank_display && c.refund_from_bank_display.includes('MRM')) ? `<div style="font-size: 0.68rem; color: #d97706; font-weight: 600;">Includes MRM</div>` : ''}
-        </td>
-        <td style="text-align: right; font-weight: 600; color: #dc2626;">
-          ${formatINR(c.to_be_refunded_from_bank)}
-        </td>
-        <td style="font-size: 0.8rem;">
-          <div style="font-weight: 500;">${escapeHtml(c.court_name || '-')}</div>
-          <div style="font-size: 0.72rem; color: #64748b;">${escapeHtml(c.judge_name || '')}</div>
-        </td>
-        <td>
-          <span style="display: inline-block; padding: 2px 6px; background: #f1f5f9; border-radius: 4px; font-size: 0.75rem; font-weight: 600; color: #334155;">
-            ${escapeHtml(c.technical_asst || 'Cyber Cell')}
-          </span>
-        </td>
-        <td style="font-size: 0.78rem; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(c.reasons_not_received || c.memo_filed_date_or_reason || c.stage_of_case || '')}">
-          ${escapeHtml(c.stage_of_case || c.reasons_not_received || c.memo_filed_date_or_reason || '-')}
-        </td>
-        <td style="text-align: center;">
+
+        <!-- 18. COURT ORDER RECEIVED DATE -->
+        <td style="font-size: 0.78rem; white-space: nowrap;">${escapeHtml(c.court_order_date || '-')}</td>
+
+        <!-- 19. Reasons for not Receving Court orders -->
+        <td style="font-size: 0.78rem; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(c.reasons_not_received || '-')}">${escapeHtml(c.reasons_not_received || '-')}</td>
+
+        <!-- 20. Technical asst -->
+        <td><span style="display: inline-block; padding: 2px 7px; background: #f1f5f9; border-radius: 4px; font-size: 0.75rem; font-weight: 600; color: #334155; white-space: nowrap;">${escapeHtml(c.technical_asst || '-')}</span></td>
+
+        <!-- 21. Court name -->
+        <td style="font-size: 0.8rem; font-weight: 600; color: #1e293b; white-space: nowrap;">${escapeHtml(c.court_name || '-')}</td>
+
+        <!-- 22. Judge Name -->
+        <td style="font-size: 0.8rem; color: #475569; white-space: nowrap;">${escapeHtml(c.judge_name || '-')}</td>
+
+        <!-- 23. Stage of the case -->
+        <td style="font-size: 0.78rem; font-weight: 600; color: #0369a1; white-space: nowrap;">${escapeHtml(c.stage_of_case || '-')}</td>
+
+        <!-- Action Button -->
+        <td style="text-align: center; position: sticky; right: 0; background: white; z-index: 5;">
           <button class="btn-sm-view" onclick="event.stopPropagation(); openCaseModal(${c.s_no})">👁️ View</button>
         </td>
       </tr>
