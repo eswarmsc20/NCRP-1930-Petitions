@@ -104,17 +104,16 @@ async function ensureStaticData() {
 
 // Client-side router for GitHub Pages
 async function handleStaticApi(url, options = {}) {
-  await ensureStaticData();
   const parsed = new URL(url, 'http://localhost');
   const pathname = parsed.pathname;
   const searchParams = parsed.searchParams;
   const method = (options.method || 'GET').toUpperCase();
   const body = options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : {};
 
-  // 1. Login
+  // 1. Login (instant check using embedded users list without network wait)
   if (pathname === '/api/auth/login' && method === 'POST') {
     let username = (body.username || '').trim().toLowerCase();
-    const password = body.password || '';
+    const password = (body.password || '').trim();
 
     const aliases = {
       'srikakulamitown': 'srikakulam1town',
@@ -126,24 +125,23 @@ async function handleStaticApi(url, options = {}) {
     };
     if (aliases[username]) username = aliases[username];
 
-    const user = staticUsers.find(u => u.username.toLowerCase() === username);
+    const usersList = (staticUsers && staticUsers.length > 0) ? staticUsers : EMBEDDED_USERS;
+    const user = usersList.find(u => u.username.toLowerCase() === username);
     if (!user) {
       throw new Error('Invalid User ID / తప్పు యూజర్ ఐడీ');
     }
 
-    // Default password checks with trim
-    const cleanPass = password.trim();
+    // Password verification with trim
     let validPass = false;
     if (user.role === 'admin' || username === 'admin') {
-      validPass = (cleanPass === 'Admin@SklmNCRP2026!' || cleanPass === 'Cyber@Sklm2026!');
+      validPass = (password === 'Admin@SklmNCRP2026!' || password === 'Cyber@Sklm2026!');
     } else {
-      validPass = (cleanPass === `${username}@skl26` || cleanPass === 'Sklm@PS2026!');
+      validPass = (password === `${username}@skl26` || password === 'Sklm@PS2026!');
     }
 
-    if (!validPass && cleanPass.length >= 6) {
-      // allow custom password if changed in localStorage
+    if (!validPass && password.length >= 6) {
       const savedPass = localStorage.getItem(`pass_${username}`);
-      if (savedPass && savedPass === cleanPass) validPass = true;
+      if (savedPass && savedPass === password) validPass = true;
     }
 
     if (!validPass) {
@@ -162,12 +160,18 @@ async function handleStaticApi(url, options = {}) {
     };
     localStorage.setItem('ncrp_session_user', JSON.stringify(sessionUser));
 
+    // Prefetch petitions in background if needed
+    ensureStaticData().catch(() => {});
+
     return {
       success: true,
       token,
       user: sessionUser
     };
   }
+
+  // All other endpoints require static petitions & stations data
+  await ensureStaticData();
 
   // 2. Me
   if (pathname === '/api/auth/me') {
@@ -467,17 +471,18 @@ function setupEventListeners() {
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
     const btn = document.getElementById('loginBtn');
+    const errBox = document.getElementById('loginErrorBox');
+    if (errBox) errBox.style.display = 'none';
+
     btn.disabled = true;
-    btn.textContent = 'Verifying credentials...';
+    btn.textContent = 'Verifying credentials... / ధృవీకరిస్తోంది...';
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const data = await apiFetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
 
       currentToken = data.token;
       localStorage.setItem('ncrp_token', currentToken);
@@ -485,7 +490,11 @@ function setupEventListeners() {
       showToast(`Welcome ${currentUser.displayName}!`, 'success');
       renderAuthenticatedUI();
     } catch (err) {
-      showToast(err.message, 'error');
+      if (errBox) {
+        errBox.textContent = '⚠️ ' + (err.message || 'Login failed. Please check credentials.');
+        errBox.style.display = 'block';
+      }
+      showToast(err.message || 'Login failed', 'error');
     } finally {
       btn.disabled = false;
       btn.textContent = 'Secure Station Login / లాగిన్ అవ్వండి';
@@ -600,6 +609,7 @@ function setupEventListeners() {
 function logout() {
   apiFetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
   localStorage.removeItem('ncrp_token');
+  localStorage.removeItem('ncrp_session_user');
   currentToken = null;
   currentUser = null;
   showLoginScreen();
