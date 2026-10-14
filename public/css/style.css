@@ -523,11 +523,42 @@ body {
 .table-sheet-view th,
 .table-sheet-view td {
   padding: 8px 10px !important;
-  white-space: nowrap !important;
+  white-space: nowrap;
   border-right: 1px solid #e2e8f0;
 }
 .table-sheet-view tr:hover td {
   background-color: #f1f5f9;
+}
+
+/* Cell wrapping support for long text columns in tables */
+.data-table td.cell-wrap,
+.table-sheet-view td.cell-wrap,
+td.cell-wrap,
+.cell-wrap {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  hyphens: auto;
+  line-height: 1.4 !important;
+}
+
+.col-address,
+.td-address {
+  min-width: 200px !important;
+  max-width: 280px !important;
+}
+
+.col-action-taken,
+.td-action-taken {
+  min-width: 240px !important;
+  max-width: 360px !important;
+}
+
+.col-complainant,
+.td-complainant {
+  min-width: 160px !important;
+  max-width: 220px !important;
 }
 
 /* Excel Import Dropzone & Preview Styles */

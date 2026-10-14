@@ -1103,16 +1103,16 @@ function renderPetitionsTable(data) {
           <th style="min-width: 130px; cursor: pointer; user-select: none;" onclick="sortTableBy('circle_name')" title="Click to sort">Circle Name${getSortHeaderIndicator('circle_name')}</th>
           <th style="min-width: 80px;">NCRP/1930</th>
           <th style="min-width: 145px; cursor: pointer; user-select: none;" onclick="sortTableBy('ack_no')" title="Click to sort">Acknowledgement No${getSortHeaderIndicator('ack_no')}</th>
-          <th style="min-width: 160px; cursor: pointer; user-select: none;" onclick="sortTableBy('complainant_name')" title="Click to sort">Complaint name & Ph no${getSortHeaderIndicator('complainant_name')}</th>
+          <th class="col-complainant" style="min-width: 160px; max-width: 220px; cursor: pointer; user-select: none;" onclick="sortTableBy('complainant_name')" title="Click to sort">Complaint name & Ph no${getSortHeaderIndicator('complainant_name')}</th>
           <th style="min-width: 70px;">Victim Age</th>
-          <th style="min-width: 180px;">Complainant Address</th>
+          <th class="col-address" style="min-width: 200px; max-width: 280px;">Complainant Address</th>
           <th style="min-width: 160px;">Category of Complaint</th>
           <th style="min-width: 180px;">Sub Category of Complaint</th>
           <th style="min-width: 120px; cursor: pointer; user-select: none;" onclick="sortTableBy('lost_amount')" title="Click to sort">Lost Amount (₹)${getSortHeaderIndicator('lost_amount')}</th>
           <th style="min-width: 120px; cursor: pointer; user-select: none;" onclick="sortTableBy('hold_amount')" title="Click to sort">Hold Amount (₹)${getSortHeaderIndicator('hold_amount')}</th>
           <th class="th-refund" style="min-width: 125px; cursor: pointer; user-select: none;" onclick="sortTableBy('refund_amount')" title="Click to sort">Refund Amount (₹)${getSortHeaderIndicator('refund_amount')}</th>
           <th class="th-process" style="min-width: 110px; cursor: pointer; user-select: none;" onclick="sortTableBy('status')" title="Click to sort">Status${getSortHeaderIndicator('status')}</th>
-          <th style="min-width: 220px;">Action taken by PS</th>
+          <th class="col-action-taken" style="min-width: 240px; max-width: 360px;">Action taken by PS</th>
           <th style="min-width: 95px;">Date of Action</th>
           <th class="th-fir" style="min-width: 120px;">Whether FIR is Registered (Cr. No.)</th>
           <th style="min-width: 110px;">Court Memo Filed</th>
@@ -1132,14 +1132,14 @@ function renderPetitionsTable(data) {
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('petition_date')" title="Click to sort">Date${getSortHeaderIndicator('petition_date')}</th>
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('ack_no')" title="Click to sort">Ack Number${getSortHeaderIndicator('ack_no')}</th>
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('ps_name')" title="Click to sort">Police Station${getSortHeaderIndicator('ps_name')}</th>
-          <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('complainant_name')" title="Click to sort">Complainant Details${getSortHeaderIndicator('complainant_name')}</th>
+          <th class="col-complainant" style="min-width: 160px; max-width: 220px; cursor: pointer; user-select: none;" onclick="sortTableBy('complainant_name')" title="Click to sort">Complainant Details${getSortHeaderIndicator('complainant_name')}</th>
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('mo')" title="Click to sort">Modus Operandi (MO)${getSortHeaderIndicator('mo')}</th>
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('lost_amount')" title="Click to sort">Lost Amount (₹)${getSortHeaderIndicator('lost_amount')}</th>
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('hold_amount')" title="Click to sort">Hold Amount (₹)${getSortHeaderIndicator('hold_amount')}</th>
           <th class="th-refund" style="cursor: pointer; user-select: none;" onclick="sortTableBy('refund_amount')" title="Click to sort">Refund Amount (₹)${getSortHeaderIndicator('refund_amount')}</th>
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('status')" title="Click to sort">Status${getSortHeaderIndicator('status')}</th>
           <th>FIR / Cr. No</th>
-          <th>Action Taken</th>
+          <th class="col-action-taken" style="min-width: 220px; max-width: 320px;">Action Taken</th>
           <th style="text-align: center;">Action</th>
         </tr>
       `;
@@ -1172,20 +1172,20 @@ function renderPetitionsTable(data) {
         <td style="color: #64748b;">${p.circle_name || '-'}</td>
         <td><span class="badge" style="background:#e0e7ff; color:#3730a3; font-weight:700;">${p.portal_type || 'NCRP'}</span></td>
         <td><strong style="color: #0b1e3f;">${p.ack_no}</strong></td>
-        <td>
+        <td class="cell-wrap td-complainant">
           <strong>${p.complainant_name || 'Unknown'}</strong>
           <div style="font-size: 0.74rem; color: #2563eb;">${p.complainant_phone ? '📞 ' + p.complainant_phone : ''}</div>
         </td>
         <td>${p.victim_age || '-'}</td>
-        <td style="max-width: 200px; font-size: 0.75rem;" title="${p.complainant_address || ''}">${p.complainant_address || '-'}</td>
+        <td class="cell-wrap td-address" style="font-size: 0.75rem;" title="${p.complainant_address || ''}">${p.complainant_address || '-'}</td>
         <td style="font-size: 0.75rem;">${p.category || 'Online Financial Fraud'}</td>
         <td style="font-size: 0.75rem;">${p.sub_category || '-'}</td>
         <td class="amount-loss" style="font-weight: 700;">${p.lost_amount > 0 ? '₹' + p.lost_amount.toLocaleString('en-IN') : '-'}</td>
         <td class="amount-hold" style="font-weight: 700;">${p.hold_amount > 0 ? '₹' + p.hold_amount.toLocaleString('en-IN') : '-'}</td>
         <td class="amount-refund" style="font-weight: 700; color: #059669;">${p.refund_amount > 0 ? '₹' + p.refund_amount.toLocaleString('en-IN') : '-'}</td>
         <td><span class="badge ${badgeClass}">${p.status}</span></td>
-        <td style="max-width: 250px; font-size: 0.75rem; color: #334155;" title="${p.action_taken || ''}">
-          ${p.action_taken ? (p.action_taken.length > 50 ? p.action_taken.slice(0, 50) + '...' : p.action_taken) : '<em style="color:#94a3b8">Pending</em>'}
+        <td class="cell-wrap td-action-taken" style="font-size: 0.75rem; color: #334155;" title="${p.action_taken || ''}">
+          ${p.action_taken ? p.action_taken : '<em style="color:#94a3b8">Pending</em>'}
         </td>
         <td>${p.date_of_action || '-'}</td>
         <td><strong style="color: #dc2626;">${p.fir_number || '-'}</strong></td>
@@ -1212,7 +1212,7 @@ function renderPetitionsTable(data) {
           <strong>${p.ps_name}</strong>
           <div style="font-size: 0.72rem; color: #64748b;">${p.circle_name || ''}</div>
         </td>
-        <td>
+        <td class="cell-wrap td-complainant">
           <div><strong>${p.complainant_name}</strong></div>
           <div style="font-size: 0.78rem; color: #2563eb;">${p.complainant_phone ? '📞 ' + p.complainant_phone : ''}</div>
         </td>
@@ -1222,8 +1222,8 @@ function renderPetitionsTable(data) {
         <td class="amount-refund" style="font-weight: 700; color: #059669;">${p.refund_amount > 0 ? '₹' + p.refund_amount.toLocaleString('en-IN') : '-'}</td>
         <td><span class="badge ${badgeClass}">${p.status}</span></td>
         <td><span style="font-weight: 600; color: #dc2626;">${p.fir_number || '-'}</span></td>
-        <td style="max-width: 220px; font-size: 0.78rem; color: #475569;" title="${p.action_taken || ''}">
-          ${p.action_taken ? (p.action_taken.length > 60 ? p.action_taken.slice(0, 60) + '...' : p.action_taken) : '<em style="color:#94a3b8">Pending</em>'}
+        <td class="cell-wrap td-action-taken" style="font-size: 0.78rem; color: #475569;" title="${p.action_taken || ''}">
+          ${p.action_taken ? p.action_taken : '<em style="color:#94a3b8">Pending</em>'}
         </td>
         <td style="text-align: center; white-space: nowrap;">
           <button class="action-btn-sm" onclick="openEditModal(${p.id})">✏️ Edit Action</button>
