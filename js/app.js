@@ -17,12 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
 });
 
-// Quick fill credentials for demo
-window.quickFill = function(username, password) {
-  document.getElementById('loginUsername').value = username;
-  document.getElementById('loginPassword').value = password;
-  document.getElementById('loginBtn').focus();
-};
 
 // Toast notification helper
 function showToast(message, type = 'info') {
