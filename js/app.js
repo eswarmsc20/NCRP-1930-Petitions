@@ -313,6 +313,151 @@ async function handleStaticApi(url, options = {}) {
     return { success: true, petition: pet, message: 'Petition updated successfully / పిటిషన్ విజయవంతంగా అప్‌డేట్ చేయబడింది' };
   }
 
+  // 8B. Create Single Petition (Static / GitHub Pages with Zero-Duplicate Guard)
+  if (pathname === '/api/petitions' && method === 'POST') {
+    const rawAck = (body.ack_no || '').toString().trim();
+    if (!rawAck) throw new Error('Acknowledgement Number is required');
+    const cleanAck = rawAck.toLowerCase();
+
+    // Zero-Duplicate Check against all existing petitions
+    const existing = staticPetitions.find(p => (p.ack_no || '').toString().trim().toLowerCase() === cleanAck);
+    if (existing) {
+      throw new Error(`Duplicate Petition! Ack No [${rawAck}] already registered in ${existing.ps_name} on ${existing.petition_date || 'N/A'}. డూప్లికేట్ ఎంట్రీ అనుమతించబడదు.`);
+    }
+
+    const station = staticStations.find(s => s.name === body.ps_name);
+    const circle = station ? station.circle : '';
+    const subDivision = station ? station.sub_division : '';
+
+    const newId = (staticPetitions.reduce((max, p) => Math.max(max, p.id || 0), 0)) + 1;
+    const newSl = (staticPetitions.reduce((max, p) => Math.max(max, p.sl_no || 0), 0)) + 1;
+
+    const newPet = {
+      id: newId,
+      sl_no: newSl,
+      petition_date: body.petition_date || new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+      ps_name: body.ps_name || 'Cyber Crime PS, Srikakulam',
+      circle_name: circle,
+      sub_division: subDivision,
+      portal_type: body.portal_type || 'NCRP',
+      ack_no: rawAck,
+      complainant_name: body.complainant_name || '',
+      complainant_phone: body.complainant_phone || '',
+      victim_age: (body.victim_age || '').toString(),
+      complainant_address: body.complainant_address || '',
+      category: body.category || 'Online Financial Fraud',
+      sub_category: body.sub_category || 'UPI Related Frauds',
+      lost_amount: parseFloat(body.lost_amount) || 0,
+      hold_amount: parseFloat(body.hold_amount) || 0,
+      refund_amount: parseFloat(body.refund_amount) || 0,
+      status: body.status || 'Under Process',
+      mo: body.mo || 'Other',
+      action_taken: body.action_taken || '',
+      date_of_action: body.date_of_action || '',
+      fir_number: body.fir_number || '',
+      court_memo_filed: body.court_memo_filed || 'No',
+      court_order_obtained: body.court_order_obtained || 'No',
+      remarks: body.remarks || '',
+      no_of_days: 0,
+      timeline_status: 'Below 1 Week',
+      loss_bucket: 'BELOW 10L',
+      hold_bucket: (parseFloat(body.hold_amount) || 0) > 0 ? 'Hold Available' : 'No Hold',
+      created_at: new Date().toISOString()
+    };
+
+    staticPetitions.unshift(newPet);
+
+    // Save in localStorage
+    const added = JSON.parse(localStorage.getItem('ncrp_local_added') || '[]');
+    added.unshift(newPet);
+    localStorage.setItem('ncrp_local_added', JSON.stringify(added));
+
+    return { success: true, petition: newPet, message: 'New petition registered successfully / కొత్త పిటిషన్ విజయవంతంగా నమోదైంది' };
+  }
+
+  // 8C. Bulk Import Petitions (Static / GitHub Pages with Zero-Duplicate Guard)
+  if (pathname === '/api/petitions/bulk' && method === 'POST') {
+    const list = body.petitions || [];
+    if (!Array.isArray(list) || list.length === 0) {
+      throw new Error('No petitions provided for import');
+    }
+
+    const existingAcks = new Set(
+      staticPetitions.map(p => (p.ack_no || '').toString().trim().toLowerCase())
+    );
+
+    let maxId = staticPetitions.reduce((max, p) => Math.max(max, p.id || 0), 0);
+    let maxSl = staticPetitions.reduce((max, p) => Math.max(max, p.sl_no || 0), 0);
+
+    const newlyAdded = [];
+    let skippedDuplicates = 0;
+
+    for (const item of list) {
+      const rawAck = (item.ack_no || '').toString().trim();
+      const cleanAck = rawAck.toLowerCase();
+      if (!cleanAck || existingAcks.has(cleanAck)) {
+        skippedDuplicates++;
+        continue;
+      }
+
+      existingAcks.add(cleanAck);
+      maxId++;
+      maxSl++;
+
+      const station = staticStations.find(s => s.name === item.ps_name);
+      const circle = station ? station.circle : (item.circle_name || '');
+      const subDivision = station ? station.sub_division : (item.sub_division || '');
+
+      const pet = {
+        id: maxId,
+        sl_no: maxSl,
+        petition_date: item.petition_date || new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+        ps_name: item.ps_name || 'Cyber Crime PS, Srikakulam',
+        circle_name: circle,
+        sub_division: subDivision,
+        portal_type: item.portal_type || 'NCRP',
+        ack_no: rawAck,
+        complainant_name: item.complainant_name || '',
+        complainant_phone: item.complainant_phone || '',
+        victim_age: (item.victim_age || '').toString(),
+        complainant_address: item.complainant_address || '',
+        category: item.category || 'Online Financial Fraud',
+        sub_category: item.sub_category || 'UPI Related Frauds',
+        lost_amount: parseFloat(item.lost_amount) || 0,
+        hold_amount: parseFloat(item.hold_amount) || 0,
+        refund_amount: parseFloat(item.refund_amount) || 0,
+        status: item.status || 'Under Process',
+        mo: item.mo || 'Other',
+        action_taken: item.action_taken || '',
+        date_of_action: item.date_of_action || '',
+        fir_number: item.fir_number || '',
+        court_memo_filed: item.court_memo_filed || 'No',
+        court_order_obtained: item.court_order_obtained || 'No',
+        remarks: item.remarks || '',
+        no_of_days: 0,
+        timeline_status: 'Below 1 Week',
+        loss_bucket: 'BELOW 10L',
+        hold_bucket: (parseFloat(item.hold_amount) || 0) > 0 ? 'Hold Available' : 'No Hold',
+        created_at: new Date().toISOString()
+      };
+
+      newlyAdded.push(pet);
+    }
+
+    if (newlyAdded.length > 0) {
+      staticPetitions = [...newlyAdded, ...staticPetitions];
+      const added = JSON.parse(localStorage.getItem('ncrp_local_added') || '[]');
+      localStorage.setItem('ncrp_local_added', JSON.stringify([...newlyAdded, ...added]));
+    }
+
+    return {
+      success: true,
+      insertedCount: newlyAdded.length,
+      skippedDuplicates,
+      message: `Successfully imported ${newlyAdded.length} new petitions! ${skippedDuplicates} duplicate petitions skipped.`
+    };
+  }
+
   // 9. Abstract Report
   if (pathname === '/api/reports/abstract') {
     const rows = staticStations.map(st => {
@@ -548,11 +693,44 @@ function setupEventListeners() {
     }
   });
 
+  // Live duplicate checking on new Ack No input
+  const newAckInput = document.getElementById('newAckNo');
+  if (newAckInput) {
+    newAckInput.addEventListener('input', (e) => {
+      const raw = e.target.value.trim().toLowerCase();
+      const warn = document.getElementById('newAckDuplicateWarning');
+      if (!warn) return;
+      if (!raw) {
+        warn.style.display = 'none';
+        return;
+      }
+      const match = staticPetitions.find(p => (p.ack_no || '').toString().trim().toLowerCase() === raw);
+      if (match) {
+        warn.innerHTML = `⚠️ ఈ Ack No (${match.ack_no}) ఇప్పటికే <strong>${match.ps_name}</strong> లో (${match.petition_date || ''}) నమోదై ఉంది! డూప్లికేట్ ఎంట్రీ అనుమతించబడదు.`;
+        warn.style.display = 'block';
+        warn.style.color = '#dc2626';
+      } else {
+        warn.innerHTML = `✅ Ack No అందుబాటులో ఉంది (New Petition - No Duplicate)`;
+        warn.style.display = 'block';
+        warn.style.color = '#15803d';
+      }
+    });
+  }
+
   // New Petition Form
   document.getElementById('newPetitionForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const ackNo = document.getElementById('newAckNo').value.trim();
+    
+    // Strict duplicate check before submitting
+    const match = staticPetitions.find(p => (p.ack_no || '').toString().trim().toLowerCase() === ackNo.toLowerCase());
+    if (match) {
+      showToast(`Duplicate Ack No! This petition already exists in ${match.ps_name}`, 'error');
+      return;
+    }
+
     const payload = {
-      ack_no: document.getElementById('newAckNo').value.trim(),
+      ack_no: ackNo,
       portal_type: document.getElementById('newPortalType').value,
       ps_name: document.getElementById('newPSSelect').value,
       petition_date: document.getElementById('newPetitionDate').value,
@@ -571,10 +749,11 @@ function setupEventListeners() {
         method: 'POST',
         body: payload
       });
-      showToast('New petition registered successfully!', 'success');
+      showToast('New petition registered successfully! (కొత్త పిటిషన్ నమోదైంది)', 'success');
       closeNewModal();
       loadPetitions(1);
       loadKPISummary();
+      loadStations();
     } catch (err) {
       showToast(err.message, 'error');
     }
@@ -603,6 +782,9 @@ function setupEventListeners() {
       showToast(err.message, 'error');
     }
   });
+
+  // Setup Excel dropzone
+  setupExcelDropzone();
 }
 
 // Logout
@@ -855,6 +1037,378 @@ function openNewPetitionModal() {
 
 function closeNewModal() {
   document.getElementById('newPetitionModal').style.display = 'none';
+}
+
+// ==================== EXCEL / CSV IMPORT & ZERO-DUPLICATE GUARD ====================
+let stagedImportPetitions = [];
+let stagedDuplicateCount = 0;
+
+function openExcelImportModal() {
+  stagedImportPetitions = [];
+  stagedDuplicateCount = 0;
+  const fileInput = document.getElementById('excelFileInput');
+  if (fileInput) fileInput.value = '';
+  const pasteArea = document.getElementById('excelPasteArea');
+  if (pasteArea) pasteArea.value = '';
+  document.getElementById('selectedFileName').style.display = 'none';
+  document.getElementById('importLoading').style.display = 'none';
+  document.getElementById('importSummarySection').style.display = 'none';
+  const confirmBtn = document.getElementById('confirmImportBtn');
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = '✅ Confirm & Import New Petitions (కొత్త పిటిషన్లను చేర్చండి)';
+  switchImportMethod('file');
+  document.getElementById('excelImportModal').style.display = 'flex';
+}
+
+function closeExcelImportModal() {
+  document.getElementById('excelImportModal').style.display = 'none';
+}
+
+function switchImportMethod(method) {
+  const fileSec = document.getElementById('importFileSection');
+  const pasteSec = document.getElementById('importPasteSection');
+  const fileBtn = document.getElementById('importTabFileBtn');
+  const pasteBtn = document.getElementById('importTabPasteBtn');
+
+  if (method === 'file') {
+    fileSec.style.display = 'block';
+    pasteSec.style.display = 'none';
+    fileBtn.className = 'btn-primary';
+    fileBtn.style.background = '#0b1e3f';
+    pasteBtn.className = 'btn-secondary';
+    pasteBtn.style.background = '';
+  } else {
+    fileSec.style.display = 'none';
+    pasteSec.style.display = 'block';
+    pasteBtn.className = 'btn-primary';
+    pasteBtn.style.background = '#0b1e3f';
+    fileBtn.className = 'btn-secondary';
+    fileBtn.style.background = '';
+  }
+}
+
+function setupExcelDropzone() {
+  const dropzone = document.getElementById('excelDropzone');
+  if (!dropzone) return;
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('dragover');
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('dragover');
+    }, false);
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files && files.length > 0) {
+      handleExcelFile(files[0]);
+    }
+  });
+}
+
+function handleExcelFileSelect(event) {
+  const file = event.target.files[0];
+  if (file) handleExcelFile(file);
+}
+
+function handleExcelFile(file) {
+  const nameLabel = document.getElementById('selectedFileName');
+  nameLabel.textContent = `📄 Selected File: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+  nameLabel.style.display = 'block';
+
+  document.getElementById('importLoading').style.display = 'block';
+  document.getElementById('importSummarySection').style.display = 'none';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      if (typeof XLSX === 'undefined') {
+        throw new Error('Excel parsing library is initializing, please try again in a moment');
+      }
+      const workbook = XLSX.read(data, { type: 'array' });
+      let sheetName = workbook.SheetNames[0];
+      const ws = workbook.Sheets[sheetName];
+      const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      processRawRows(rawRows);
+    } catch (err) {
+      document.getElementById('importLoading').style.display = 'none';
+      showToast('Error reading Excel: ' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function analyzePastedData() {
+  const text = document.getElementById('excelPasteArea').value.trim();
+  if (!text) {
+    showToast('Please paste data copied from Excel or Sheets first', 'warning');
+    return;
+  }
+
+  document.getElementById('importLoading').style.display = 'block';
+  document.getElementById('importSummarySection').style.display = 'none';
+
+  setTimeout(() => {
+    try {
+      const lines = text.split(/\r?\n/).map(l => l.split('\t'));
+      processRawRows(lines);
+    } catch (err) {
+      document.getElementById('importLoading').style.display = 'none';
+      showToast('Error parsing pasted data: ' + err.message, 'error');
+    }
+  }, 100);
+}
+
+// Intelligent Column Mapper & 100% Zero-Duplicate Guard
+function processRawRows(matrix) {
+  document.getElementById('importLoading').style.display = 'none';
+  if (!matrix || matrix.length < 2) {
+    showToast('Sheet has no data rows to import', 'warning');
+    return;
+  }
+
+  let headerRowIndex = 0;
+  for (let i = 0; i < Math.min(6, matrix.length); i++) {
+    const rowStr = matrix[i].map(c => String(c).toLowerCase()).join(' ');
+    if (rowStr.includes('ack') || rowStr.includes('complain') || rowStr.includes('police') || rowStr.includes('loss') || rowStr.includes('lost')) {
+      headerRowIndex = i;
+      break;
+    }
+  }
+
+  const headers = matrix[headerRowIndex].map(h => String(h || '').trim().toLowerCase());
+  
+  const getCol = (keywords) => {
+    return headers.findIndex(h => keywords.some(k => h.includes(k)));
+  };
+
+  const colAck = getCol(['ack', 'complaint no', 'petition no', 'reference']);
+  const colDate = getCol(['date', 'reg date']);
+  const colPS = getCol(['police station', 'ps name', 'station', 'ps']);
+  const colName = getCol(['complainant name', 'victim name', 'complainant', 'victim', 'name']);
+  const colPhone = getCol(['phone', 'mobile', 'contact']);
+  const colAge = getCol(['age']);
+  const colAddress = getCol(['address', 'village', 'native']);
+  const colCategory = getCol(['category']);
+  const colSubCat = getCol(['sub category', 'sub-category']);
+  const colMO = getCol(['modus operandi', 'mo', 'fraud type']);
+  const colLost = getCol(['lost amount', 'loss amount', 'amount lost', 'lost']);
+  const colHold = getCol(['hold amount', 'amount hold', 'freeze amount', 'hold', 'freeze']);
+  const colStatus = getCol(['status', 'current status']);
+  const colFIR = getCol(['fir number', 'fir no', 'cr no', 'crime no', 'fir']);
+  const colAction = getCol(['action taken', 'action', 'investigation', 'remarks']);
+
+  if (colAck === -1) {
+    showToast('Could not find "Ack Number" column in header. Please ensure your sheet has an Ack No column.', 'error');
+    return;
+  }
+
+  // Build lookup map of all existing petitions in database
+  const existingAcksMap = new Map();
+  staticPetitions.forEach(p => {
+    const clean = String(p.ack_no || '').trim().toLowerCase();
+    if (clean) {
+      existingAcksMap.set(clean, {
+        ack_no: p.ack_no,
+        ps_name: p.ps_name,
+        petition_date: p.petition_date,
+        complainant_name: p.complainant_name
+      });
+    }
+  });
+
+  const batchAcksSet = new Set();
+  const processedRows = [];
+  let newCount = 0;
+  let dupCount = 0;
+  let invalidCount = 0;
+
+  for (let r = headerRowIndex + 1; r < matrix.length; r++) {
+    const row = matrix[r];
+    if (!row || row.every(cell => String(cell || '').trim() === '')) {
+      continue;
+    }
+
+    const rawAck = String(row[colAck] || '').trim();
+    const cleanAck = rawAck.toLowerCase();
+
+    if (!rawAck || rawAck === '-' || cleanAck === 'ack no' || cleanAck === 'acknowledgement no') {
+      invalidCount++;
+      continue;
+    }
+
+    let ps = (colPS !== -1 && row[colPS]) ? String(row[colPS]).trim() : '';
+    if (!ps && currentUser && currentUser.role === 'station') {
+      ps = currentUser.psName;
+    }
+    if (ps) {
+      const matchSt = staticStations.find(s => s.name.toLowerCase() === ps.toLowerCase() || s.name.toLowerCase().includes(ps.toLowerCase()));
+      if (matchSt) ps = matchSt.name;
+    }
+    if (!ps) ps = 'District Police Office, Srikakulam';
+
+    const petitionDate = (colDate !== -1 && row[colDate]) ? String(row[colDate]).trim() : new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+    const compName = (colName !== -1 && row[colName]) ? String(row[colName]).trim() : 'Unknown';
+    const compPhone = (colPhone !== -1 && row[colPhone]) ? String(row[colPhone]).trim() : '';
+    const victimAge = (colAge !== -1 && row[colAge]) ? String(row[colAge]).trim() : '';
+    const compAddress = (colAddress !== -1 && row[colAddress]) ? String(row[colAddress]).trim() : '';
+    const category = (colCategory !== -1 && row[colCategory]) ? String(row[colCategory]).trim() : 'Online Financial Fraud';
+    const subCat = (colSubCat !== -1 && row[colSubCat]) ? String(row[colSubCat]).trim() : 'UPI Related Frauds';
+    const mo = (colMO !== -1 && row[colMO]) ? String(row[colMO]).trim() : 'Other';
+    const lost = (colLost !== -1 && row[colLost]) ? (parseFloat(String(row[colLost]).replace(/[^0-9.]/g, '')) || 0) : 0;
+    const hold = (colHold !== -1 && row[colHold]) ? (parseFloat(String(row[colHold]).replace(/[^0-9.]/g, '')) || 0) : 0;
+    const status = (colStatus !== -1 && row[colStatus]) ? String(row[colStatus]).trim() : 'Under Process';
+    const fir = (colFIR !== -1 && row[colFIR]) ? String(row[colFIR]).trim() : '';
+    const action = (colAction !== -1 && row[colAction]) ? String(row[colAction]).trim() : '';
+
+    const petitionItem = {
+      ack_no: rawAck,
+      petition_date: petitionDate,
+      ps_name: ps,
+      complainant_name: compName,
+      complainant_phone: compPhone,
+      victim_age: victimAge,
+      complainant_address: compAddress,
+      category,
+      sub_category: subCat,
+      mo,
+      lost_amount: lost,
+      hold_amount: hold,
+      status,
+      fir_number: fir,
+      action_taken: action
+    };
+
+    // ZERO-DUPLICATE CHECK:
+    let isDuplicate = false;
+    let dupReason = '';
+
+    if (existingAcksMap.has(cleanAck)) {
+      isDuplicate = true;
+      const exist = existingAcksMap.get(cleanAck);
+      dupReason = `Already in system (${exist.ps_name} - ${exist.petition_date})`;
+    } else if (batchAcksSet.has(cleanAck)) {
+      isDuplicate = true;
+      dupReason = 'Duplicate row within this Excel';
+    }
+
+    if (isDuplicate) {
+      dupCount++;
+      petitionItem.isDuplicate = true;
+      petitionItem.reason = dupReason;
+    } else {
+      newCount++;
+      batchAcksSet.add(cleanAck);
+      petitionItem.isDuplicate = false;
+      petitionItem.reason = '🟢 New Unique Petition';
+    }
+
+    processedRows.push(petitionItem);
+  }
+
+  stagedImportPetitions = processedRows.filter(p => !p.isDuplicate);
+  stagedDuplicateCount = dupCount;
+
+  // Render Summary
+  document.getElementById('sumTotalRows').textContent = processedRows.length;
+  document.getElementById('sumNewRows').textContent = newCount;
+  document.getElementById('sumDupRows').textContent = dupCount;
+  document.getElementById('sumInvalidRows').textContent = invalidCount;
+
+  const alertBox = document.getElementById('importAlertBox');
+  if (newCount > 0) {
+    alertBox.style.background = '#dcfce7';
+    alertBox.style.color = '#15803d';
+    alertBox.style.border = '1px solid #86efac';
+    alertBox.innerHTML = `✅ <strong>${newCount} కొత్త పిటిషన్లు సిద్ధంగా ఉన్నాయి.</strong> ${dupCount} మునుపటి రోజుల్లో నమోదైన డూప్లికేట్లు విజయవంతంగా ఫిల్టర్ చేయబడ్డాయి (Zero Duplicates)!`;
+    document.getElementById('confirmImportBtn').disabled = false;
+    document.getElementById('confirmImportBtn').textContent = `✅ Confirm & Import ${newCount} New Petitions (చేర్చండి)`;
+  } else {
+    alertBox.style.background = '#fee2e2';
+    alertBox.style.color = '#b91c1c';
+    alertBox.style.border = '1px solid #fca5a5';
+    alertBox.innerHTML = `⚠️ <strong>కొత్త పిటిషన్లు ఏవీ లేవు!</strong> ఎక్సెల్ లో ఉన్న ${dupCount} పిటిషన్లు అన్నీ ఇప్పటికే మన డేటాబేస్ లో నమోదై ఉన్నాయి (All are Duplicates).`;
+    document.getElementById('confirmImportBtn').disabled = true;
+    document.getElementById('confirmImportBtn').textContent = `⚠️ No New Petitions to Import (అన్నీ డూప్లికేట్లు)`;
+  }
+
+  // Render Preview Table
+  const tbody = document.getElementById('importPreviewTableBody');
+  tbody.innerHTML = '';
+  processedRows.slice(0, 100).forEach(p => {
+    const tr = document.createElement('tr');
+    tr.style.background = p.isDuplicate ? '#fef2f2' : '#f0fdf4';
+    tr.innerHTML = `
+      <td>
+        <span class="badge" style="${p.isDuplicate ? 'background:#fee2e2; color:#b91c1c;' : 'background:#dcfce7; color:#15803d;'}">
+          ${p.isDuplicate ? '⚠️ DUPLICATE' : '🟢 NEW'}
+        </span>
+      </td>
+      <td><strong>${p.ack_no}</strong></td>
+      <td>${p.petition_date}</td>
+      <td>${p.ps_name}</td>
+      <td>${p.complainant_name}</td>
+      <td>₹${p.lost_amount.toLocaleString('en-IN')}</td>
+      <td>₹${p.hold_amount.toLocaleString('en-IN')}</td>
+      <td style="font-size: 0.75rem; color: ${p.isDuplicate ? '#dc2626' : '#15803d'}; font-weight: 600;">
+        ${p.reason}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  if (processedRows.length > 100) {
+    const moreTr = document.createElement('tr');
+    moreTr.innerHTML = `<td colspan="8" style="text-align: center; color: #64748b; font-style: italic;">...and ${processedRows.length - 100} more rows</td>`;
+    tbody.appendChild(moreTr);
+  }
+
+  document.getElementById('importSummarySection').style.display = 'block';
+}
+
+async function confirmAndExecuteImport() {
+  if (!stagedImportPetitions || stagedImportPetitions.length === 0) {
+    showToast('No new petitions to import', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('confirmImportBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving & Updating Database... / నమోదు చేస్తోంది...';
+
+  try {
+    const res = await apiFetch('/api/petitions/bulk', {
+      method: 'POST',
+      body: { petitions: stagedImportPetitions }
+    });
+
+    showToast(`✅ ${res.insertedCount || stagedImportPetitions.length} New Petitions added! (${stagedDuplicateCount} duplicates skipped)`, 'success');
+    closeExcelImportModal();
+
+    // Reload all dashboard views immediately
+    loadPetitions(1);
+    loadKPISummary();
+    loadStations();
+    if (document.getElementById('abstractTab') && document.getElementById('abstractTab').style.display !== 'none') loadAbstractReport();
+    if (document.getElementById('holdRefundTab') && document.getElementById('holdRefundTab').style.display !== 'none') loadHoldRefundReport();
+
+  } catch (err) {
+    showToast('Failed to import petitions: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✅ Confirm & Import New Petitions (కొత్త పిటిషన్లను చేర్చండి)';
+  }
 }
 
 // Password Modal

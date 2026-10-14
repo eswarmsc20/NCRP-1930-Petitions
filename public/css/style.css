@@ -421,13 +421,101 @@ body {
   text-align: left;
 }
 
+.data-table thead tr {
+  background: #0b1e3f !important;
+}
+
+.data-table thead th,
 .data-table th {
-  background: #f1f5f9;
-  color: #334155;
-  font-weight: 600;
+  background: #0b1e3f !important;
+  color: #ffffff !important;
+  font-weight: 700;
   padding: 12px 14px;
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 2px solid #0f172a;
   white-space: nowrap;
+  font-size: 0.88rem;
+  letter-spacing: 0.3px;
+}
+
+/* Distinct column colors with crystal clear white text */
+.data-table thead th.th-fir,
+.data-table th.th-fir {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  font-weight: 800;
+}
+
+.data-table thead th.th-closed,
+.data-table th.th-closed {
+  background: #16a34a !important;
+  color: #ffffff !important;
+  font-weight: 800;
+}
+
+.data-table thead th.th-process,
+.data-table th.th-process {
+  background: #d97706 !important;
+  color: #ffffff !important;
+  font-weight: 800;
+}
+
+.data-table thead th.th-hold,
+.data-table th.th-hold {
+  background: #1e3a8a !important;
+  color: #ffffff !important;
+  font-weight: 800;
+}
+
+.data-table thead th.th-refund,
+.data-table th.th-refund {
+  background: #059669 !important;
+  color: #ffffff !important;
+  font-weight: 800;
+}
+
+.data-table thead th.th-gold,
+.data-table th.th-gold {
+  background: #c59b27 !important;
+  color: #0b1e3f !important;
+  font-weight: 800;
+}
+
+/* Excel Import Dropzone & Preview Styles */
+.dropzone-box {
+  border: 2px dashed #94a3b8;
+  border-radius: 8px;
+  padding: 24px 16px;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.dropzone-box:hover, .dropzone-box.dragover {
+  border-color: #059669;
+  background: #ecfdf5;
+}
+.import-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.import-summary-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  text-align: center;
+}
+.import-summary-val {
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+.import-summary-lbl {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
 .data-table td {

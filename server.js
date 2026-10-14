@@ -519,6 +519,15 @@ const server = http.createServer(async (req, res) => {
       const subDivision = station ? station.sub_division : '';
 
       const ackNo = (body.ack_no || '').trim() || `NCRP_${Date.now()}`;
+      
+      // Zero-Duplicate Check
+      const existing = db.prepare('SELECT id, ack_no, ps_name, petition_date FROM petitions WHERE LOWER(TRIM(ack_no)) = LOWER(TRIM(?))').get(ackNo);
+      if (existing) {
+        return sendJson(res, 400, {
+          error: `Duplicate Petition! Acknowledgment Number [${ackNo}] already registered in ${existing.ps_name} on ${existing.petition_date || 'N/A'}. డూప్లికేట్ ఎంట్రీ అనుమతించబడదు.`
+        });
+      }
+
       const portalType = body.portal_type || 'NCRP';
       const petitionDate = body.petition_date || new Date().toISOString().slice(0, 10).split('-').reverse().join('-');
       const complainantName = (body.complainant_name || '').trim();
@@ -573,6 +582,98 @@ const server = http.createServer(async (req, res) => {
       );
 
       return sendJson(res, 201, { success: true, message: 'New petition created successfully' });
+    }
+
+    // 9B. PETITIONS: Bulk Import from Excel / CSV with Zero-Duplicate Guard
+    if (pathname === '/api/petitions/bulk' && req.method === 'POST') {
+      const authUser = getAuthUser(req);
+      if (!authUser) {
+        return sendJson(res, 401, { error: 'Authentication required' });
+      }
+
+      const body = await parseJsonBody(req);
+      const rows = body.petitions || [];
+      if (!Array.isArray(rows) || rows.length === 0) {
+        return sendJson(res, 400, { error: 'No petitions provided for import' });
+      }
+
+      const existingAcks = new Set(
+        db.prepare('SELECT LOWER(TRIM(ack_no)) as ack FROM petitions').all().map(r => r.ack)
+      );
+
+      let insertedCount = 0;
+      let skippedDuplicates = 0;
+
+      const maxSl = db.prepare('SELECT MAX(sl_no) as max_sl FROM petitions').get();
+      let currentSl = (maxSl.max_sl || 0);
+
+      const insertStmt = db.prepare(`
+        INSERT INTO petitions (
+          sl_no, petition_date, ps_name, circle_name, sub_division,
+          portal_type, ack_no, complainant_name, complainant_phone, victim_age,
+          complainant_address, category, sub_category, lost_amount, hold_amount,
+          refund_amount, status, mo, action_taken, date_of_action, fir_number,
+          court_memo_filed, court_order_obtained, remarks, updated_by
+        ) VALUES (
+          ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?
+        )
+      `);
+
+      for (const item of rows) {
+        const rawAck = (item.ack_no || '').toString().trim();
+        const cleanAck = rawAck.toLowerCase();
+        if (!cleanAck || existingAcks.has(cleanAck)) {
+          skippedDuplicates++;
+          continue;
+        }
+
+        existingAcks.add(cleanAck);
+        currentSl++;
+
+        const station = db.prepare('SELECT * FROM stations WHERE name = ?').get(item.ps_name);
+        const circleName = station ? station.circle : (item.circle_name || '');
+        const subDivision = station ? station.sub_division : (item.sub_division || '');
+
+        insertStmt.run(
+          currentSl,
+          item.petition_date || new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+          item.ps_name || 'Cyber Crime PS, Srikakulam',
+          circleName,
+          subDivision,
+          item.portal_type || 'NCRP',
+          rawAck,
+          item.complainant_name || '',
+          item.complainant_phone || '',
+          (item.victim_age || '').toString(),
+          item.complainant_address || '',
+          item.category || 'Online Financial Fraud',
+          item.sub_category || 'UPI Related Frauds',
+          parseFloat(item.lost_amount) || 0,
+          parseFloat(item.hold_amount) || 0,
+          parseFloat(item.refund_amount) || 0,
+          item.status || 'Under Process',
+          item.mo || 'Other',
+          item.action_taken || '',
+          item.date_of_action || '',
+          item.fir_number || '',
+          item.court_memo_filed || 'No',
+          item.court_order_obtained || 'No',
+          item.remarks || '',
+          authUser.username
+        );
+        insertedCount++;
+      }
+
+      return sendJson(res, 200, {
+        success: true,
+        insertedCount,
+        skippedDuplicates,
+        message: `Successfully imported ${insertedCount} new petitions! ${skippedDuplicates} duplicate petitions skipped.`
+      });
     }
 
     // 10. REPORTS: Executive KPI Summary
