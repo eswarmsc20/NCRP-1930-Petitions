@@ -297,6 +297,7 @@
     /* Responsive Data Tables */
     .table-responsive-wrapper {
       overflow-x: auto;
+      overflow-y: auto;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
       background: white;
@@ -956,28 +957,63 @@
         <table class="court-table" id="abstractTable">
           <thead>
             <tr>
-              <th rowspan="2" style="text-align: center; vertical-align: middle;">S.No</th>
-              <th rowspan="2" style="vertical-align: middle;">Name of the PS / Circle / Sub-Division</th>
-              <th rowspan="2" style="text-align: center; vertical-align: middle;">Total Cases</th>
-              <th rowspan="2" style="text-align: right; vertical-align: middle;">Lost Amount (₹)</th>
-              <th rowspan="2" style="text-align: right; vertical-align: middle;">Hold Amount (₹)</th>
-              <th colspan="3" style="text-align: center; background: #1e3a8a; border-bottom: 1px solid rgba(255,255,255,0.2);">Court Memos</th>
-              <th colspan="3" style="text-align: center; background: #4338ca; border-bottom: 1px solid rgba(255,255,255,0.2);">Court Orders</th>
-              <th colspan="3" style="text-align: center; background: #15803d; border-bottom: 1px solid rgba(255,255,255,0.2);">Refunded From Bank</th>
-              <th colspan="2" style="text-align: center; background: #b91c1c; border-bottom: 1px solid rgba(255,255,255,0.2);">Pending From Bank</th>
-            </tr>
-            <tr>
-              <th style="text-align: center; background: #1e3a8a; font-size: 0.74rem;">Filed</th>
-              <th style="text-align: right; background: #1e3a8a; font-size: 0.74rem;">Amount (₹)</th>
-              <th style="text-align: center; background: #1e3a8a; font-size: 0.74rem;">Yet to File</th>
-              <th style="text-align: center; background: #4338ca; font-size: 0.74rem;">Received</th>
-              <th style="text-align: right; background: #4338ca; font-size: 0.74rem;">Ordered (₹)</th>
-              <th style="text-align: center; background: #4338ca; font-size: 0.74rem;">Pending</th>
-              <th style="text-align: center; background: #15803d; font-size: 0.74rem;">Full</th>
-              <th style="text-align: center; background: #15803d; font-size: 0.74rem;">Partial</th>
-              <th style="text-align: right; background: #15803d; font-size: 0.74rem;">Total Refund (₹)</th>
-              <th style="text-align: center; background: #b91c1c; font-size: 0.74rem;">Cases</th>
-              <th style="text-align: right; background: #b91c1c; font-size: 0.74rem;">Balance (₹)</th>
+              <th style="text-align: center; width: 45px; vertical-align: middle;">S.No</th>
+              <th style="vertical-align: middle;">Name of the PS / Circle / Sub-Division</th>
+              <th style="text-align: center; vertical-align: middle;">Total Cases</th>
+              <th style="text-align: right; vertical-align: middle;">Lost Amount (₹)</th>
+              <th style="text-align: right; vertical-align: middle;">Hold Amount (₹)</th>
+              
+              <!-- Court Memos (3 cols) -->
+              <th style="text-align: center; background: #1e3a8a; border-left: 2px solid rgba(255,255,255,0.25);">
+                <div style="font-size: 0.68rem; color: #93c5fd; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Court Memos</div>
+                <div>Filed</div>
+              </th>
+              <th style="text-align: right; background: #1e3a8a;">
+                <div style="font-size: 0.68rem; color: #93c5fd; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Court Memos</div>
+                <div>Amount (₹)</div>
+              </th>
+              <th style="text-align: center; background: #1e3a8a; border-right: 2px solid rgba(255,255,255,0.25);">
+                <div style="font-size: 0.68rem; color: #93c5fd; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Court Memos</div>
+                <div>Yet to File</div>
+              </th>
+
+              <!-- Court Orders (3 cols) -->
+              <th style="text-align: center; background: #4338ca; border-left: 2px solid rgba(255,255,255,0.25);">
+                <div style="font-size: 0.68rem; color: #c7d2fe; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Court Orders</div>
+                <div>Received</div>
+              </th>
+              <th style="text-align: right; background: #4338ca;">
+                <div style="font-size: 0.68rem; color: #c7d2fe; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Court Orders</div>
+                <div>Ordered (₹)</div>
+              </th>
+              <th style="text-align: center; background: #4338ca; border-right: 2px solid rgba(255,255,255,0.25);">
+                <div style="font-size: 0.68rem; color: #c7d2fe; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Court Orders</div>
+                <div>Pending</div>
+              </th>
+
+              <!-- Refunded From Bank (3 cols) -->
+              <th style="text-align: center; background: #15803d; border-left: 2px solid rgba(255,255,255,0.25);">
+                <div style="font-size: 0.68rem; color: #86efac; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Bank Refund</div>
+                <div>Full</div>
+              </th>
+              <th style="text-align: center; background: #15803d;">
+                <div style="font-size: 0.68rem; color: #86efac; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Bank Refund</div>
+                <div>Partial</div>
+              </th>
+              <th style="text-align: right; background: #15803d; border-right: 2px solid rgba(255,255,255,0.25);">
+                <div style="font-size: 0.68rem; color: #86efac; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Bank Refund</div>
+                <div>Total (₹)</div>
+              </th>
+
+              <!-- Pending From Bank (2 cols) -->
+              <th style="text-align: center; background: #b91c1c; border-left: 2px solid rgba(255,255,255,0.25);">
+                <div style="font-size: 0.68rem; color: #fca5a5; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Pending Bank</div>
+                <div>Cases</div>
+              </th>
+              <th style="text-align: right; background: #b91c1c;">
+                <div style="font-size: 0.68rem; color: #fca5a5; text-transform: uppercase; font-weight: 700; margin-bottom: 2px;">Pending Bank</div>
+                <div>Balance (₹)</div>
+              </th>
             </tr>
           </thead>
           <tbody id="abstractTableBody">
