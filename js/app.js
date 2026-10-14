@@ -682,16 +682,27 @@ async function initApp() {
 }
 
 function showLoginScreen() {
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('appScreen').style.display = 'none';
+  const login = document.getElementById('loginScreen');
+  const app = document.getElementById('appScreen');
+  const home = document.getElementById('portalHomeScreen');
+  if (login) login.style.display = 'flex';
+  if (app) app.style.display = 'none';
+  if (home) home.style.display = 'none';
 }
 
-function renderAuthenticatedUI() {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('appScreen').style.display = 'block';
+function renderAuthenticatedUI(preferredScreen = null) {
+  const login = document.getElementById('loginScreen');
+  if (login) login.style.display = 'none';
 
-  document.getElementById('userDisplayName').textContent = currentUser.displayName;
-  document.getElementById('userCircleLabel').textContent = currentUser.circle ? `(${currentUser.circle})` : '';
+  const displayName = currentUser.displayName || currentUser.username || 'Authorized Police Station';
+  const circleText = currentUser.circle ? `(${currentUser.circle})` : '';
+
+  if (document.getElementById('userDisplayName')) document.getElementById('userDisplayName').textContent = displayName;
+  if (document.getElementById('userCircleLabel')) document.getElementById('userCircleLabel').textContent = circleText;
+  if (document.getElementById('homeUserDisplayName')) document.getElementById('homeUserDisplayName').textContent = displayName;
+  if (document.getElementById('homeUserCircleLabel')) document.getElementById('homeUserCircleLabel').textContent = circleText;
+  if (document.getElementById('homeBannerStation')) document.getElementById('homeBannerStation').textContent = displayName;
+  if (document.getElementById('homeBannerCircle')) document.getElementById('homeBannerCircle').textContent = currentUser.circle ? `${currentUser.circle} Circle` : 'District Cyber Command';
 
   if (currentUser.role === 'admin') {
     document.getElementById('adminUsersTabBtn').style.display = 'inline-flex';
@@ -705,7 +716,42 @@ function renderAuthenticatedUI() {
   loadKPISummary();
   loadPetitions(1);
   renderMOGuide();
+
+  // Route to preferred screen or hash
+  const hash = window.location.hash;
+  if (preferredScreen === 'ncrp' || hash === '#ncrp') {
+    openPortalModule('ncrp');
+  } else {
+    showPortalHomeScreen();
+  }
 }
+
+function showPortalHomeScreen() {
+  const login = document.getElementById('loginScreen');
+  const app = document.getElementById('appScreen');
+  const home = document.getElementById('portalHomeScreen');
+  if (login) login.style.display = 'none';
+  if (app) app.style.display = 'none';
+  if (home) home.style.display = 'block';
+  window.location.hash = '#home';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openPortalModule(mod) {
+  if (mod === 'ncrp') {
+    const home = document.getElementById('portalHomeScreen');
+    const app = document.getElementById('appScreen');
+    if (home) home.style.display = 'none';
+    if (app) app.style.display = 'block';
+    window.location.hash = '#ncrp';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (mod === 'court-refunds') {
+    window.location.href = 'court-refunds.html';
+  }
+}
+
+window.showPortalHomeScreen = showPortalHomeScreen;
+window.openPortalModule = openPortalModule;
 
 // Setup Event Listeners
 function setupEventListeners() {
@@ -955,8 +1001,14 @@ async function loadKPISummary() {
 
     document.getElementById('kpiTotalPetitions').textContent = (s.total_petitions || 0).toLocaleString('en-IN');
     document.getElementById('tabBadgePetitions').textContent = (s.total_petitions || 0).toLocaleString('en-IN');
+    if (document.getElementById('homeKpiPetitions')) {
+      document.getElementById('homeKpiPetitions').textContent = (s.total_petitions || 0).toLocaleString('en-IN');
+    }
     document.getElementById('kpiTotalLost').textContent = formatINR(s.total_lost);
     document.getElementById('kpiTotalHold').textContent = formatINR(s.total_hold);
+    if (document.getElementById('homeKpiHold')) {
+      document.getElementById('homeKpiHold').textContent = formatINR(s.total_hold);
+    }
     document.getElementById('kpiHoldCases').textContent = `${(s.hold_cases_count || 0)} Accounts Secured`;
     document.getElementById('kpiTotalRefund').textContent = formatINR(s.total_refund);
     document.getElementById('kpiFIRCount').textContent = (s.fir_count || 0).toLocaleString('en-IN');

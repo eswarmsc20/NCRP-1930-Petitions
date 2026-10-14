@@ -49,6 +49,167 @@
     </div>
   </div>
 
+  <!-- ==================== CENTRAL PORTAL HOME / MODULE SELECTOR ==================== -->
+  <div id="portalHomeScreen" class="portal-home-screen" style="display: none;">
+    <!-- Police Header for Hub -->
+    <header class="police-header">
+      <div class="header-container">
+        <div class="police-branding">
+          <div class="police-emblem emblem-left" title="Andhra Pradesh Police">
+            <img src="./images/ap_police_logo.png" alt="Andhra Pradesh Police" class="police-emblem-img">
+          </div>
+          <div class="police-titles">
+            <h1>
+              SRIKAKULAM DISTRICT POLICE
+              <span class="portal-tag">CYBER CRIME COMMAND PORTAL</span>
+            </h1>
+            <div class="telugu-sub">శ్రీకాకుళం జిల్లా పోలీస్ - సైబర్ క్రైమ్ సమగ్ర పోర్టల్ & రిపోర్టింగ్ వ్యవస్థ</div>
+          </div>
+          <div class="police-emblem emblem-right" title="Srikakulam District Police">
+            <img src="./images/srikakulam_police_logo.png" alt="Srikakulam District Police" class="police-emblem-img">
+          </div>
+        </div>
+
+        <div class="header-user-panel">
+          <div class="station-badge">
+            <div class="badge-icon"></div>
+            <span id="homeUserDisplayName">Srikakulam I Town PS</span>
+            <span id="homeUserCircleLabel" style="font-size: 0.72rem; color: #fde047;">(Srikakulam Rural Circle)</span>
+          </div>
+          <button class="btn-header" onclick="openChangePasswordModal()">
+            🔑 Password
+          </button>
+          <button class="btn-header btn-logout" onclick="logout()">
+            ⏻ Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="portal-home-container">
+      <!-- Welcome Banner -->
+      <div class="portal-welcome-banner">
+        <div class="portal-welcome-text">
+          <h2>Welcome to Cyber Crime Command Center</h2>
+          <div class="telugu-welcome">డిస్ట్రిక్ట్ సైబర్ క్రైమ్ మేనేజ్‌మెంట్ & రికవరీ వ్యవస్థకు స్వాగతం</div>
+          <p>Select a departmental module below to access records, manage petitions, and track recoveries:</p>
+        </div>
+        <div class="portal-welcome-badge">
+          <div class="station-title" id="homeBannerStation">Srikakulam I Town PS</div>
+          <div class="role-sub" id="homeBannerCircle">Authorized District User</div>
+        </div>
+      </div>
+
+      <div class="portal-modules-header">
+        <h3>🏛️ Police Department Modules / అందుబాటులో ఉన్న విభాగాలు</h3>
+        <p>Choose an operational module to open petitions, court orders, or analytical records:</p>
+      </div>
+
+      <!-- Modules 3-Column Grid -->
+      <div class="modules-grid">
+        <!-- MODULE 1: NCRP & 1930 PETITIONS -->
+        <div class="module-card card-ncrp">
+          <div class="module-card-top">
+            <div class="module-card-tag">📋 Module 01 • Master Petitions</div>
+            <h4 class="module-card-title">1. NCRP & 1930 Petitions</h4>
+            <div class="module-card-telugu">ఎన్‌సిఆర్‌పి & 1930 సైబర్ పిటిషన్ల సమగ్ర నిర్వహణ</div>
+            <p class="module-card-desc">
+              National Cyber Crime Reporting Portal (NCRP) మరియు 1930 హెల్ప్‌లైన్ ఫిర్యాదుల 24-కాలమ్ల మాస్టర్ రిపోర్ట్, హోల్డ్ స్లాబ్‌లు, మరియు పోలీస్ స్టేషన్ స్టేట్‌మెంట్లు.
+            </p>
+
+            <div class="module-metrics-pill">
+              <div class="metric-item">
+                <span class="m-label">Total Petitions</span>
+                <span class="m-val" id="homeKpiPetitions" style="color: #1e3a8a;">1,886</span>
+              </div>
+              <div class="metric-item">
+                <span class="m-label">Hold / Frozen</span>
+                <span class="m-val" id="homeKpiHold" style="color: #047857;">₹1.56 Cr</span>
+              </div>
+              <div class="metric-item">
+                <span class="m-label">Secured Accounts</span>
+                <span class="m-val">417 Accts</span>
+              </div>
+              <div class="metric-item">
+                <span class="m-label">FIRs Registered</span>
+                <span class="m-val" style="color: #b91c1c;">29 FIRs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="module-card-footer">
+            <button class="btn-module-open btn-module-ncrp" onclick="openPortalModule('ncrp')">
+              🚀 Open NCRP & 1930 Portal / ప్రవేశించండి ➔
+            </button>
+          </div>
+        </div>
+
+        <!-- MODULE 2: COURT REFUNDS STATUS -->
+        <div class="module-card card-court">
+          <div class="module-card-top">
+            <div class="module-card-tag">⚖️ Module 02 • Recovery & Refunds</div>
+            <h4 class="module-card-title">2. Court Refund Status</h4>
+            <div class="module-card-telugu">కోర్టు రీఫండ్ మెమోలు & బాధితులకు జమ అయిన వివరాలు (2021-2026)</div>
+            <p class="module-card-desc">
+              గౌరవ న్యాయస్థానాల్లో దాఖలు చేసిన రీఫండ్ మెమోలు, సెక్షన్ 451/457 CrPC ఉత్తర్వులు, బ్యాంకుల నుండి రీఫండ్ రికవరీ మరియు పోలీస్ స్టేషన్ల వారీ అబ్‌స్ట్రాక్ట్.
+            </p>
+
+            <div class="module-metrics-pill">
+              <div class="metric-item">
+                <span class="m-label">Court FIR Cases</span>
+                <span class="m-val" style="color: #0b1e3f;">83 Cases</span>
+              </div>
+              <div class="metric-item">
+                <span class="m-label">Orders Issued</span>
+                <span class="m-val" style="color: #1d4ed8;">44 (₹1.20 Cr)</span>
+              </div>
+              <div class="metric-item">
+                <span class="m-label">Refunded to Victims</span>
+                <span class="m-val" style="color: #15803d;">₹58.47 L</span>
+              </div>
+              <div class="metric-item">
+                <span class="m-label">Bank Pending</span>
+                <span class="m-val" style="color: #dc2626;">₹61.74 L</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="module-card-footer">
+            <button class="btn-module-open btn-module-court" onclick="openPortalModule('court-refunds')">
+              ⚖️ Open Court Refunds Portal / ప్రవేశించండి ➔
+            </button>
+          </div>
+        </div>
+
+        <!-- MODULE 3: FUTURE EXTENSIBLE MODULE -->
+        <div class="module-card card-future">
+          <div class="module-card-top">
+            <div class="module-card-tag">✨ Future Module • Cyber Analytics</div>
+            <h4 class="module-card-title">3. Future Operations Hub</h4>
+            <div class="module-card-telugu">నూతన విభాగాలు / భవిష్యత్ డేటా షీట్ల కొరకు సిద్ధంగా ఉంది</div>
+            <p class="module-card-desc">
+              మరిన్ని నూతన డేటా షీట్లు (CDR / IPDR అనలిటిక్స్, సైబర్ మోసగాళ్ల నిఘా, సీమ్ కార్డులు & డివైజ్ ప్రొఫైలింగ్) నేరుగా ఇక్కడ అమర్చబడతాయి.
+            </p>
+
+            <div class="module-metrics-pill" style="grid-template-columns: 1fr;">
+              <div class="metric-item">
+                <span class="m-label">Integration Status</span>
+                <span class="m-val" style="color: #7c3aed; font-size: 0.95rem;">Ready to Slot In New Data Sheets</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="module-card-footer">
+            <button class="btn-module-open btn-module-future" disabled>
+              ⏳ Future Module / సిద్ధంగా ఉంది
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== MAIN APPLICATION ==================== -->
   <div id="appScreen" style="display: none;">
     <!-- Police Header -->
@@ -76,6 +237,9 @@
             <span id="userDisplayName">Srikakulam I Town PS</span>
             <span id="userCircleLabel" style="font-size: 0.72rem; color: #fde047;">(Srikakulam Rural Circle)</span>
           </div>
+          <button class="btn-header" onclick="showPortalHomeScreen()" style="background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.4); color: #ffffff; font-weight: 700;" title="Return to Portal Home Module Selector">
+            🏠 Portal Home / హోమ్
+          </button>
           <a href="court-refunds.html" class="btn-header" style="background: rgba(16, 185, 129, 0.25); border-color: #34d399; color: #a7f3d0; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" title="Financial Cases Refund Memos filed in Hon'ble Courts (2021-2026)">
             ⚖️ Court Refund Orders (83 FIRs)
           </a>
