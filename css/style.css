@@ -46,16 +46,19 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
+  justify-content: center;
+  gap: 12px;
 }
 
 .police-branding {
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
+  text-align: center;
+  gap: 20px;
+  width: 100%;
 }
 
 .police-emblem {
@@ -100,20 +103,30 @@ body {
   transform: scale(1.05);
 }
 
+.police-titles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
 .police-titles h1 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
   color: #ffffff;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
 }
 
 .police-titles .telugu-sub {
-  font-size: 0.85rem;
-  color: #e2e8f0;
+  font-size: 0.88rem;
+  color: #f1f5f9;
   font-weight: 500;
+  margin-top: 4px;
 }
 
 .police-titles .portal-tag {
@@ -121,16 +134,21 @@ body {
   border: 1px solid var(--accent-gold);
   color: #fde047;
   font-size: 0.72rem;
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: 4px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
 .header-user-panel {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 12px;
+  width: 100%;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .station-badge {
