@@ -264,6 +264,37 @@ async function handleStaticApi(url, options = {}) {
     const totalLost = pets.reduce((acc, p) => acc + (p.lost_amount || 0), 0);
     const totalHold = pets.reduce((acc, p) => acc + (p.hold_amount || 0), 0);
 
+    const sortBy = searchParams.get('sort_by') || 'sl_no';
+    const sortOrder = (searchParams.get('sort_order') || 'asc').toLowerCase();
+
+    pets.sort((a, b) => {
+      let valA = a[sortBy];
+      let valB = b[sortBy];
+      if (valA === undefined || valA === null) valA = '';
+      if (valB === undefined || valB === null) valB = '';
+
+      if (sortBy === 'lost_amount' || sortBy === 'hold_amount' || sortBy === 'sl_no' || sortBy === 'id') {
+        const numA = parseFloat(valA) || 0;
+        const numB = parseFloat(valB) || 0;
+        return sortOrder === 'desc' ? numB - numA : numA - numB;
+      }
+      if (sortBy === 'petition_date') {
+        const parseD = (d) => {
+          if (!d) return 0;
+          const parts = String(d).split(/[-/]/);
+          if (parts.length === 3) {
+            if (parts[0].length === 4) return new Date(parts[0], parts[1]-1, parts[2]).getTime();
+            return new Date(parts[2], parts[1]-1, parts[0]).getTime();
+          }
+          return new Date(d).getTime() || 0;
+        };
+        const tA = parseD(valA);
+        const tB = parseD(valB);
+        return sortOrder === 'desc' ? tB - tA : tA - tB;
+      }
+      return sortOrder === 'desc' ? String(valB).localeCompare(String(valA)) : String(valA).localeCompare(String(valB));
+    });
+
     const page = Math.max(1, parseInt(searchParams.get('page')) || 1);
     const limit = Math.min(1000, parseInt(searchParams.get('limit')) || 25);
     const offset = (page - 1) * limit;
@@ -874,6 +905,39 @@ function setTableViewMode(mode) {
   loadPetitions(currentPetitionsPage);
 }
 
+// Sorting state and helpers
+let currentSortColumn = 'sl_no';
+let currentSortOrder = 'asc';
+
+function sortTableBy(col) {
+  if (currentSortColumn === col) {
+    currentSortOrder = (currentSortOrder === 'asc') ? 'desc' : 'asc';
+  } else {
+    currentSortColumn = col;
+    currentSortOrder = (col === 'lost_amount' || col === 'hold_amount' || col === 'petition_date') ? 'desc' : 'asc';
+  }
+
+  const sortByEl = document.getElementById('sortByFilter');
+  if (sortByEl) {
+    if (col === 'sl_no') sortByEl.value = currentSortOrder === 'desc' ? 'sl_desc' : 'sl_asc';
+    else if (col === 'petition_date') sortByEl.value = currentSortOrder === 'desc' ? 'date_desc' : 'date_asc';
+    else if (col === 'lost_amount') sortByEl.value = currentSortOrder === 'desc' ? 'lost_desc' : 'lost_asc';
+    else if (col === 'hold_amount') sortByEl.value = 'hold_desc';
+    else if (col === 'ps_name') sortByEl.value = 'ps_asc';
+    else if (col === 'ack_no') sortByEl.value = 'ack_asc';
+    else if (col === 'status') sortByEl.value = 'status_asc';
+  }
+
+  loadPetitions(1);
+}
+
+function getSortHeaderIndicator(col) {
+  if (currentSortColumn === col) {
+    return currentSortOrder === 'asc' ? ' <span style="color:#f59e0b;">▲</span>' : ' <span style="color:#f59e0b;">▼</span>';
+  }
+  return ' <span style="color:#94a3b8; font-size:0.72rem; opacity:0.7;">↕</span>';
+}
+
 // Load Petitions with filters
 async function loadPetitions(page = 1) {
   currentPetitionsPage = page;
@@ -888,12 +952,26 @@ async function loadPetitions(page = 1) {
   const portalType = portalEl ? portalEl.value : '';
   let ps = (currentUser && currentUser.role === 'station') ? currentUser.psName : document.getElementById('filterPS').value;
 
+  const sortVal = (document.getElementById('sortByFilter') ? document.getElementById('sortByFilter').value : 'sl_asc');
+  if (sortVal === 'sl_desc') { currentSortColumn = 'sl_no'; currentSortOrder = 'desc'; }
+  else if (sortVal === 'sl_asc') { currentSortColumn = 'sl_no'; currentSortOrder = 'asc'; }
+  else if (sortVal === 'date_desc') { currentSortColumn = 'petition_date'; currentSortOrder = 'desc'; }
+  else if (sortVal === 'date_asc') { currentSortColumn = 'petition_date'; currentSortOrder = 'asc'; }
+  else if (sortVal === 'lost_desc') { currentSortColumn = 'lost_amount'; currentSortOrder = 'desc'; }
+  else if (sortVal === 'lost_asc') { currentSortColumn = 'lost_amount'; currentSortOrder = 'asc'; }
+  else if (sortVal === 'hold_desc') { currentSortColumn = 'hold_amount'; currentSortOrder = 'desc'; }
+  else if (sortVal === 'ps_asc') { currentSortColumn = 'ps_name'; currentSortOrder = 'asc'; }
+  else if (sortVal === 'ack_asc') { currentSortColumn = 'ack_no'; currentSortOrder = 'asc'; }
+  else if (sortVal === 'status_asc') { currentSortColumn = 'status'; currentSortOrder = 'asc'; }
+
   const queryParams = new URLSearchParams({
     page,
     limit: currentPetitionsLimit,
     search,
     status,
-    mo
+    mo,
+    sort_by: currentSortColumn,
+    sort_order: currentSortOrder
   });
 
   if (ps) queryParams.set('ps_name', ps);
@@ -926,25 +1004,25 @@ function renderPetitionsTable(data) {
   if (isFullMode && table) table.classList.add('table-sheet-view');
   else if (table) table.classList.remove('table-sheet-view');
 
-  // Render Header based on Mode
+  // Render Header based on Mode with click-to-sort headers
   if (thead) {
     if (isFullMode) {
       thead.innerHTML = `
         <tr>
-          <th style="min-width: 50px;">SL NO</th>
-          <th style="min-width: 95px;">Date</th>
-          <th style="min-width: 140px;">Name of the PS</th>
-          <th style="min-width: 130px;">Circle Name</th>
+          <th style="min-width: 60px; cursor: pointer; user-select: none;" onclick="sortTableBy('sl_no')" title="Click to sort">SL NO${getSortHeaderIndicator('sl_no')}</th>
+          <th style="min-width: 95px; cursor: pointer; user-select: none;" onclick="sortTableBy('petition_date')" title="Click to sort">Date${getSortHeaderIndicator('petition_date')}</th>
+          <th style="min-width: 140px; cursor: pointer; user-select: none;" onclick="sortTableBy('ps_name')" title="Click to sort">Name of the PS${getSortHeaderIndicator('ps_name')}</th>
+          <th style="min-width: 130px; cursor: pointer; user-select: none;" onclick="sortTableBy('circle_name')" title="Click to sort">Circle Name${getSortHeaderIndicator('circle_name')}</th>
           <th style="min-width: 80px;">NCRP/1930</th>
-          <th style="min-width: 140px;">Acknowledgement No</th>
-          <th style="min-width: 160px;">Complaint name & Ph no</th>
+          <th style="min-width: 145px; cursor: pointer; user-select: none;" onclick="sortTableBy('ack_no')" title="Click to sort">Acknowledgement No${getSortHeaderIndicator('ack_no')}</th>
+          <th style="min-width: 160px; cursor: pointer; user-select: none;" onclick="sortTableBy('complainant_name')" title="Click to sort">Complaint name & Ph no${getSortHeaderIndicator('complainant_name')}</th>
           <th style="min-width: 70px;">Victim Age</th>
           <th style="min-width: 180px;">Complainant Address</th>
           <th style="min-width: 160px;">Category of Complaint</th>
           <th style="min-width: 180px;">Sub Category of Complaint</th>
-          <th style="min-width: 110px;">Lost Amount (₹)</th>
-          <th style="min-width: 110px;">Hold Amount (₹)</th>
-          <th class="th-process" style="min-width: 110px;">Status</th>
+          <th style="min-width: 120px; cursor: pointer; user-select: none;" onclick="sortTableBy('lost_amount')" title="Click to sort">Lost Amount (₹)${getSortHeaderIndicator('lost_amount')}</th>
+          <th style="min-width: 120px; cursor: pointer; user-select: none;" onclick="sortTableBy('hold_amount')" title="Click to sort">Hold Amount (₹)${getSortHeaderIndicator('hold_amount')}</th>
+          <th class="th-process" style="min-width: 110px; cursor: pointer; user-select: none;" onclick="sortTableBy('status')" title="Click to sort">Status${getSortHeaderIndicator('status')}</th>
           <th style="min-width: 220px;">Action taken by PS</th>
           <th style="min-width: 95px;">Date of Action</th>
           <th class="th-fir" style="min-width: 120px;">Whether FIR is Registered (Cr. No.)</th>
@@ -954,22 +1032,22 @@ function renderPetitionsTable(data) {
           <th style="min-width: 120px;">Lost Amount Details</th>
           <th style="min-width: 120px;">Hold Amount Details</th>
           <th style="min-width: 110px;">Time Line</th>
-          <th style="min-width: 130px;">Case Type (MO)</th>
+          <th style="min-width: 130px; cursor: pointer; user-select: none;" onclick="sortTableBy('mo')" title="Click to sort">Case Type (MO)${getSortHeaderIndicator('mo')}</th>
           <th style="min-width: 110px; text-align: center;">Action</th>
         </tr>
       `;
     } else {
       thead.innerHTML = `
         <tr>
-          <th style="width: 50px;">S.No</th>
-          <th>Date</th>
-          <th>Ack Number</th>
-          <th>Police Station</th>
-          <th>Complainant Details</th>
-          <th>Modus Operandi (MO)</th>
-          <th>Lost Amount (₹)</th>
-          <th>Hold Amount (₹)</th>
-          <th>Status</th>
+          <th style="width: 60px; cursor: pointer; user-select: none;" onclick="sortTableBy('sl_no')" title="Click to sort">S.No${getSortHeaderIndicator('sl_no')}</th>
+          <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('petition_date')" title="Click to sort">Date${getSortHeaderIndicator('petition_date')}</th>
+          <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('ack_no')" title="Click to sort">Ack Number${getSortHeaderIndicator('ack_no')}</th>
+          <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('ps_name')" title="Click to sort">Police Station${getSortHeaderIndicator('ps_name')}</th>
+          <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('complainant_name')" title="Click to sort">Complainant Details${getSortHeaderIndicator('complainant_name')}</th>
+          <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('mo')" title="Click to sort">Modus Operandi (MO)${getSortHeaderIndicator('mo')}</th>
+          <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('lost_amount')" title="Click to sort">Lost Amount (₹)${getSortHeaderIndicator('lost_amount')}</th>
+          <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('hold_amount')" title="Click to sort">Hold Amount (₹)${getSortHeaderIndicator('hold_amount')}</th>
+          <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('status')" title="Click to sort">Status${getSortHeaderIndicator('status')}</th>
           <th>FIR / Cr. No</th>
           <th>Action Taken</th>
           <th style="text-align: center;">Action</th>
@@ -1390,30 +1468,63 @@ function processRawRows(matrix) {
 
   const headers = matrix[headerRowIndex].map(h => String(h || '').trim().toLowerCase());
   
-  const getCol = (keywords) => {
-    return headers.findIndex(h => keywords.some(k => h.includes(k)));
+  const getCol = (keywords, exclude = []) => {
+    return headers.findIndex(h =>
+      keywords.some(k => h.includes(k)) &&
+      !exclude.some(ex => h.includes(ex))
+    );
   };
 
-  const colAck = getCol(['ack', 'complaint no', 'petition no', 'reference']);
-  const colDate = getCol(['date', 'reg date']);
-  const colPS = getCol(['police station', 'ps name', 'station', 'ps']);
-  const colName = getCol(['complainant name', 'victim name', 'complainant', 'victim', 'name']);
-  const colPhone = getCol(['phone', 'mobile', 'contact']);
+  const colAck = getCol(['acknowledgement', 'ack no', 'ack', 'complaint no', 'petition no', 'reference']);
+  const colDate = getCol(['complaint date', 'petition date', 'date', 'reg date', 'incident date'], ['last action', 'action', 'dob']);
+  const colPS = getCol(['police station', 'ps name', 'station name', 'station', 'ps'], ['circle', 'sub', 'state', 'district', 'action']);
+  
+  let colName = getCol(['complainant name', 'victim name'], ['state', 'district', 'suspect']);
+  if (colName === -1) {
+    colName = getCol(['complainant', 'victim', 'name'], ['state', 'district', 'station', 'suspect', 'police', 'circle', 'sub']);
+  }
+  
+  const colPhone = getCol(['complainant mobile', 'complainant phone', 'mobile no', 'mobile', 'phone', 'contact'], ['suspect']);
   const colAge = getCol(['age']);
-  const colAddress = getCol(['address', 'village', 'native']);
-  const colCategory = getCol(['category']);
+  const colAddress = getCol(['complainant address', 'victim address', 'address', 'village', 'native'], ['suspect', 'email', 'ip']);
+  const colCategory = getCol(['category'], ['sub']);
   const colSubCat = getCol(['sub category', 'sub-category']);
-  const colMO = getCol(['modus operandi', 'mo', 'fraud type']);
-  const colLost = getCol(['lost amount', 'loss amount', 'amount lost', 'lost']);
-  const colHold = getCol(['hold amount', 'amount hold', 'freeze amount', 'hold', 'freeze']);
-  const colStatus = getCol(['status', 'current status']);
+  const colCrimeInfo = getCol(['crime aditional', 'crime additional', 'crime info', 'additional information', 'description', 'brief']);
+  const colMO = getCol(['modus operandi', 'crime type', 'fraud type', 'case type'], ['mobile', 'model', 'mode']);
+  const colLost = getCol(['fraudulent amount', 'fraud amount', 'lost amount', 'loss amount', 'amount lost', 'lost', 'amount'], ['hold', 'freeze', 'refund']);
+  const colHold = getCol(['hold amount', 'amount hold', 'freeze amount', 'frozen amount', 'hold', 'freeze'], ['lost', 'loss', 'fraud']);
+  const colStatus = getCol(['status', 'current status'], ['timeline']);
   const colFIR = getCol(['fir number', 'fir no', 'cr no', 'crime no', 'fir']);
-  const colAction = getCol(['action taken', 'action', 'investigation', 'remarks']);
+  const colAction = getCol(['action taken', 'last action', 'action', 'investigation', 'remarks']);
 
   if (colAck === -1) {
     showToast('Could not find "Ack Number" column in header. Please ensure your sheet has an Ack No column.', 'error');
     return;
   }
+
+  // Deduce MO helper
+  const deduceMOFromText = (text, subCat, category) => {
+    const combined = ((text || '') + ' ' + (subCat || '') + ' ' + (category || '')).toLowerCase();
+    if (combined.includes('olx') || combined.includes('quikr') || combined.includes('guitar')) return 'OLX / Fake Seller Fraud';
+    if (combined.includes('stock') || combined.includes('share market') || combined.includes('trading') || combined.includes('invest')) return 'Investment / Stock Market';
+    if (combined.includes('part time') || combined.includes('job') || combined.includes('task') || combined.includes('telegram')) return 'Job / Part Time Job Fraud';
+    if (combined.includes('digital arrest') || combined.includes('fedex') || combined.includes('cbi') || combined.includes('customs')) return 'Digital Arrest';
+    if (combined.includes('loan') || combined.includes('apk')) return 'Loan App Fraud';
+    if (combined.includes('sextortion') || combined.includes('video call') || combined.includes('nude')) return 'Sextortion';
+    if (combined.includes('credit card') || combined.includes('debit card') || combined.includes('sim swap')) return 'Credit/Debit Card Fraud';
+    if (combined.includes('otp')) return 'OTP Fraud';
+    if (combined.includes('kyc') || combined.includes('sim kyc')) return 'KYC / SIM KYC';
+    if (combined.includes('screen sharing') || combined.includes('anydesk') || combined.includes('teamviewer') || combined.includes('rustdesk')) return 'Screen Sharing';
+    if (combined.includes('matrimonial') || combined.includes('dating')) return 'Matrimonial / Dating Fraud';
+    if (combined.includes('aeps') || combined.includes('aadhaar')) return 'AEPS Fraud';
+    if (combined.includes('lottery') || combined.includes('gift') || combined.includes('reward')) return 'Lottery / Fake Reward Fraud';
+    if (combined.includes('courier') || combined.includes('parcel')) return 'Courier / Parcel Scam';
+    if (combined.includes('electricity') || combined.includes('bill')) return 'Electricity Bill Scam';
+    if (combined.includes('customer care') || combined.includes('helpline')) return 'Customer Care Scam';
+    if (combined.includes('free fire') || combined.includes('gaming')) return 'Online Gaming / In-App Scam';
+    if (combined.includes('upi') || combined.includes('qr code') || combined.includes('gpay') || combined.includes('phonepe')) return 'UPI Related Frauds';
+    return subCat || 'Other Cyber Crime';
+  };
 
   // Build lookup map of all existing petitions in database
   const existingAcksMap = new Map();
@@ -1454,7 +1565,13 @@ function processRawRows(matrix) {
       ps = currentUser.psName;
     }
     if (ps) {
-      const matchSt = staticStations.find(s => s.name.toLowerCase() === ps.toLowerCase() || s.name.toLowerCase().includes(ps.toLowerCase()));
+      const cleanPs = ps.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const matchSt = staticStations.find(s => 
+        s.name.toLowerCase() === ps.toLowerCase() ||
+        s.name.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanPs ||
+        s.name.toLowerCase().includes(ps.toLowerCase()) ||
+        cleanPs.includes(s.name.toLowerCase().replace(/[^a-z0-9]/g, ''))
+      );
       if (matchSt) ps = matchSt.name;
     }
     if (!ps) ps = 'District Police Office, Srikakulam';
@@ -1466,10 +1583,21 @@ function processRawRows(matrix) {
     const compAddress = (colAddress !== -1 && row[colAddress]) ? String(row[colAddress]).trim() : '';
     const category = (colCategory !== -1 && row[colCategory]) ? String(row[colCategory]).trim() : 'Online Financial Fraud';
     const subCat = (colSubCat !== -1 && row[colSubCat]) ? String(row[colSubCat]).trim() : 'UPI Related Frauds';
-    const mo = (colMO !== -1 && row[colMO]) ? String(row[colMO]).trim() : 'Other';
+    const crimeDesc = (colCrimeInfo !== -1 && row[colCrimeInfo]) ? String(row[colCrimeInfo]).trim() : '';
+
+    let mo = (colMO !== -1 && row[colMO]) ? String(row[colMO]).trim() : '';
+    if (!mo || mo === 'Other' || /^\d+$/.test(mo)) {
+      mo = deduceMOFromText(crimeDesc, subCat, category);
+    }
+
     const lost = (colLost !== -1 && row[colLost]) ? (parseFloat(String(row[colLost]).replace(/[^0-9.]/g, '')) || 0) : 0;
     const hold = (colHold !== -1 && row[colHold]) ? (parseFloat(String(row[colHold]).replace(/[^0-9.]/g, '')) || 0) : 0;
-    const status = (colStatus !== -1 && row[colStatus]) ? String(row[colStatus]).trim() : 'Under Process';
+    
+    let status = (colStatus !== -1 && row[colStatus]) ? String(row[colStatus]).trim() : 'Under Process';
+    if (status.toLowerCase() === 'registered' || status.toLowerCase() === 'open') {
+      status = 'Under Process';
+    }
+
     const fir = (colFIR !== -1 && row[colFIR]) ? String(row[colFIR]).trim() : '';
     const action = (colAction !== -1 && row[colAction]) ? String(row[colAction]).trim() : '';
 
@@ -1488,7 +1616,8 @@ function processRawRows(matrix) {
       hold_amount: hold,
       status,
       fir_number: fir,
-      action_taken: action
+      action_taken: action,
+      remarks: crimeDesc
     };
 
     // ZERO-DUPLICATE CHECK:

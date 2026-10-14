@@ -235,6 +235,19 @@
               <option value="Other">Other Cyber Crime</option>
             </select>
 
+            <select id="sortByFilter" class="select-filter" onchange="applyFilters()">
+              <option value="sl_asc" selected>🔢 Sort: S.No 1 to 1886 (ఆరోహణ)</option>
+              <option value="sl_desc">🔢 Sort: S.No High to Low (తాజా S.No ముందుగా)</option>
+              <option value="date_desc">📅 Sort: Date Newest First (తాజా తేదీలు ముందుగా)</option>
+              <option value="date_asc">📅 Sort: Date Oldest First (పాత తేదీలు ముందుగా)</option>
+              <option value="lost_desc">💰 Sort: Lost Amount High to Low (ఎక్కువ నష్టం)</option>
+              <option value="lost_asc">💰 Sort: Lost Amount Low to High</option>
+              <option value="hold_desc">🔒 Sort: Hold Amount High to Low (ఎక్కువ హోల్డ్)</option>
+              <option value="ps_asc">🏢 Sort: Police Station (A to Z)</option>
+              <option value="ack_asc">🏷️ Sort: Ack No (A to Z)</option>
+              <option value="status_asc">⏳ Sort: Status</option>
+            </select>
+
             <button class="btn-primary" onclick="applyFilters()">
               Filter / శోధించండి
             </button>
