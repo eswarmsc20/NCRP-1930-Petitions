@@ -1,6 +1,8 @@
 node_modules/
 .DS_Store
 *.log
+*.db-shm
+*.db-wal
 .env
 scratch/
 test_sheet.csv

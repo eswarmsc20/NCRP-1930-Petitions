@@ -721,10 +721,19 @@ async function loadAbstractReport() {
       grandTotal.lost += (r.total_lost || 0);
       grandTotal.hold += (r.total_hold || 0);
 
+      const isMyStation = (currentUser && currentUser.role === 'station' && r.ps_name === currentUser.psName);
       const tr = document.createElement('tr');
+      if (isMyStation) {
+        tr.style.background = '#fef9c3';
+        tr.style.outline = '2px solid #ca8a04';
+      }
       tr.innerHTML = `
         <td>${r.sl_no}</td>
-        <td><strong>${r.ps_name}</strong> <span style="font-size: 0.72rem; color: #64748b;">(${r.circle})</span></td>
+        <td>
+          <strong>${r.ps_name}</strong>
+          ${isMyStation ? '<span class="badge" style="background:#ca8a04; color:white; margin-left:6px;">⭐ YOUR STATION</span>' : ''}
+          <span style="font-size: 0.72rem; color: #64748b;">(${r.circle})</span>
+        </td>
         <td style="font-weight: 700;">${r.total_cases}</td>
         <td style="font-weight: 700; color: #dc2626;">${r.fir_count}</td>
         <td>${r.nc_count}</td>
@@ -969,3 +978,91 @@ async function adminResetPassword(userId, username) {
     showToast(err.message, 'error');
   }
 }
+
+// STATION STATEMENT (PDF / PRINT)
+async function openStationStatementModal() {
+  const modal = document.getElementById('stationStatementModal');
+  modal.style.display = 'flex';
+
+  let targetPS = '';
+  let targetCircle = '';
+  let targetSubDiv = '';
+
+  if (currentUser && currentUser.role === 'station') {
+    targetPS = currentUser.psName;
+    targetCircle = currentUser.circle || '-';
+    targetSubDiv = currentUser.subDivision || '-';
+  } else {
+    // Admin: check selected PS in filter or default to first station
+    const filterPS = document.getElementById('filterPS').value;
+    targetPS = filterPS || 'Srikakulam I Town';
+    const found = allStationsList.find(s => s.name === targetPS);
+    targetCircle = found ? found.circle : '-';
+    targetSubDiv = found ? found.sub_division : '-';
+  }
+
+  // Update headers
+  document.getElementById('stmtStationTitle').textContent = `OFFICE OF THE STATION HOUSE OFFICER, ${targetPS.toUpperCase()} POLICE STATION`;
+  document.getElementById('stmtMetaPS').textContent = targetPS;
+  document.getElementById('stmtMetaCircle').textContent = targetCircle;
+  document.getElementById('stmtMetaSubDiv').textContent = targetSubDiv;
+  document.getElementById('stmtMetaDate').textContent = new Date().toLocaleString('en-IN');
+  document.querySelectorAll('.stmtSignPSName').forEach(el => el.textContent = targetPS);
+
+  const tbody = document.getElementById('stmtTableBody');
+  tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px;">Loading station petitions...</td></tr>';
+
+  try {
+    const data = await apiFetch(`/api/petitions?limit=1000&ps_name=${encodeURIComponent(targetPS)}`);
+    const petitions = data.petitions;
+
+    // Fill Summary KPI Box
+    document.getElementById('stmtTotalPetitions').textContent = petitions.length;
+    document.getElementById('stmtTotalLost').textContent = formatINR(data.totalLost);
+    document.getElementById('stmtTotalHold').textContent = formatINR(data.totalHold);
+
+    const firs = petitions.filter(p => p.status === 'FIR Registered').length;
+    const closed = petitions.filter(p => p.status === 'Closed').length;
+    const process = petitions.filter(p => p.status === 'Under Process').length;
+    const refunds = petitions.reduce((acc, p) => acc + (p.refund_amount || 0), 0);
+
+    document.getElementById('stmtFIRCount').textContent = firs;
+    document.getElementById('stmtClosedCount').textContent = closed;
+    document.getElementById('stmtProcessCount').textContent = process;
+    document.getElementById('stmtRefundVal').textContent = formatINR(refunds);
+
+    tbody.innerHTML = '';
+    if (petitions.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px;">No petitions recorded for this police station.</td></tr>';
+      return;
+    }
+
+    petitions.forEach((p, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="text-align: center;">${idx + 1}</td>
+        <td style="white-space: nowrap;">${p.petition_date}</td>
+        <td><strong>${p.ack_no}</strong></td>
+        <td>
+          <div>${p.complainant_name}</div>
+          <div style="font-size: 7pt; color: #475569;">${p.complainant_phone || ''}</div>
+        </td>
+        <td>${p.mo || '-'}</td>
+        <td style="font-weight: 600; text-align: right;">${p.lost_amount > 0 ? '₹' + p.lost_amount.toLocaleString('en-IN') : '-'}</td>
+        <td style="font-weight: 600; text-align: right; color: #15803d;">${p.hold_amount > 0 ? '₹' + p.hold_amount.toLocaleString('en-IN') : '-'}</td>
+        <td style="font-weight: 600;">${p.status}</td>
+        <td style="color: #dc2626; font-weight: 700;">${p.fir_number || '-'}</td>
+        <td style="font-size: 7.5pt; max-width: 260px;">${p.action_taken || '<em>Under enquiry</em>'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: red;">Failed to load data: ${err.message}</td></tr>`;
+  }
+}
+
+function closeStationStatementModal() {
+  document.getElementById('stationStatementModal').style.display = 'none';
+}
+

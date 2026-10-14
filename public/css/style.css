@@ -59,21 +59,27 @@ body {
 }
 
 .police-emblem {
-  width: 52px;
-  height: 52px;
-  background: white;
-  border-radius: 50%;
-  padding: 4px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 10px rgba(197, 155, 39, 0.4);
-  border: 2px solid var(--accent-gold);
 }
 
-.police-emblem svg {
-  width: 100%;
-  height: 100%;
+.police-emblem-img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
+
+.login-emblem-img {
+  width: 95px;
+  height: 95px;
+  object-fit: contain;
+  margin: 0 auto 12px;
+  display: block;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
 }
 
 .police-titles h1 {
@@ -775,18 +781,126 @@ body {
   to { transform: translateX(0); opacity: 1; }
 }
 
+/* Official Police PDF / Print Statement Styles */
+.statement-doc {
+  background: white;
+  padding: 30px;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.statement-header {
+  text-align: center;
+  border-bottom: 2px solid #0b1e3f;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+
+.statement-logo-img {
+  width: 75px;
+  height: 75px;
+  margin: 0 auto 8px;
+  display: block;
+  object-fit: contain;
+}
+
+.statement-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #0b1e3f;
+  letter-spacing: 0.5px;
+}
+
+.statement-subtitle {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-top: 2px;
+}
+
+.statement-telugu {
+  font-size: 0.85rem;
+  color: #b45309;
+  font-weight: 600;
+}
+
+.statement-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  margin-bottom: 18px;
+}
+
+.statement-summary-box {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.statement-summary-box .stat-item {
+  text-align: center;
+}
+
+.statement-summary-box .stat-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: #475569;
+  font-weight: 600;
+}
+
+.statement-summary-box .stat-val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0b1e3f;
+}
+
+.statement-signatures {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 50px;
+  padding-top: 20px;
+  border-top: 1px solid #cbd5e1;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
 /* Print styling */
 @media print {
-  .police-header, .nav-tabs-wrapper, .filter-bar, .pagination-bar, .btn-logout, .action-btn-sm {
+  .police-header, .kpi-ribbon, .nav-tabs-wrapper, .filter-bar, .pagination-bar, .btn-logout, .action-btn-sm, .modal-header, .modal-footer, .no-print {
     display: none !important;
   }
-  body, .tab-content, .app-container {
+  body, .tab-content, .app-container, .modal-overlay, .modal-card {
     background: white !important;
     padding: 0 !important;
     margin: 0 !important;
     box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: static !important;
   }
-  .data-table {
-    font-size: 9pt;
+  .data-table, .statement-doc table {
+    font-size: 8.5pt !important;
+  }
+  .data-table th, .statement-doc table th {
+    background-color: #f1f5f9 !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .statement-doc {
+    padding: 0 !important;
   }
 }
