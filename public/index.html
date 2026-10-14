@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Srikakulam District Police | NCRP & 1930 Management System</title>
-  <link rel="stylesheet" href="./css/style.css?v=3.7">
+  <link rel="stylesheet" href="./css/style.css?v=3.8">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="./js/xlsx.full.min.js"></script>
 </head>
@@ -666,11 +666,11 @@
 
   <!-- 1. EDIT / SUBMIT PETITION MODAL -->
   <div id="editPetitionModal" class="modal-overlay" style="display: none;">
-    <div class="modal-card">
+    <div class="modal-card" style="max-width: 940px;">
       <div class="modal-header">
         <div>
-          <h3 id="modalEditTitle">Update Petition Action (పిటిషన్ చర్య నమోదు చేయండి)</h3>
-          <div style="font-size: 0.75rem; color: #fde047;" id="modalEditAckSub">Ack No: 20201260000105</div>
+          <h3 id="modalEditTitle">Edit Petition Details (పిటిషన్ పూర్తి 24 కాలమ్స్ సవరణ)</h3>
+          <div style="font-size: 0.78rem; color: #fde047;" id="modalEditAckSub">Ack No: - | S.No: -</div>
         </div>
         <button class="modal-close-btn" onclick="closeEditModal()">&times;</button>
       </div>
@@ -678,49 +678,140 @@
       <form id="editPetitionForm">
         <input type="hidden" id="editPetitionId">
 
-        <div class="modal-body">
+        <div class="modal-body" style="padding: 20px 24px;">
           <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Police Station</label>
-              <input type="text" id="editPSName" class="form-input" readonly>
+
+            <!-- 1. Case & Registration Details -->
+            <div class="form-section-header">
+              📌 1. Case Registration Details / కేసు నమోదు వివరాలు
             </div>
 
             <div class="form-group">
-              <label class="form-label">Date of Complaint</label>
-              <input type="text" id="editDate" class="form-input" readonly>
+              <label class="form-label">S.No (క్రమ సంఖ్య) <span class="required">*</span></label>
+              <input type="number" id="editSlNo" class="form-input" required placeholder="e.g. 1886">
             </div>
 
             <div class="form-group">
-              <label class="form-label">Complainant Name & Phone</label>
-              <input type="text" id="editComplainant" class="form-input" readonly>
+              <label class="form-label">Acknowledgement No (ఫిర్యాదు నంబర్) <span class="required">*</span></label>
+              <input type="text" id="editAckNo" class="form-input" required placeholder="e.g. 20210260054770">
             </div>
 
             <div class="form-group">
-              <label class="form-label">Address</label>
-              <input type="text" id="editAddress" class="form-input" readonly>
+              <label class="form-label">Date of Complaint / Petition (తేదీ) <span class="required">*</span></label>
+              <input type="text" id="editDate" class="form-input" required placeholder="DD-MM-YYYY">
             </div>
 
             <div class="form-group">
-              <label class="form-label">Category / Sub-Category</label>
-              <input type="text" id="editCategorySub" class="form-input" readonly>
+              <label class="form-label">Portal Type (పోర్టల్) <span class="required">*</span></label>
+              <select id="editPortalType" class="form-select" required>
+                <option value="NCRP">NCRP Portal</option>
+                <option value="1930">1930 Helpline</option>
+              </select>
             </div>
 
             <div class="form-group">
-              <label class="form-label">Days Pending / Timeline</label>
-              <input type="text" id="editTimeline" class="form-input" readonly>
+              <label class="form-label">Police Station (పోలీస్ స్టేషన్) <span class="required">*</span></label>
+              <select id="editPSName" class="form-select" required onchange="onEditStationChange()">
+              </select>
             </div>
 
             <div class="form-group">
-              <label class="form-label">Lost Amount (₹)</label>
-              <input type="text" id="editLostAmount" class="form-input" readonly>
+              <label class="form-label">Circle (సర్కిల్)</label>
+              <input type="text" id="editCircleName" class="form-input" placeholder="e.g. Srikakulam II Town Circle">
+            </div>
+
+            <div class="form-group form-full">
+              <label class="form-label">Sub-Division (సబ్-డివిజన్)</label>
+              <input type="text" id="editSubDivision" class="form-input" placeholder="e.g. Srikakulam Sub-Division">
+            </div>
+
+            <!-- 2. Complainant & Victim Details -->
+            <div class="form-section-header">
+              👤 2. Complainant & Victim Details / ఫిర్యాదుదారుడి & బాధితుడి వివరాలు
             </div>
 
             <div class="form-group">
-              <label class="form-label">Hold / Frozen Amount (₹)</label>
-              <input type="number" id="editHoldAmount" class="form-input" placeholder="0">
+              <label class="form-label">Complainant Name (ఫిర్యాదుదారుడి పేరు) <span class="required">*</span></label>
+              <input type="text" id="editComplainantName" class="form-input" required placeholder="e.g. Lalith Abhilash Bantupalli">
             </div>
 
-            <!-- Editable fields -->
+            <div class="form-group">
+              <label class="form-label">Complainant Mobile No (మొబైల్ నంబర్)</label>
+              <input type="text" id="editComplainantPhone" class="form-input" placeholder="e.g. 7013115749">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Victim Age (బాధితుడి వయస్సు)</label>
+              <input type="text" id="editVictimAge" class="form-input" placeholder="e.g. 35">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Complainant Address (చిరునామా)</label>
+              <input type="text" id="editAddress" class="form-input" placeholder="Village / Town / Location">
+            </div>
+
+            <!-- 3. Crime Category & Financials -->
+            <div class="form-section-header">
+              ⚖️ 3. Crime Category & Financials / నేరం రకం & ఆర్థిక నష్టం
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Category (కేటగిరీ)</label>
+              <input type="text" id="editCategory" class="form-input" placeholder="e.g. Online Financial Fraud">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Sub-Category (సబ్-కేటగిరీ)</label>
+              <input type="text" id="editSubCategory" class="form-input" placeholder="e.g. Online Service Frauds">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Modus Operandi (MO) <span class="required">*</span> (మోసం రకం)</label>
+              <select id="editMO" class="form-select" required>
+                <option value="UPI Fraud">UPI Fraud</option>
+                <option value="Job">Job Fraud (ఉద్యోగ మోసం)</option>
+                <option value="OTP">OTP Fraud</option>
+                <option value="Loan">Loan App (రుణ యాప్ మోసం)</option>
+                <option value="Investement fraud">Investment / Trading Fraud (పెట్టుబడి మోసం)</option>
+                <option value="Sextortion">Cyber Sextortion (వీడియో కాల్ బెదిరింపు)</option>
+                <option value="Digital Arrest">Digital Arrest (డిజిటల్ అరెస్ట్)</option>
+                <option value="Screen Sharing">Screen Sharing (AnyDesk/TeamViewer)</option>
+                <option value="Fake Customer Care">Fake Customer Care</option>
+                <option value="Fake Website">Fake Website</option>
+                <option value="E-Commerce">E-Commerce Fraud</option>
+                <option value="Credit Card Fraud">Credit/Debit Card Fraud</option>
+                <option value="Social media">Social Media Harassment</option>
+                <option value="Facebook impersonating">Facebook / Social Impersonating</option>
+                <option value="Matrimonial">Matrimonial / Dating Fraud</option>
+                <option value="KYC">SIM / KYC Update</option>
+                <option value="Lottery">Lottery / Gift Fraud</option>
+                <option value="OLX">OLX / Fake Seller Fraud</option>
+                <option value="AEPS">AEPS Fraud</option>
+                <option value="Child pornography">Child Pornography / CSAM</option>
+                <option value="Other">Other Cyber Crime</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Lost Amount (₹) (కోల్పోయిన మొత్తం) <span class="required">*</span></label>
+              <input type="number" id="editLostAmount" class="form-input" required placeholder="0" min="0">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Hold / Frozen Amount (₹) (హోల్డ్ చేయబడిన సొమ్ము)</label>
+              <input type="number" id="editHoldAmount" class="form-input" placeholder="0" min="0">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Refund Amount to Victim (₹) (బాధితుడికి రీఫండ్)</label>
+              <input type="number" id="editRefundAmount" class="form-input" placeholder="0" min="0">
+            </div>
+
+            <!-- 4. Police Action & Legal Tracking -->
+            <div class="form-section-header">
+              👮 4. Investigation & Legal Action Taken / స్టేషన్ విచారణ & చట్టపరమైన చర్యలు
+            </div>
+
             <div class="form-group">
               <label class="form-label">Status <span class="required">*</span> (పోర్టల్ స్టేటస్)</label>
               <select id="editStatus" class="form-select" required>
@@ -735,35 +826,12 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Modus Operandi (MO) <span class="required">*</span> (మోసం రకం)</label>
-              <select id="editMO" class="form-select" required>
-                <option value="UPI Fraud">UPI Fraud</option>
-                <option value="Job">Job Fraud (ఉద్యోగ మోసం)</option>
-                <option value="OTP">OTP Fraud</option>
-                <option value="Loan">Loan App (రుణ యాప్ మోసం)</option>
-                <option value="Investment fraud">Investment Fraud (ట్రేడింగ్/పెట్టుబడి మోసం)</option>
-                <option value="Sextortion">Cyber Sextortion (వీడియో కాల్ బెదిరింపు)</option>
-                <option value="Digital Arrest">Digital Arrest (డిజిటల్ అరెస్ట్)</option>
-                <option value="Screen Sharing">Screen Sharing (AnyDesk/TeamViewer)</option>
-                <option value="Fake Customer Care">Fake Customer Care</option>
-                <option value="Fake Website">Fake Website</option>
-                <option value="E-Commerce">E-Commerce Fraud</option>
-                <option value="Credit/Debit Card Fraud">Credit/Debit Card Fraud</option>
-                <option value="Social media">Social Media Harassment</option>
-                <option value="Matrimonial/Dating">Matrimonial / Dating Fraud</option>
-                <option value="KYC / SIM KYC">SIM / KYC Update</option>
-                <option value="Gift/Lottery">Gift / Lottery Fraud</option>
-                <option value="Other">Other Cyber Crime</option>
-              </select>
-            </div>
-
-            <div class="form-group">
               <label class="form-label">Date of Action Taken (చర్య తీసుకున్న తేదీ)</label>
-              <input type="text" id="editDateOfAction" class="form-input" placeholder="DD.MM.YYYY">
+              <input type="text" id="editDateOfAction" class="form-input" placeholder="DD-MM-YYYY">
             </div>
 
             <div class="form-group">
-              <label class="form-label">Whether FIR Registered (Cr. No.)</label>
+              <label class="form-label">Whether FIR Registered (Cr. No. / క్రైమ్ నంబర్)</label>
               <input type="text" id="editFIRNumber" class="form-input" placeholder="e.g. Cr.No. 41/2026 U/s 318(4) BNS">
             </div>
 
@@ -777,7 +845,7 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Court Order Obtained?</label>
+              <label class="form-label">Court Order Obtained? (కోర్టు ఉత్తర్వులు)</label>
               <select id="editCourtOrder" class="form-select">
                 <option value="No">No / రాలేదు</option>
                 <option value="Yes">Yes / కోర్టు ఉత్తర్వు వచ్చినది</option>
@@ -785,27 +853,23 @@
               </select>
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Refund Amount Retrieved to Victim (₹)</label>
-              <input type="number" id="editRefundAmount" class="form-input" placeholder="0">
-            </div>
-
             <div class="form-group form-full">
               <label class="form-label">Action Taken by Police Station (స్టేషన్ ఆఫీసర్ నివేదిక) <span class="required">*</span></label>
-              <textarea id="editActionTaken" class="form-textarea" rows="4" placeholder="Enter investigation details, statements recorded, bank freeze status, reason for closure/FIR..."></textarea>
+              <textarea id="editActionTaken" class="form-textarea" rows="3" placeholder="Enter investigation details, statements recorded, bank freeze status, reason for closure/FIR..."></textarea>
             </div>
 
             <div class="form-group form-full">
-              <label class="form-label">Remarks / Additional Notes</label>
-              <input type="text" id="editRemarks" class="form-input" placeholder="Any additional remarks">
+              <label class="form-label">Remarks / Additional Notes / Crime Details</label>
+              <input type="text" id="editRemarks" class="form-input" placeholder="Any additional notes or details">
             </div>
+
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+          <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancel / రద్దు</button>
           <button type="submit" class="btn-primary" id="savePetitionBtn">
-            💾 Save & Submit Action (సమర్పించండి)
+            💾 Save All 24 Columns (అన్ని వివరాలు సేవ్ చేయండి)
           </button>
         </div>
       </form>
@@ -1173,6 +1237,6 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="./js/app.js?v=3.7"></script>
+  <script src="./js/app.js?v=3.8"></script>
 </body>
 </html>

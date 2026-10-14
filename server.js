@@ -446,6 +446,22 @@ const server = http.createServer(async (req, res) => {
 
       const body = await parseJsonBody(req);
 
+      const slNo = body.sl_no !== undefined ? parseInt(body.sl_no) || existing.sl_no : existing.sl_no;
+      const petitionDate = body.petition_date !== undefined ? body.petition_date : existing.petition_date;
+      const portalType = body.portal_type !== undefined ? body.portal_type : existing.portal_type;
+      const ackNo = body.ack_no !== undefined ? String(body.ack_no).trim() : existing.ack_no;
+      const psName = body.ps_name !== undefined ? body.ps_name : existing.ps_name;
+      const circleName = body.circle_name !== undefined ? body.circle_name : existing.circle_name;
+      const subDivision = body.sub_division !== undefined ? body.sub_division : existing.sub_division;
+      const complainantName = body.complainant_name !== undefined ? body.complainant_name : existing.complainant_name;
+      const complainantPhone = body.complainant_phone !== undefined ? body.complainant_phone : existing.complainant_phone;
+      const victimAge = body.victim_age !== undefined ? String(body.victim_age) : existing.victim_age;
+      const complainantAddress = body.complainant_address !== undefined ? body.complainant_address : existing.complainant_address;
+      const category = body.category !== undefined ? body.category : existing.category;
+      const subCategory = body.sub_category !== undefined ? body.sub_category : existing.sub_category;
+      const lostAmount = body.lost_amount !== undefined ? parseFloat(body.lost_amount) || 0 : existing.lost_amount;
+      const holdAmount = body.hold_amount !== undefined ? parseFloat(body.hold_amount) || 0 : existing.hold_amount;
+      const refundAmount = body.refund_amount !== undefined ? parseFloat(body.refund_amount) || 0 : existing.refund_amount;
       const status = body.status !== undefined ? body.status : existing.status;
       const mo = body.mo !== undefined ? body.mo : existing.mo;
       const actionTaken = body.action_taken !== undefined ? body.action_taken : existing.action_taken;
@@ -453,12 +469,29 @@ const server = http.createServer(async (req, res) => {
       const firNumber = body.fir_number !== undefined ? body.fir_number : existing.fir_number;
       const courtMemoFiled = body.court_memo_filed !== undefined ? body.court_memo_filed : existing.court_memo_filed;
       const courtOrderObtained = body.court_order_obtained !== undefined ? body.court_order_obtained : existing.court_order_obtained;
-      const holdAmount = body.hold_amount !== undefined ? parseFloat(body.hold_amount) || 0 : existing.hold_amount;
-      const refundAmount = body.refund_amount !== undefined ? parseFloat(body.refund_amount) || 0 : existing.refund_amount;
       const remarks = body.remarks !== undefined ? body.remarks : existing.remarks;
+
+      const lossBucket = lostAmount >= 10000000 ? 'ABOVE 1 CR' : (lostAmount >= 5000000 ? '50L TO 1CR' : (lostAmount >= 2500000 ? '25L TO 50L' : (lostAmount >= 1000000 ? '10L TO 25L' : 'BELOW 10L')));
+      const holdBucket = holdAmount > 0 ? (holdAmount >= 100000 ? 'Above 1L' : (holdAmount >= 50000 ? '50K to 1L' : (holdAmount >= 10000 ? '10K to 50K' : 'Below 10K'))) : 'No Hold';
 
       db.prepare(`
         UPDATE petitions SET
+          sl_no = ?,
+          petition_date = ?,
+          portal_type = ?,
+          ack_no = ?,
+          ps_name = ?,
+          circle_name = ?,
+          sub_division = ?,
+          complainant_name = ?,
+          complainant_phone = ?,
+          victim_age = ?,
+          complainant_address = ?,
+          category = ?,
+          sub_category = ?,
+          lost_amount = ?,
+          hold_amount = ?,
+          refund_amount = ?,
           status = ?,
           mo = ?,
           action_taken = ?,
@@ -466,13 +499,29 @@ const server = http.createServer(async (req, res) => {
           fir_number = ?,
           court_memo_filed = ?,
           court_order_obtained = ?,
-          hold_amount = ?,
-          refund_amount = ?,
           remarks = ?,
+          loss_bucket = ?,
+          hold_bucket = ?,
           updated_by = ?,
           updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `).run(
+        slNo,
+        petitionDate,
+        portalType,
+        ackNo,
+        psName,
+        circleName,
+        subDivision,
+        complainantName,
+        complainantPhone,
+        victimAge,
+        complainantAddress,
+        category,
+        subCategory,
+        lostAmount,
+        holdAmount,
+        refundAmount,
         status,
         mo,
         actionTaken,
@@ -480,9 +529,9 @@ const server = http.createServer(async (req, res) => {
         firNumber,
         courtMemoFiled,
         courtOrderObtained,
-        holdAmount,
-        refundAmount,
         remarks,
+        lossBucket,
+        holdBucket,
         authUser.username,
         id
       );
@@ -490,14 +539,34 @@ const server = http.createServer(async (req, res) => {
       // Audit log
       db.prepare('INSERT INTO audit_logs (username, ps_name, action, ack_no, details) VALUES (?, ?, ?, ?, ?)').run(
         authUser.username,
-        authUser.psName || existing.ps_name,
+        authUser.psName || psName,
         'UPDATE_PETITION',
-        existing.ack_no,
-        `Status updated to '${status}', MO: '${mo}', FIR: '${firNumber}', Action: '${actionTaken ? actionTaken.slice(0, 50) : ''}'`
+        ackNo,
+        `Updated all columns: Status '${status}', MO '${mo}', Complainant '${complainantName}', Lost ₹${lostAmount}, Hold ₹${holdAmount}`
       );
 
       const updated = db.prepare('SELECT * FROM petitions WHERE id = ?').get(id);
-      return sendJson(res, 200, { success: true, petition: updated, message: 'Petition updated successfully / పిటిషన్ విజయవంతంగా అప్‌డేట్ చేయబడింది' });
+
+      // Keep JSON files in sync if they exist
+      try {
+        const petsPath = path.join(__dirname, 'data', 'petitions.json');
+        const pubPetsPath = path.join(PUBLIC_DIR, 'data', 'petitions.json');
+        if (fs.existsSync(petsPath)) {
+          const list = JSON.parse(fs.readFileSync(petsPath, 'utf8'));
+          const idx = list.findIndex(p => p.id === id);
+          if (idx !== -1) {
+            list[idx] = updated;
+            fs.writeFileSync(petsPath, JSON.stringify(list, null, 2));
+            if (fs.existsSync(pubPetsPath)) {
+              fs.writeFileSync(pubPetsPath, JSON.stringify(list, null, 2));
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Sync JSON note:', e.message);
+      }
+
+      return sendJson(res, 200, { success: true, petition: updated, message: 'All 24 columns updated successfully / పిటిషన్ వివరాలు అన్నీ విజయవంతంగా అప్‌డేట్ చేయబడ్డాయి' });
     }
 
     // 9. PETITIONS: Create New Petition

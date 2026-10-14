@@ -70,7 +70,7 @@ function getDataBasePath() {
   return window.location.origin + path + "data/";
 }
 
-const NCRP_APP_VERSION = '3.7';
+const NCRP_APP_VERSION = '3.8';
 
 // Clear obsolete or corrupted localStorage caches on app version upgrade
 try {
@@ -359,13 +359,36 @@ async function handleStaticApi(url, options = {}) {
     return { petition };
   }
 
-  // 8. Update Petition
+  // 8. Update Petition (Static / GitHub Pages - All 24 Columns)
   if (pathname.match(/^\/api\/petitions\/(\d+)$/) && method === 'PUT') {
     const id = parseInt(pathname.split('/')[3]);
     const pet = staticPetitions.find(p => p.id === id);
     if (!pet) throw new Error('Petition not found');
 
+    const lostAmount = body.lost_amount !== undefined ? parseFloat(body.lost_amount) || 0 : (pet.lost_amount || 0);
+    const holdAmount = body.hold_amount !== undefined ? parseFloat(body.hold_amount) || 0 : (pet.hold_amount || 0);
+    const refundAmount = body.refund_amount !== undefined ? parseFloat(body.refund_amount) || 0 : (pet.refund_amount || 0);
+
+    const lossBucket = lostAmount >= 10000000 ? 'ABOVE 1 CR' : (lostAmount >= 5000000 ? '50L TO 1CR' : (lostAmount >= 2500000 ? '25L TO 50L' : (lostAmount >= 1000000 ? '10L TO 25L' : 'BELOW 10L')));
+    const holdBucket = holdAmount > 0 ? (holdAmount >= 100000 ? 'Above 1L' : (holdAmount >= 50000 ? '50K to 1L' : (holdAmount >= 10000 ? '10K to 50K' : 'Below 10K'))) : 'No Hold';
+
     Object.assign(pet, {
+      sl_no: body.sl_no !== undefined ? parseInt(body.sl_no) || pet.sl_no : pet.sl_no,
+      petition_date: body.petition_date !== undefined ? body.petition_date : pet.petition_date,
+      portal_type: body.portal_type !== undefined ? body.portal_type : pet.portal_type,
+      ack_no: body.ack_no !== undefined ? String(body.ack_no).trim() : pet.ack_no,
+      ps_name: body.ps_name !== undefined ? body.ps_name : pet.ps_name,
+      circle_name: body.circle_name !== undefined ? body.circle_name : pet.circle_name,
+      sub_division: body.sub_division !== undefined ? body.sub_division : pet.sub_division,
+      complainant_name: body.complainant_name !== undefined ? body.complainant_name : pet.complainant_name,
+      complainant_phone: body.complainant_phone !== undefined ? body.complainant_phone : pet.complainant_phone,
+      victim_age: body.victim_age !== undefined ? String(body.victim_age) : pet.victim_age,
+      complainant_address: body.complainant_address !== undefined ? body.complainant_address : pet.complainant_address,
+      category: body.category !== undefined ? body.category : pet.category,
+      sub_category: body.sub_category !== undefined ? body.sub_category : pet.sub_category,
+      lost_amount: lostAmount,
+      hold_amount: holdAmount,
+      refund_amount: refundAmount,
       status: body.status !== undefined ? body.status : pet.status,
       mo: body.mo !== undefined ? body.mo : pet.mo,
       action_taken: body.action_taken !== undefined ? body.action_taken : pet.action_taken,
@@ -373,17 +396,18 @@ async function handleStaticApi(url, options = {}) {
       fir_number: body.fir_number !== undefined ? body.fir_number : pet.fir_number,
       court_memo_filed: body.court_memo_filed !== undefined ? body.court_memo_filed : pet.court_memo_filed,
       court_order_obtained: body.court_order_obtained !== undefined ? body.court_order_obtained : pet.court_order_obtained,
-      hold_amount: body.hold_amount !== undefined ? parseFloat(body.hold_amount) || 0 : pet.hold_amount,
-      refund_amount: body.refund_amount !== undefined ? parseFloat(body.refund_amount) || 0 : pet.refund_amount,
-      remarks: body.remarks !== undefined ? body.remarks : pet.remarks
+      remarks: body.remarks !== undefined ? body.remarks : pet.remarks,
+      loss_bucket: lossBucket,
+      hold_bucket: holdBucket,
+      updated_at: new Date().toISOString()
     });
 
-    // Save in localStorage
+    // Save in localStorage so edits persist across sessions on GitHub Pages
     const savedEdits = JSON.parse(localStorage.getItem('ncrp_local_edits') || '{}');
     savedEdits[id] = pet;
     localStorage.setItem('ncrp_local_edits', JSON.stringify(savedEdits));
 
-    return { success: true, petition: pet, message: 'Petition updated successfully / పిటిషన్ విజయవంతంగా అప్‌డేట్ చేయబడింది' };
+    return { success: true, petition: pet, message: 'All 24 columns updated successfully / పిటిషన్ వివరాలు అన్నీ విజయవంతంగా అప్‌డేట్ చేయబడ్డాయి' };
   }
 
   // 8B. Create Single Petition (Static / GitHub Pages with Zero-Duplicate Guard)
@@ -728,24 +752,38 @@ function setupEventListeners() {
     }, 400);
   });
 
-  // Edit Petition Form
+  // Edit Petition Form (All 24 Columns)
   document.getElementById('editPetitionForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('editPetitionId').value;
     const saveBtn = document.getElementById('savePetitionBtn');
     saveBtn.disabled = true;
-    saveBtn.textContent = 'Saving & Submitting...';
+    saveBtn.textContent = 'Saving Changes... / సేవ్ అవుతోంది...';
 
     const payload = {
-      status: document.getElementById('editStatus').value,
+      sl_no: document.getElementById('editSlNo').value,
+      ack_no: document.getElementById('editAckNo').value,
+      petition_date: document.getElementById('editDate').value,
+      portal_type: document.getElementById('editPortalType').value,
+      ps_name: document.getElementById('editPSName').value,
+      circle_name: document.getElementById('editCircleName').value,
+      sub_division: document.getElementById('editSubDivision').value,
+      complainant_name: document.getElementById('editComplainantName').value,
+      complainant_phone: document.getElementById('editComplainantPhone').value,
+      victim_age: document.getElementById('editVictimAge').value,
+      complainant_address: document.getElementById('editAddress').value,
+      category: document.getElementById('editCategory').value,
+      sub_category: document.getElementById('editSubCategory').value,
       mo: document.getElementById('editMO').value,
-      action_taken: document.getElementById('editActionTaken').value,
+      lost_amount: document.getElementById('editLostAmount').value,
+      hold_amount: document.getElementById('editHoldAmount').value,
+      refund_amount: document.getElementById('editRefundAmount').value,
+      status: document.getElementById('editStatus').value,
       date_of_action: document.getElementById('editDateOfAction').value,
       fir_number: document.getElementById('editFIRNumber').value,
       court_memo_filed: document.getElementById('editCourtMemo').value,
       court_order_obtained: document.getElementById('editCourtOrder').value,
-      hold_amount: document.getElementById('editHoldAmount').value,
-      refund_amount: document.getElementById('editRefundAmount').value,
+      action_taken: document.getElementById('editActionTaken').value,
       remarks: document.getElementById('editRemarks').value
     };
 
@@ -754,15 +792,21 @@ function setupEventListeners() {
         method: 'PUT',
         body: payload
       });
-      showToast(data.message || 'Action saved successfully!', 'success');
+      showToast(data.message || 'All columns saved successfully! / అన్ని వివరాలు విజయవంతంగా సేవ్ అయ్యాయి', 'success');
       closeEditModal();
       loadPetitions(currentPetitionsPage);
       loadKPISummary();
+      if (document.getElementById('abstractTab') && document.getElementById('abstractTab').style.display !== 'none') {
+        loadAbstractReport();
+      }
+      if (document.getElementById('holdRefundTab') && document.getElementById('holdRefundTab').style.display !== 'none') {
+        loadHoldRefundReport();
+      }
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
       saveBtn.disabled = false;
-      saveBtn.textContent = '💾 Save & Submit Action (సమర్పించండి)';
+      saveBtn.textContent = '💾 Save All 24 Columns (అన్ని వివరాలు సేవ్ చేయండి)';
     }
   });
 
@@ -1307,32 +1351,72 @@ function exportCSV() {
   }
 }
 
-// Edit Modal Functions
+// Edit Modal Functions - All 24 Columns
+function populateEditStationOptions(selectedStation) {
+  const select = document.getElementById('editPSName');
+  if (!select) return;
+  const stations = (allStationsList && allStationsList.length > 0) ? allStationsList : staticStations;
+  select.innerHTML = '';
+  stations.forEach(st => {
+    const opt = document.createElement('option');
+    opt.value = st.name;
+    opt.textContent = `${st.name} (${st.circle || ''})`;
+    if (st.name === selectedStation) {
+      opt.selected = true;
+    }
+    select.appendChild(opt);
+  });
+}
+
+function onEditStationChange() {
+  const stationName = document.getElementById('editPSName').value;
+  const stations = (allStationsList && allStationsList.length > 0) ? allStationsList : staticStations;
+  const st = stations.find(s => s.name === stationName);
+  if (st) {
+    document.getElementById('editCircleName').value = st.circle || '';
+    document.getElementById('editSubDivision').value = st.sub_division || '';
+  }
+}
+
 async function openEditModal(petitionId) {
   try {
     const data = await apiFetch(`/api/petitions/${petitionId}`);
     const p = data.petition;
 
     document.getElementById('editPetitionId').value = p.id;
-    document.getElementById('modalEditAckSub').textContent = `Ack No: ${p.ack_no} | Date: ${p.petition_date}`;
-    document.getElementById('editPSName').value = `${p.ps_name} (${p.circle_name || ''})`;
-    document.getElementById('editDate').value = p.petition_date;
-    document.getElementById('editComplainant').value = `${p.complainant_name} ${p.complainant_phone ? '(' + p.complainant_phone + ')' : ''}`;
-    document.getElementById('editLostAmount').value = p.lost_amount ? '₹' + p.lost_amount.toLocaleString('en-IN') : '0';
-    document.getElementById('editHoldAmount').value = p.hold_amount || 0;
+    document.getElementById('modalEditAckSub').textContent = `Ack No: ${p.ack_no || '-'} | S.No: ${p.sl_no || p.id}`;
 
-    const catEl = document.getElementById('editCategorySub');
-    if (catEl) catEl.value = `${p.category || '-'} / ${p.sub_category || '-'}`;
-    const timeEl = document.getElementById('editTimeline');
-    if (timeEl) timeEl.value = `${p.no_of_days !== undefined ? p.no_of_days + ' Days' : '-'} (${p.timeline_status || '-'})`;
+    // 1. Case Registration Details
+    document.getElementById('editSlNo').value = p.sl_no !== undefined ? p.sl_no : p.id;
+    document.getElementById('editAckNo').value = p.ack_no || '';
+    document.getElementById('editDate').value = p.petition_date || '';
+    document.getElementById('editPortalType').value = p.portal_type || 'NCRP';
 
-    document.getElementById('editStatus').value = p.status || 'Under Process';
+    populateEditStationOptions(p.ps_name);
+    document.getElementById('editPSName').value = p.ps_name || '';
+    document.getElementById('editCircleName').value = p.circle_name || '';
+    document.getElementById('editSubDivision').value = p.sub_division || '';
+
+    // 2. Complainant & Victim Details
+    document.getElementById('editComplainantName').value = p.complainant_name || '';
+    document.getElementById('editComplainantPhone').value = p.complainant_phone || '';
+    document.getElementById('editVictimAge').value = p.victim_age || '';
+    document.getElementById('editAddress').value = p.complainant_address || '';
+
+    // 3. Crime Category & Financials
+    document.getElementById('editCategory').value = p.category || '';
+    document.getElementById('editSubCategory').value = p.sub_category || '';
     document.getElementById('editMO').value = p.mo || 'UPI Fraud';
+    document.getElementById('editLostAmount').value = p.lost_amount !== undefined ? p.lost_amount : 0;
+    document.getElementById('editHoldAmount').value = p.hold_amount !== undefined ? p.hold_amount : 0;
+    document.getElementById('editRefundAmount').value = p.refund_amount !== undefined ? p.refund_amount : 0;
+
+    // 4. Police Action & Legal Tracking
+    document.getElementById('editStatus').value = p.status || 'Under Process';
     document.getElementById('editDateOfAction').value = p.date_of_action || '';
     document.getElementById('editFIRNumber').value = p.fir_number || '';
     document.getElementById('editCourtMemo').value = p.court_memo_filed || 'No';
     document.getElementById('editCourtOrder').value = p.court_order_obtained || 'No';
-    document.getElementById('editRefundAmount').value = p.refund_amount || 0;
     document.getElementById('editActionTaken').value = p.action_taken || '';
     document.getElementById('editRemarks').value = p.remarks || '';
 
