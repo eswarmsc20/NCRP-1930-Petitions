@@ -158,7 +158,7 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/auth/login' && req.method === 'POST') {
       const body = await parseJsonBody(req);
       let username = (body.username || '').trim().toLowerCase();
-      const password = body.password || '';
+      const password = (body.password || '').trim();
 
       if (!username || !password) {
         return sendJson(res, 400, { error: 'Username and password are required' });

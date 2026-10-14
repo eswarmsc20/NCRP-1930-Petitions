@@ -48,40 +48,57 @@ function formatINR(val) {
   }
 }
 
+// Embedded Master Datasets for GitHub Pages & Offline Reliability
+const EMBEDDED_USERS = [{"id":1,"username":"admin","display_name":"DPO / District Admin, Srikakulam","role":"admin","ps_name":"District Police Office, Srikakulam","circle":"District HQ","sub_division":"Srikakulam District","station_code":"DPO"},{"id":2,"username":"cybercell_sklm","display_name":"Cyber Crime Police Station, Srikakulam","role":"admin","ps_name":"Cyber Crime PS, Srikakulam","circle":"Cyber Cell","sub_division":"Srikakulam District","station_code":"CYBER_PS"},{"id":3,"username":"srikakulam1town","display_name":"Srikakulam I Town PS","role":"station","ps_name":"Srikakulam I Town","circle":"Srikakulam Rural Circle","sub_division":"Srikakulam Sub-Division","station_code":"SKL_1T"},{"id":4,"username":"srikakulamrural","display_name":"Srikakulam Rural PS","role":"station","ps_name":"Srikakulam Rural","circle":"Srikakulam Rural Circle","sub_division":"Srikakulam Sub-Division","station_code":"SKL_RUR"},{"id":5,"username":"gara","display_name":"Gara PS","role":"station","ps_name":"Gara","circle":"Srikakulam Rural Circle","sub_division":"Srikakulam Sub-Division","station_code":"GARA"},{"id":6,"username":"srikakulam2town","display_name":"Srikakulam II Town PS","role":"station","ps_name":"Srikakulam II Town","circle":"Srikakulam II Town Circle","sub_division":"Srikakulam Sub-Division","station_code":"SKL_2T"},{"id":7,"username":"amadalavalasa","display_name":"Amadalavalasa PS","role":"station","ps_name":"Amadalavalasa","circle":"Amadalavalasa Circle","sub_division":"Srikakulam Sub-Division","station_code":"ADV"},{"id":8,"username":"sarubujjili","display_name":"Sarubujjili PS","role":"station","ps_name":"Sarubujjili","circle":"Amadalavalasa Circle","sub_division":"Srikakulam Sub-Division","station_code":"SBJ"},{"id":9,"username":"burja","display_name":"Burja PS","role":"station","ps_name":"Burja","circle":"Amadalavalasa Circle","sub_division":"Srikakulam Sub-Division","station_code":"BRJ"},{"id":10,"username":"ponduru","display_name":"Ponduru PS","role":"station","ps_name":"Ponduru","circle":"Amadalavalasa Circle","sub_division":"Srikakulam Sub-Division","station_code":"PDR"},{"id":11,"username":"jrpuram","display_name":"J.R.Puram PS","role":"station","ps_name":"J.R.Puram","circle":"J.R.Puram Circle","sub_division":"Srikakulam Sub-Division","station_code":"JRP"},{"id":12,"username":"etcherla","display_name":"Etcherla PS","role":"station","ps_name":"Etcherla","circle":"J.R.Puram Circle","sub_division":"Srikakulam Sub-Division","station_code":"ETC"},{"id":13,"username":"laveru","display_name":"Laveru PS","role":"station","ps_name":"Laveru","circle":"J.R.Puram Circle","sub_division":"Srikakulam Sub-Division","station_code":"LVR"},{"id":14,"username":"gsigadam","display_name":"G. Sigadam PS","role":"station","ps_name":"G. Sigadam","circle":"J.R.Puram Circle","sub_division":"Srikakulam Sub-Division","station_code":"GSG"},{"id":15,"username":"tekkalips","display_name":"Tekkali PS PS","role":"station","ps_name":"Tekkali PS","circle":"Tekkali PS Circle","sub_division":"Tekkali Sub-Division","station_code":"TKL"},{"id":16,"username":"kotabommali","display_name":"Kotabommali PS","role":"station","ps_name":"Kotabommali","circle":"Tekkali Rural Circle","sub_division":"Tekkali Sub-Division","station_code":"KBM"},{"id":17,"username":"santhabommali","display_name":"Santhabommali PS","role":"station","ps_name":"Santhabommali","circle":"Tekkali Rural Circle","sub_division":"Tekkali Sub-Division","station_code":"SBM"},{"id":18,"username":"naupada","display_name":"Naupada PS","role":"station","ps_name":"Naupada","circle":"Tekkali Rural Circle","sub_division":"Tekkali Sub-Division","station_code":"NPD"},{"id":19,"username":"nandigam","display_name":"Nandigam PS","role":"station","ps_name":"Nandigam","circle":"Tekkali Rural Circle","sub_division":"Tekkali Sub-Division","station_code":"NDG"},{"id":20,"username":"narasannapeta","display_name":"Narasannapeta PS","role":"station","ps_name":"Narasannapeta","circle":"Narasannapeta Circle","sub_division":"Tekkali Sub-Division","station_code":"NSP"},{"id":21,"username":"jalumuru","display_name":"Jalumuru PS","role":"station","ps_name":"Jalumuru","circle":"Narasannapeta Circle","sub_division":"Tekkali Sub-Division","station_code":"JLM"},{"id":22,"username":"polaki","display_name":"Polaki PS","role":"station","ps_name":"Polaki","circle":"Narasannapeta Circle","sub_division":"Tekkali Sub-Division","station_code":"PLK"},{"id":23,"username":"saravakota","display_name":"Saravakota PS","role":"station","ps_name":"Saravakota","circle":"Narasannapeta Circle","sub_division":"Tekkali Sub-Division","station_code":"SVK"},{"id":24,"username":"kothuru","display_name":"Kothuru PS","role":"station","ps_name":"Kothuru","circle":"Kothuru Circle","sub_division":"Tekkali Sub-Division","station_code":"KTR"},{"id":25,"username":"hiramandalam","display_name":"Hiramandalam PS","role":"station","ps_name":"Hiramandalam","circle":"Kothuru Circle","sub_division":"Tekkali Sub-Division","station_code":"HRM"},{"id":26,"username":"pathapatnam","display_name":"Pathapatnam PS","role":"station","ps_name":"Pathapatnam","circle":"Pathapatnam Circle","sub_division":"Tekkali Sub-Division","station_code":"PPT"},{"id":27,"username":"meliaputti","display_name":"Meliaputti PS","role":"station","ps_name":"Meliaputti","circle":"Pathapatnam Circle","sub_division":"Tekkali Sub-Division","station_code":"MPT"},{"id":28,"username":"kasibugga","display_name":"Kasibugga PS","role":"station","ps_name":"Kasibugga","circle":"Kasibugga Circle","sub_division":"Kasibugga Sub-Division","station_code":"KBG"},{"id":29,"username":"vajrapukothuru","display_name":"Vajrapukothuru PS","role":"station","ps_name":"Vajrapukothuru","circle":"Kasibugga Rural Circle","sub_division":"Kasibugga Sub-Division","station_code":"VPK"},{"id":30,"username":"mandasa","display_name":"Mandasa PS","role":"station","ps_name":"Mandasa","circle":"Kasibugga Rural Circle","sub_division":"Kasibugga Sub-Division","station_code":"MDS"},{"id":31,"username":"sompeta","display_name":"Sompeta PS","role":"station","ps_name":"Sompeta","circle":"Sompeta Circle","sub_division":"Kasibugga Sub-Division","station_code":"SMP"},{"id":32,"username":"baruva","display_name":"Baruva PS","role":"station","ps_name":"Baruva","circle":"Sompeta Circle","sub_division":"Kasibugga Sub-Division","station_code":"BRV"},{"id":33,"username":"kanchili","display_name":"Kanchili PS","role":"station","ps_name":"Kanchili","circle":"Sompeta Circle","sub_division":"Kasibugga Sub-Division","station_code":"KNC"},{"id":34,"username":"itchapuramtown","display_name":"Itchapuram Town PS","role":"station","ps_name":"Itchapuram Town","circle":"Itchapuram Circle","sub_division":"Kasibugga Sub-Division","station_code":"ICP_T"},{"id":35,"username":"itchapuramrural","display_name":"Itchapuram Rural PS","role":"station","ps_name":"Itchapuram Rural","circle":"Itchapuram Circle","sub_division":"Kasibugga Sub-Division","station_code":"ICP_R"},{"id":36,"username":"kaviti","display_name":"Kaviti PS","role":"station","ps_name":"Kaviti","circle":"Itchapuram Circle","sub_division":"Kasibugga Sub-Division","station_code":"KVT"},{"id":37,"username":"mahilapssrikakulam","display_name":"Mahila PS, Srikakulam PS","role":"station","ps_name":"Mahila PS, Srikakulam","circle":"Mahila PS Circle","sub_division":"Srikakulam Sub-Division","station_code":"MHL_PS"},{"id":38,"username":"srikakulamtraffic","display_name":"Srikakulam Traffic PS","role":"station","ps_name":"Srikakulam Traffic","circle":"Traffic Circle","sub_division":"Srikakulam Sub-Division","station_code":"TRF_PS"}];
+const EMBEDDED_STATIONS = [{"id":1,"station_code":"SKL_1T","name":"Srikakulam I Town","circle":"Srikakulam Rural Circle","sub_division":"Srikakulam Sub-Division","sl_no":1,"in_charge_name":null,"contact_number":null},{"id":2,"station_code":"SKL_RUR","name":"Srikakulam Rural","circle":"Srikakulam Rural Circle","sub_division":"Srikakulam Sub-Division","sl_no":2,"in_charge_name":null,"contact_number":null},{"id":3,"station_code":"GARA","name":"Gara","circle":"Srikakulam Rural Circle","sub_division":"Srikakulam Sub-Division","sl_no":3,"in_charge_name":null,"contact_number":null},{"id":4,"station_code":"SKL_2T","name":"Srikakulam II Town","circle":"Srikakulam II Town Circle","sub_division":"Srikakulam Sub-Division","sl_no":4,"in_charge_name":null,"contact_number":null},{"id":5,"station_code":"ADV","name":"Amadalavalasa","circle":"Amadalavalasa Circle","sub_division":"Srikakulam Sub-Division","sl_no":5,"in_charge_name":null,"contact_number":null},{"id":6,"station_code":"SBJ","name":"Sarubujjili","circle":"Amadalavalasa Circle","sub_division":"Srikakulam Sub-Division","sl_no":6,"in_charge_name":null,"contact_number":null},{"id":7,"station_code":"BRJ","name":"Burja","circle":"Amadalavalasa Circle","sub_division":"Srikakulam Sub-Division","sl_no":7,"in_charge_name":null,"contact_number":null},{"id":8,"station_code":"PDR","name":"Ponduru","circle":"Amadalavalasa Circle","sub_division":"Srikakulam Sub-Division","sl_no":8,"in_charge_name":null,"contact_number":null},{"id":9,"station_code":"JRP","name":"J.R.Puram","circle":"J.R.Puram Circle","sub_division":"Srikakulam Sub-Division","sl_no":9,"in_charge_name":null,"contact_number":null},{"id":10,"station_code":"ETC","name":"Etcherla","circle":"J.R.Puram Circle","sub_division":"Srikakulam Sub-Division","sl_no":10,"in_charge_name":null,"contact_number":null},{"id":11,"station_code":"LVR","name":"Laveru","circle":"J.R.Puram Circle","sub_division":"Srikakulam Sub-Division","sl_no":11,"in_charge_name":null,"contact_number":null},{"id":12,"station_code":"GSG","name":"G. Sigadam","circle":"J.R.Puram Circle","sub_division":"Srikakulam Sub-Division","sl_no":12,"in_charge_name":null,"contact_number":null},{"id":13,"station_code":"TKL","name":"Tekkali PS","circle":"Tekkali PS Circle","sub_division":"Tekkali Sub-Division","sl_no":13,"in_charge_name":null,"contact_number":null},{"id":14,"station_code":"KBM","name":"Kotabommali","circle":"Tekkali Rural Circle","sub_division":"Tekkali Sub-Division","sl_no":14,"in_charge_name":null,"contact_number":null},{"id":15,"station_code":"SBM","name":"Santhabommali","circle":"Tekkali Rural Circle","sub_division":"Tekkali Sub-Division","sl_no":15,"in_charge_name":null,"contact_number":null},{"id":16,"station_code":"NPD","name":"Naupada","circle":"Tekkali Rural Circle","sub_division":"Tekkali Sub-Division","sl_no":16,"in_charge_name":null,"contact_number":null},{"id":17,"station_code":"NDG","name":"Nandigam","circle":"Tekkali Rural Circle","sub_division":"Tekkali Sub-Division","sl_no":17,"in_charge_name":null,"contact_number":null},{"id":18,"station_code":"NSP","name":"Narasannapeta","circle":"Narasannapeta Circle","sub_division":"Tekkali Sub-Division","sl_no":18,"in_charge_name":null,"contact_number":null},{"id":19,"station_code":"JLM","name":"Jalumuru","circle":"Narasannapeta Circle","sub_division":"Tekkali Sub-Division","sl_no":19,"in_charge_name":null,"contact_number":null},{"id":20,"station_code":"PLK","name":"Polaki","circle":"Narasannapeta Circle","sub_division":"Tekkali Sub-Division","sl_no":20,"in_charge_name":null,"contact_number":null},{"id":21,"station_code":"SVK","name":"Saravakota","circle":"Narasannapeta Circle","sub_division":"Tekkali Sub-Division","sl_no":21,"in_charge_name":null,"contact_number":null},{"id":22,"station_code":"KTR","name":"Kothuru","circle":"Kothuru Circle","sub_division":"Tekkali Sub-Division","sl_no":22,"in_charge_name":null,"contact_number":null},{"id":23,"station_code":"HRM","name":"Hiramandalam","circle":"Kothuru Circle","sub_division":"Tekkali Sub-Division","sl_no":23,"in_charge_name":null,"contact_number":null},{"id":24,"station_code":"PPT","name":"Pathapatnam","circle":"Pathapatnam Circle","sub_division":"Tekkali Sub-Division","sl_no":24,"in_charge_name":null,"contact_number":null},{"id":25,"station_code":"MPT","name":"Meliaputti","circle":"Pathapatnam Circle","sub_division":"Tekkali Sub-Division","sl_no":25,"in_charge_name":null,"contact_number":null},{"id":26,"station_code":"KBG","name":"Kasibugga","circle":"Kasibugga Circle","sub_division":"Kasibugga Sub-Division","sl_no":26,"in_charge_name":null,"contact_number":null},{"id":27,"station_code":"VPK","name":"Vajrapukothuru","circle":"Kasibugga Rural Circle","sub_division":"Kasibugga Sub-Division","sl_no":27,"in_charge_name":null,"contact_number":null},{"id":28,"station_code":"MDS","name":"Mandasa","circle":"Kasibugga Rural Circle","sub_division":"Kasibugga Sub-Division","sl_no":28,"in_charge_name":null,"contact_number":null},{"id":29,"station_code":"SMP","name":"Sompeta","circle":"Sompeta Circle","sub_division":"Kasibugga Sub-Division","sl_no":29,"in_charge_name":null,"contact_number":null},{"id":30,"station_code":"BRV","name":"Baruva","circle":"Sompeta Circle","sub_division":"Kasibugga Sub-Division","sl_no":30,"in_charge_name":null,"contact_number":null},{"id":31,"station_code":"KNC","name":"Kanchili","circle":"Sompeta Circle","sub_division":"Kasibugga Sub-Division","sl_no":31,"in_charge_name":null,"contact_number":null},{"id":32,"station_code":"ICP_T","name":"Itchapuram Town","circle":"Itchapuram Circle","sub_division":"Kasibugga Sub-Division","sl_no":32,"in_charge_name":null,"contact_number":null},{"id":33,"station_code":"ICP_R","name":"Itchapuram Rural","circle":"Itchapuram Circle","sub_division":"Kasibugga Sub-Division","sl_no":33,"in_charge_name":null,"contact_number":null},{"id":34,"station_code":"KVT","name":"Kaviti","circle":"Itchapuram Circle","sub_division":"Kasibugga Sub-Division","sl_no":34,"in_charge_name":null,"contact_number":null},{"id":35,"station_code":"MHL_PS","name":"Mahila PS, Srikakulam","circle":"Mahila PS Circle","sub_division":"Srikakulam Sub-Division","sl_no":35,"in_charge_name":null,"contact_number":null},{"id":36,"station_code":"TRF_PS","name":"Srikakulam Traffic","circle":"Traffic Circle","sub_division":"Srikakulam Sub-Division","sl_no":36,"in_charge_name":null,"contact_number":null}];
+
 // Static / GitHub Pages Mode State
-const IS_STATIC_HOST = window.location.hostname.includes('github.io') || window.location.protocol === 'file:' || !window.location.port;
+const IS_STATIC_HOST = window.location.hostname.includes("github.io") || window.location.protocol === "file:" || !window.location.port;
 let staticDataLoaded = false;
 let staticPetitions = [];
-let staticStations = [];
-let staticUsers = [];
+let staticStations = [...EMBEDDED_STATIONS];
+let staticUsers = [...EMBEDDED_USERS];
+
+function getDataBasePath() {
+  let path = window.location.pathname || "/";
+  if (path.endsWith(".html") || path.endsWith(".htm")) {
+    path = path.substring(0, path.lastIndexOf("/"));
+  }
+  if (!path.endsWith("/")) {
+    path += "/";
+  }
+  return window.location.origin + path + "data/";
+}
 
 async function ensureStaticData() {
   if (staticDataLoaded) return;
   try {
-    const basePath = window.location.pathname.includes('/NCRP-1930-Petitions') ? './data/' : './data/';
+    const base = getDataBasePath();
     const [pRes, sRes, uRes] = await Promise.all([
-      fetch(basePath + 'petitions.json').then(r => r.json()),
-      fetch(basePath + 'stations.json').then(r => r.json()),
-      fetch(basePath + 'users.json').then(r => r.json())
+      fetch(base + "petitions.json").then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); }).catch(() => fetch("./data/petitions.json").then(r => r.json())),
+      fetch(base + "stations.json").then(r => r.json()).catch(() => EMBEDDED_STATIONS),
+      fetch(base + "users.json").then(r => r.json()).catch(() => EMBEDDED_USERS)
     ]);
-    staticPetitions = pRes;
-    staticStations = sRes;
-    staticUsers = uRes;
+    staticPetitions = pRes || [];
+    staticStations = sRes || EMBEDDED_STATIONS;
+    staticUsers = uRes || EMBEDDED_USERS;
 
     // Apply any saved local edits from browser localStorage
-    const savedEdits = JSON.parse(localStorage.getItem('ncrp_local_edits') || '{}');
+    const savedEdits = JSON.parse(localStorage.getItem("ncrp_local_edits") || "{}");
     staticPetitions.forEach(p => {
       if (savedEdits[p.id]) {
         Object.assign(p, savedEdits[p.id]);
       }
     });
 
-    const addedPetitions = JSON.parse(localStorage.getItem('ncrp_local_added') || '[]');
+    const addedPetitions = JSON.parse(localStorage.getItem("ncrp_local_added") || "[]");
     staticPetitions = [...addedPetitions, ...staticPetitions];
 
     staticDataLoaded = true;
   } catch (err) {
-    console.warn('Could not load static data JSON:', err);
+    console.warn("Static data fetch note:", err);
+    // Even if petitions fetch fails, users and stations are already loaded!
+    staticDataLoaded = true;
   }
 }
 
@@ -114,18 +131,19 @@ async function handleStaticApi(url, options = {}) {
       throw new Error('Invalid User ID / తప్పు యూజర్ ఐడీ');
     }
 
-    // Default password checks
+    // Default password checks with trim
+    const cleanPass = password.trim();
     let validPass = false;
-    if (user.role === 'admin') {
-      validPass = (password === 'Admin@SklmNCRP2026!' || password === 'Cyber@Sklm2026!');
+    if (user.role === 'admin' || username === 'admin') {
+      validPass = (cleanPass === 'Admin@SklmNCRP2026!' || cleanPass === 'Cyber@Sklm2026!');
     } else {
-      validPass = (password === `${username}@skl26` || password === 'Sklm@PS2026!');
+      validPass = (cleanPass === `${username}@skl26` || cleanPass === 'Sklm@PS2026!');
     }
 
-    if (!validPass && password.length >= 6) {
+    if (!validPass && cleanPass.length >= 6) {
       // allow custom password if changed in localStorage
       const savedPass = localStorage.getItem(`pass_${username}`);
-      if (savedPass && savedPass === password) validPass = true;
+      if (savedPass && savedPass === cleanPass) validPass = true;
     }
 
     if (!validPass) {
