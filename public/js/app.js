@@ -1640,8 +1640,16 @@ function switchTab(tabId) {
     loadAbstractReport();
   } else if (tabId === 'holdRefundTab') {
     loadHoldRefundReport();
+  } else if (tabId === 'statusWiseTab') {
+    loadStatusWiseReport();
   } else if (tabId === 'timelineTab') {
     loadTimelineReport();
+  } else if (tabId === 'holdSlabsTab') {
+    loadHoldSlabsReport();
+  } else if (tabId === 'lostSlabsTab') {
+    loadLostSlabsReport();
+  } else if (tabId === 'moWiseTab') {
+    loadMOWiseReport();
   } else if (tabId === 'adminUsersTab') {
     loadAdminUsers();
   }
@@ -1996,43 +2004,547 @@ function renderMOGuide() {
   });
 }
 
-// TAB 6: TIMELINE & AGING
+// ==========================================
+// DISTRICT POLICE SHEETS ENGINE (MASTER REPLICA)
+// ==========================================
+
+const HIERARCHY_CONFIG = [
+  { type: 'station', sl: 1, name: 'Srikakulam I Town', circle: 'Srikakulam Rural Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'station', sl: 2, name: 'Srikakulam Rural', circle: 'Srikakulam Rural Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'station', sl: 3, name: 'Gara', circle: 'Srikakulam Rural Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'circle_total', name: 'Srikakulam Rural Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'station', sl: 4, name: 'Srikakulam II Town', circle: 'Srikakulam II Town Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'station', sl: 5, name: 'Amadalavalasa', circle: 'Amadalavalasa Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'station', sl: 6, name: 'Sarubujjili', circle: 'Amadalavalasa Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'station', sl: 7, name: 'Burja', circle: 'Amadalavalasa Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'station', sl: 8, name: 'Ponduru', circle: 'Amadalavalasa Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'circle_total', name: 'Amadalavalasa Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'station', sl: 9, name: 'J.R.Puram', circle: 'J.R.Puram Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'station', sl: 10, name: 'Etcherla', circle: 'J.R.Puram Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'station', sl: 11, name: 'Laveru', circle: 'J.R.Puram Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'station', sl: 12, name: 'G. Sigadam', circle: 'J.R.Puram Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'circle_total', name: 'J.R Puram Circle', sub: 'Srikakulam Sub-Division' },
+  { type: 'subdiv_total', name: 'Srikakulam Sub-Division' },
+  { type: 'station', sl: 13, name: 'Tekkali PS', circle: 'Tekkali PS Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 14, name: 'Santhabommali', circle: 'Tekkali Rural Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 15, name: 'Naupada', circle: 'Tekkali Rural Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 16, name: 'Kotabommali', circle: 'Tekkali Rural Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 17, name: 'Nandigam', circle: 'Tekkali Rural Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'circle_total', name: 'Tekkali Rural Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 18, name: 'Narasannapeta', circle: 'Narasannapeta Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 19, name: 'Jalumuru', circle: 'Narasannapeta Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 20, name: 'Polaki', circle: 'Narasannapeta Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 21, name: 'Saravakota', circle: 'Narasannapeta Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'circle_total', name: 'Narasannapeta Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 22, name: 'Pathapatnam', circle: 'Pathapatnam Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 23, name: 'Meliaputti', circle: 'Pathapatnam Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'circle_total', name: 'Pathapatnam Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 24, name: 'Kothuru', circle: 'Kothuru Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 25, name: 'Hiramandalam', circle: 'Kothuru Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'circle_total', name: 'Kothuru Circle', sub: 'Tekkali Sub-Division' },
+  { type: 'subdiv_total', name: 'Tekkali Sub-Division' },
+  { type: 'station', sl: 26, name: 'Kasibugga', circle: 'Kasibugga Circle', sub: 'Kasibugga Sub-Division' },
+  { type: 'station', sl: 27, name: 'Vajrapukothuru', circle: 'Kasibugga Rural Circle', sub: 'Kasibugga Sub-Division' },
+  { type: 'station', sl: 28, name: 'Mandasa', circle: 'Kasibugga Rural Circle', sub: 'Kasibugga Sub-Division' },
+  { type: 'circle_total', name: 'Kasibugga Rural Circle', sub: 'Kasibugga Sub-Division' },
+  { type: 'station', sl: 29, name: 'Sompeta', circle: 'Sompeta Circle', sub: 'Kasibugga Sub-Division' },
+  { type: 'station', sl: 30, name: 'Kanchili', circle: 'Sompeta Circle', sub: 'Kasibugga Sub-Division' },
+  { type: 'station', sl: 31, name: 'Baruva', circle: 'Sompeta Circle', sub: 'Kasibugga Sub-Division' },
+  { type: 'circle_total', name: 'Sompeta Circle', sub: 'Kasibugga Sub-Division' },
+  { type: 'station', sl: 32, name: 'Itchapuram Town', circle: 'Itchapuram Circle', sub: 'Kasibugga Sub-Division' },
+  { type: 'station', sl: 33, name: 'Itchapuram Rural', circle: 'Itchapuram Circle', sub: 'Kasibugga Sub-Division' },
+  { type: 'station', sl: 34, name: 'Kaviti', circle: 'Itchapuram Circle', sub: 'Kasibugga Sub-Division' },
+  { type: 'circle_total', name: 'Itchapuram Circle', sub: 'Kasibugga Sub-Division' },
+  { type: 'subdiv_total', name: 'Kasibugga Sub-Division' },
+  { type: 'district_total', name: 'District Total' }
+];
+
+function getFilteredPetitionsForHierarchy(item, allPets) {
+  if (item.type === 'station') {
+    return allPets.filter(p => p.ps_name === item.name);
+  }
+  if (item.type === 'circle_total') {
+    const stNames = HIERARCHY_CONFIG.filter(h => h.type === 'station' && (
+      h.circle === item.name ||
+      (item.name.includes('Amadalavalasa') && h.circle.includes('Amadalavalasa')) ||
+      (item.name.includes('J.R') && h.circle.includes('J.R')) ||
+      (item.name.includes('Tekkali Rural') && h.circle.includes('Tekkali Rural')) ||
+      (item.name.includes('Narasannapeta') && h.circle.includes('Narasannapeta')) ||
+      (item.name.includes('Kasibugga Rural') && h.circle.includes('Kasibugga Rural')) ||
+      (item.name.includes('Sompeta') && h.circle.includes('Sompeta')) ||
+      (item.name.includes('Itchapuram') && h.circle.includes('Itchapuram'))
+    )).map(h => h.name);
+    return allPets.filter(p => stNames.includes(p.ps_name));
+  }
+  if (item.type === 'subdiv_total') {
+    const prefix = item.name.split(' ')[0].replace(',', '');
+    const stNames = HIERARCHY_CONFIG.filter(h => h.type === 'station' && h.sub && h.sub.includes(prefix)).map(h => h.name);
+    return allPets.filter(p => stNames.includes(p.ps_name));
+  }
+  if (item.type === 'district_total') {
+    return allPets;
+  }
+  return [];
+}
+
+function renderHierarchyRowStyling(tr, item) {
+  if (item.type === 'circle_total') {
+    tr.style.background = '#f1f5f9';
+    tr.style.fontWeight = '700';
+    tr.style.color = '#1e293b';
+  } else if (item.type === 'subdiv_total') {
+    tr.style.background = '#e2e8f0';
+    tr.style.fontWeight = '800';
+    tr.style.color = '#0b1e3f';
+    tr.style.borderTop = '2px solid #cbd5e1';
+    tr.style.borderBottom = '2px solid #cbd5e1';
+  } else if (item.type === 'district_total') {
+    tr.style.background = '#0b1e3f';
+    tr.style.color = '#ffffff';
+    tr.style.fontWeight = '800';
+  } else if (currentUser && currentUser.role === 'station' && item.name === currentUser.psName) {
+    tr.style.background = '#fef9c3';
+    tr.style.outline = '2px solid #ca8a04';
+  }
+}
+
+// 1. STATUS WISE REPORT
+async function loadStatusWiseReport() {
+  const tbody = document.getElementById('statusWiseTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  const pets = staticPetitions;
+
+  HIERARCHY_CONFIG.forEach(item => {
+    const pts = getFilteredPetitionsForHierarchy(item, pets);
+    const tr = document.createElement('tr');
+    renderHierarchyRowStyling(tr, item);
+
+    const isStation = item.type === 'station';
+    const isMyStation = isStation && currentUser && currentUser.role === 'station' && item.name === currentUser.psName;
+    const nameLabel = isStation ? `<strong>${item.name}</strong> ${isMyStation ? '<span class="badge" style="background:#ca8a04; color:white; font-size:0.68rem; margin-left:4px;">YOUR PS</span>' : ''}` : `<strong>${item.name}</strong>`;
+
+    tr.innerHTML = `
+      <td>${isStation ? item.sl : ''}</td>
+      <td>${nameLabel}</td>
+      <td style="font-weight: 700;">${pts.length}</td>
+      <td style="font-weight: 700; color: ${item.type === 'district_total' ? '#fca5a5' : '#dc2626'};">${pts.filter(p => p.status === 'FIR Registered').length}</td>
+      <td>${pts.filter(p => p.status === 'Rejected').length}</td>
+      <td>${pts.filter(p => p.status === 'NC Registered').length}</td>
+      <td style="font-weight: 700; color: ${item.type === 'district_total' ? '#86efac' : '#16a34a'};">${pts.filter(p => p.status === 'Closed').length}</td>
+      <td>${pts.filter(p => p.status === 'No Action' || p.status === 'No Action Needed').length}</td>
+      <td>${pts.filter(p => p.status === 'Withdrawal').length}</td>
+      <td style="font-weight: 700; color: ${item.type === 'district_total' ? '#fcd34d' : '#d97706'};">${pts.filter(p => p.status === 'Under Process').length}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// 2. TIMELINE & AGEING REPORT
 async function loadTimelineReport() {
   const tbody = document.getElementById('timelineTableBody');
-  tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 30px;">Loading Aging Petitions...</td></tr>`;
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  const pets = staticPetitions;
 
-  try {
-    const data = await apiFetch('/api/petitions?limit=100&status=Under Process');
-    tbody.innerHTML = '';
+  HIERARCHY_CONFIG.forEach(item => {
+    const pts = getFilteredPetitionsForHierarchy(item, pets);
+    const up = pts.filter(p => p.status === 'Under Process');
+    const tr = document.createElement('tr');
+    renderHierarchyRowStyling(tr, item);
 
-    if (data.petitions.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 30px; color: #16a34a;">No pending petitions found! Excellent performance.</td></tr>`;
-      return;
-    }
+    const isStation = item.type === 'station';
+    const isMyStation = isStation && currentUser && currentUser.role === 'station' && item.name === currentUser.psName;
+    const nameLabel = isStation ? `<strong>${item.name}</strong> ${isMyStation ? '<span class="badge" style="background:#ca8a04; color:white; font-size:0.68rem; margin-left:4px;">YOUR PS</span>' : ''}` : `<strong>${item.name}</strong>`;
 
-    data.petitions.slice(0, 50).forEach((p, idx) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${idx + 1}</td>
-        <td><strong>${p.ack_no}</strong></td>
-        <td><strong>${p.ps_name}</strong></td>
-        <td>${p.complainant_name}</td>
-        <td>${p.petition_date}</td>
-        <td><span class="badge badge-fir">> 90 Days</span></td>
-        <td class="amount-loss">${p.lost_amount > 0 ? '₹' + p.lost_amount.toLocaleString('en-IN') : '-'}</td>
-        <td class="amount-hold">${p.hold_amount > 0 ? '₹' + p.hold_amount.toLocaleString('en-IN') : '-'}</td>
-        <td><span class="badge badge-process">${p.status}</span></td>
-        <td>
-          <button class="action-btn-sm" onclick="openEditModal(${p.id})">
-            Update Action
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+    tr.innerHTML = `
+      <td>${isStation ? item.sl : ''}</td>
+      <td>${nameLabel}</td>
+      <td style="font-weight: 700;">${pts.length}</td>
+      <td style="font-weight: 700; color: ${item.type === 'district_total' ? '#86efac' : '#16a34a'};">${pts.filter(p => p.status === 'Closed' || p.status === 'FIR Registered').length}</td>
+      <td style="font-weight: 700; color: ${item.type === 'district_total' ? '#fcd34d' : '#d97706'};">${up.length}</td>
+      <td>${up.filter(p => p.timeline_status === 'Below 1 Week').length}</td>
+      <td>${up.filter(p => p.timeline_status === 'Below 2 Weeks').length}</td>
+      <td>${up.filter(p => p.timeline_status === 'Below 1 Month').length}</td>
+      <td style="color: ${item.type === 'district_total' ? '#ffffff' : '#d97706'};">${up.filter(p => p.timeline_status === 'Above 1 Month').length}</td>
+      <td style="color: ${item.type === 'district_total' ? '#ffffff' : '#b45309'};">${up.filter(p => p.timeline_status === 'Above 2 Months').length}</td>
+      <td style="font-weight: 700; color: ${item.type === 'district_total' ? '#fca5a5' : '#dc2626'};">${up.filter(p => p.timeline_status === 'Above 3 Months').length}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
 
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc2626;">Error: ${err.message}</td></tr>`;
+// 3. STATUS OF HOLD SLABS REPORT
+async function loadHoldSlabsReport() {
+  const tbody = document.getElementById('holdSlabsTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  const pets = staticPetitions;
+
+  HIERARCHY_CONFIG.forEach(item => {
+    const pts = getFilteredPetitionsForHierarchy(item, pets);
+    const up = pts.filter(p => p.status === 'Under Process');
+    const hc = up.filter(p => p.hold_amount > 0);
+    const tr = document.createElement('tr');
+    renderHierarchyRowStyling(tr, item);
+
+    const isStation = item.type === 'station';
+    const isMyStation = isStation && currentUser && currentUser.role === 'station' && item.name === currentUser.psName;
+    const nameLabel = isStation ? `<strong>${item.name}</strong> ${isMyStation ? '<span class="badge" style="background:#ca8a04; color:white; font-size:0.68rem; margin-left:4px;">YOUR PS</span>' : ''}` : `<strong>${item.name}</strong>`;
+
+    tr.innerHTML = `
+      <td>${isStation ? item.sl : ''}</td>
+      <td>${nameLabel}</td>
+      <td style="font-weight: 700;">${up.length}</td>
+      <td class="amount-loss">${up.reduce((s, p) => s + (p.lost_amount || 0), 0) > 0 ? '₹' + up.reduce((s, p) => s + (p.lost_amount || 0), 0).toLocaleString('en-IN') : '-'}</td>
+      <td style="font-weight: 700;">${hc.length}</td>
+      <td class="amount-loss">${hc.reduce((s, p) => s + (p.lost_amount || 0), 0) > 0 ? '₹' + hc.reduce((s, p) => s + (p.lost_amount || 0), 0).toLocaleString('en-IN') : '-'}</td>
+      <td class="amount-hold" style="font-weight: 700;">${hc.reduce((s, p) => s + (p.hold_amount || 0), 0) > 0 ? '₹' + hc.reduce((s, p) => s + (p.hold_amount || 0), 0).toLocaleString('en-IN') : '-'}</td>
+      <td>${hc.filter(p => p.hold_amount < 50000).length}</td>
+      <td>${hc.filter(p => p.hold_amount >= 50000 && p.hold_amount <= 100000).length}</td>
+      <td style="font-weight: 700; color: ${item.type === 'district_total' ? '#fcd34d' : '#b45309'};">${hc.filter(p => p.hold_amount > 100000).length}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// 4. LOST AMOUNT IN HOLD SLABS REPORT
+async function loadLostSlabsReport() {
+  const tbody = document.getElementById('lostSlabsTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  const pets = staticPetitions;
+
+  HIERARCHY_CONFIG.forEach(item => {
+    const pts = getFilteredPetitionsForHierarchy(item, pets);
+    const up = pts.filter(p => p.status === 'Under Process');
+    const hc = up.filter(p => p.hold_amount > 0);
+    const tr = document.createElement('tr');
+    renderHierarchyRowStyling(tr, item);
+
+    const isStation = item.type === 'station';
+    const isMyStation = isStation && currentUser && currentUser.role === 'station' && item.name === currentUser.psName;
+    const nameLabel = isStation ? `<strong>${item.name}</strong> ${isMyStation ? '<span class="badge" style="background:#ca8a04; color:white; font-size:0.68rem; margin-left:4px;">YOUR PS</span>' : ''}` : `<strong>${item.name}</strong>`;
+
+    tr.innerHTML = `
+      <td>${isStation ? item.sl : ''}</td>
+      <td>${nameLabel}</td>
+      <td style="font-weight: 700;">${up.length}</td>
+      <td class="amount-loss">${up.reduce((s, p) => s + (p.lost_amount || 0), 0) > 0 ? '₹' + up.reduce((s, p) => s + (p.lost_amount || 0), 0).toLocaleString('en-IN') : '-'}</td>
+      <td style="font-weight: 700;">${hc.length}</td>
+      <td class="amount-loss">${hc.reduce((s, p) => s + (p.lost_amount || 0), 0) > 0 ? '₹' + hc.reduce((s, p) => s + (p.lost_amount || 0), 0).toLocaleString('en-IN') : '-'}</td>
+      <td class="amount-hold" style="font-weight: 700;">${hc.reduce((s, p) => s + (p.hold_amount || 0), 0) > 0 ? '₹' + hc.reduce((s, p) => s + (p.hold_amount || 0), 0).toLocaleString('en-IN') : '-'}</td>
+      <td>${hc.filter(p => p.lost_amount < 50000).length}</td>
+      <td>${hc.filter(p => p.lost_amount >= 50000 && p.lost_amount <= 100000).length}</td>
+      <td>${hc.filter(p => p.lost_amount > 100000 && p.lost_amount <= 1000000).length}</td>
+      <td style="font-weight: 700; color: ${item.type === 'district_total' ? '#fca5a5' : '#dc2626'};">${hc.filter(p => p.lost_amount > 1000000).length}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// 5. MO WISE MATRIX REPORT
+const MO_WISE_COLUMNS = [
+  'Credit Card Fraud', 'Cyber Sextortion', 'Dating Fraud', 'Digital Arrest', 'E commerse',
+  'Fake CustomerCare', 'Fake Website', 'Gift Fraud', 'Investment', 'Job', 'Loan App',
+  'Online Fraud', 'OTP Fraud', 'Part Time Job', 'Screenshare', 'Social Media', 'UPI Related Frauds'
+];
+
+async function loadMOWiseReport() {
+  const thead = document.getElementById('moWiseTableHead');
+  const tbody = document.getElementById('moWiseTableBody');
+  if (!thead || !tbody) return;
+
+  thead.innerHTML = `
+    <tr>
+      <th>S. No.</th>
+      <th>Name of the PS</th>
+      <th>Total</th>
+      ${MO_WISE_COLUMNS.map(m => `<th>${m}</th>`).join('')}
+      <th>Other / Blanks</th>
+    </tr>
+  `;
+  tbody.innerHTML = '';
+  const pets = staticPetitions;
+
+  HIERARCHY_CONFIG.forEach(item => {
+    const pts = getFilteredPetitionsForHierarchy(item, pets);
+    const tr = document.createElement('tr');
+    renderHierarchyRowStyling(tr, item);
+
+    const isStation = item.type === 'station';
+    const isMyStation = isStation && currentUser && currentUser.role === 'station' && item.name === currentUser.psName;
+    const nameLabel = isStation ? `<strong>${item.name}</strong> ${isMyStation ? '<span class="badge" style="background:#ca8a04; color:white; font-size:0.68rem; margin-left:4px;">YOUR PS</span>' : ''}` : `<strong>${item.name}</strong>`;
+
+    const counts = MO_WISE_COLUMNS.map(m => pts.filter(p => p.mo === m).length);
+    const otherCount = pts.filter(p => !MO_WISE_COLUMNS.includes(p.mo)).length;
+
+    tr.innerHTML = `
+      <td>${isStation ? item.sl : ''}</td>
+      <td style="white-space: nowrap;">${nameLabel}</td>
+      <td style="font-weight: 700;">${pts.length}</td>
+      ${counts.map(c => `<td>${c > 0 ? `<span class="badge badge-process" style="font-size:0.75rem;">${c}</span>` : '0'}</td>`).join('')}
+      <td>${otherCount > 0 ? `<span class="badge badge-fir" style="font-size:0.75rem;">${otherCount}</span>` : '0'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ==========================================
+// FULL MULTI-SHEET EXCEL EXPORT (ALL 9 SHEETS)
+// ==========================================
+
+function exportExcelAllSheets() {
+  if (typeof XLSX === 'undefined') {
+    showToast('SheetJS library loading... please wait', 'warning');
+    return;
+  }
+
+  showToast('Generating complete 9-sheet master Excel workbook...', 'info');
+
+  let pets = staticPetitions;
+  if (currentUser && currentUser.role === 'station') {
+    pets = pets.filter(p => p.ps_name === currentUser.psName);
+  }
+
+  const wb = XLSX.utils.book_new();
+  const dateStr = new Date().toISOString().slice(0, 10);
+
+  // 1. Total (24 Columns)
+  const totalHeaders = [
+    'SL NO', 'Date', 'Name of the PS', 'Circle Name', 'NCRP/1930', 'Acknowledgement No',
+    'Complaint name & Ph no', 'Victim Age', 'Complainant Address', 'Category of Complaint',
+    'Sub Category of Complaint', 'Lost Amount', 'Hold Amount', 'Status', 'Action taken by PS',
+    'Date of Action', 'Whether FIR is Registered (Cr. No.)', 'Court Memo Filed for Refund in FIR Cases (Yes/No)',
+    'Court Order Obtained or Not', 'No. of Days', 'Lost Amount Details', 'Hold Amount Details', 'Time Line', 'case type'
+  ];
+  const totalRows = pets.map((p, i) => [
+    p.sl_no || (i + 1), p.petition_date || '', p.ps_name || '', p.circle_name || '', p.portal_type || 'NCRP', p.ack_no || '',
+    ((p.complainant_name || '') + '\n' + (p.complainant_phone || '')).trim(), p.victim_age || '', p.complainant_address || '',
+    p.category || 'Online Financial Fraud', p.sub_category || 'UPI Related Frauds',
+    p.lost_amount || 0, p.hold_amount || 0, p.status || 'Under Process', p.action_taken || '', p.date_of_action || '',
+    p.fir_number || '', p.court_memo_filed || 'No', p.court_order_obtained || 'No',
+    p.no_of_days !== undefined ? p.no_of_days : '', p.loss_bucket || '', p.hold_bucket || '',
+    p.timeline_status || '', p.mo || 'Other'
+  ]);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([totalHeaders, ...totalRows]), 'Total');
+
+  // 2. Abstract
+  const abstractRows = [
+    ['From Date', '2026-01-01', 'To Date', dateStr, 'Type of Complainant', 'Total', 'Lost/Hold Amount', 'Total'],
+    ['Status of NCRP/1930 Complaints As on ' + dateStr, 'Amount Wise', 'Total'],
+    ['S. No.', 'Name of the PS', 'Total', 'FIR Registered', 'Rejected', 'NC Registered', 'Closed', 'No Action', 'Withdrawal', 'Under Process', 'Lost Amount (₹)', 'Hold Amount (₹)']
+  ];
+  HIERARCHY_CONFIG.forEach(item => {
+    const pts = getFilteredPetitionsForHierarchy(item, pets);
+    abstractRows.push([
+      item.type === 'station' ? item.sl : '',
+      item.name,
+      pts.length,
+      pts.filter(p => p.status === 'FIR Registered').length,
+      pts.filter(p => p.status === 'Rejected').length,
+      pts.filter(p => p.status === 'NC Registered').length,
+      pts.filter(p => p.status === 'Closed').length,
+      pts.filter(p => p.status === 'No Action' || p.status === 'No Action Needed').length,
+      pts.filter(p => p.status === 'Withdrawal').length,
+      pts.filter(p => p.status === 'Under Process').length,
+      pts.reduce((s, p) => s + (p.lost_amount || 0), 0),
+      pts.reduce((s, p) => s + (p.hold_amount || 0), 0)
+    ]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(abstractRows), 'Abstract');
+
+  // 3. Status of Hold & Refund
+  const holdRefundRows = [
+    ['From Date', '2026-01-01', 'To Date', dateStr, 'Type of Complainant', 'Total'],
+    ['Status of NCRP/1930 Complaints As on ' + dateStr],
+    ['S. No.', 'Name of the PS', 'Total', 'Lost Amount', 'No. of Cases hold', 'Hold Amount', 'No. of Cases Refund Process completed', 'Refund Amount']
+  ];
+  HIERARCHY_CONFIG.forEach(item => {
+    const pts = getFilteredPetitionsForHierarchy(item, pets);
+    holdRefundRows.push([
+      item.type === 'station' ? item.sl : '',
+      item.name,
+      pts.length,
+      pts.reduce((s, p) => s + (p.lost_amount || 0), 0),
+      pts.filter(p => p.hold_amount > 0).length,
+      pts.reduce((s, p) => s + (p.hold_amount || 0), 0),
+      pts.filter(p => p.refund_amount > 0).length,
+      pts.reduce((s, p) => s + (p.refund_amount || 0), 0)
+    ]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(holdRefundRows), 'Status of Hold & Refund');
+
+  // 4. Status Wise
+  const statusWiseRows = [
+    ['From Date', '2026-01-01', 'To Date', dateStr, 'Type of Complainant', 'Total'],
+    ['Status of NCRP/1930 Complaints As on ' + dateStr],
+    ['S. No.', 'Name of the PS', 'Total', 'FIR Registered', 'Rejected', 'NC Registered', 'Closed', 'No Action Needed', 'Withdrawal', 'Under Process']
+  ];
+  HIERARCHY_CONFIG.forEach(item => {
+    const pts = getFilteredPetitionsForHierarchy(item, pets);
+    statusWiseRows.push([
+      item.type === 'station' ? item.sl : '',
+      item.name,
+      pts.length,
+      pts.filter(p => p.status === 'FIR Registered').length,
+      pts.filter(p => p.status === 'Rejected').length,
+      pts.filter(p => p.status === 'NC Registered').length,
+      pts.filter(p => p.status === 'Closed').length,
+      pts.filter(p => p.status === 'No Action' || p.status === 'No Action Needed').length,
+      pts.filter(p => p.status === 'Withdrawal').length,
+      pts.filter(p => p.status === 'Under Process').length
+    ]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(statusWiseRows), 'Status Wise');
+
+  // 5. Time Line
+  const timelineRows = [
+    ['From Date', '2026-01-01', 'To Date', dateStr, 'Type of Complainant', 'Total'],
+    ['Status of Under Process Ack. of NCRP/1930 Complaints As on ' + dateStr],
+    ['S. No.', 'Name of the PS', 'Total', 'Closed/FIR', 'Under Process', 'Below 1 Week', 'Below 2 Weeks', 'Below 1 Month', 'Above 1 Month', 'Above 2 Months', 'Above 3 Months']
+  ];
+  HIERARCHY_CONFIG.forEach(item => {
+    const pts = getFilteredPetitionsForHierarchy(item, pets);
+    const up = pts.filter(p => p.status === 'Under Process');
+    timelineRows.push([
+      item.type === 'station' ? item.sl : '',
+      item.name,
+      pts.length,
+      pts.filter(p => p.status === 'Closed' || p.status === 'FIR Registered').length,
+      up.length,
+      up.filter(p => p.timeline_status === 'Below 1 Week').length,
+      up.filter(p => p.timeline_status === 'Below 2 Weeks').length,
+      up.filter(p => p.timeline_status === 'Below 1 Month').length,
+      up.filter(p => p.timeline_status === 'Above 1 Month').length,
+      up.filter(p => p.timeline_status === 'Above 2 Months').length,
+      up.filter(p => p.timeline_status === 'Above 3 Months').length
+    ]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(timelineRows), 'Time Line');
+
+  // 6. Status of Hold
+  const holdSlabsRows = [
+    ['From Date', '2026-01-01', 'To Date', dateStr, 'Type of Complainant', 'Total'],
+    ['Status of Under Process Ack. of NCRP/1930 Complaints As on ' + dateStr],
+    ['S. No.', 'Name of the PS', 'Under Process', 'Lost Amount', 'Hold Details', '', '', 'Hold Amount', '', ''],
+    ['', '', '', '', 'No. of Ack.', 'Lost Amount', 'Hold Amount', 'Below 50,000', '50,000 - 1,00,000', 'Above 1,00,000']
+  ];
+  HIERARCHY_CONFIG.forEach(item => {
+    const pts = getFilteredPetitionsForHierarchy(item, pets);
+    const up = pts.filter(p => p.status === 'Under Process');
+    const hc = up.filter(p => p.hold_amount > 0);
+    holdSlabsRows.push([
+      item.type === 'station' ? item.sl : '',
+      item.name,
+      up.length,
+      up.reduce((s, p) => s + (p.lost_amount || 0), 0),
+      hc.length,
+      hc.reduce((s, p) => s + (p.lost_amount || 0), 0),
+      hc.reduce((s, p) => s + (p.hold_amount || 0), 0),
+      hc.filter(p => p.hold_amount < 50000).length,
+      hc.filter(p => p.hold_amount >= 50000 && p.hold_amount <= 100000).length,
+      hc.filter(p => p.hold_amount > 100000).length
+    ]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(holdSlabsRows), 'Status of Hold');
+
+  // 7. Lost Amount In Hold
+  const lostSlabsRows = [
+    ['From Date', '2026-01-01', 'To Date', dateStr, 'Type of Complainant', 'Total'],
+    ['Status of Under Process Ack. of NCRP/1930 Complaints As on ' + dateStr],
+    ['S. No.', 'Name of the PS', 'Under Process', 'Lost Amount', 'Hold Details', '', '', 'Lost Amount', '', '', ''],
+    ['', '', '', '', 'No. of Ack.', 'Lost Amount', 'Hold Amount', 'Below 50,000', '50,000 - 1,00,000', '1,00,000 to 10,00,000', 'Above 10,00,000']
+  ];
+  HIERARCHY_CONFIG.forEach(item => {
+    const pts = getFilteredPetitionsForHierarchy(item, pets);
+    const up = pts.filter(p => p.status === 'Under Process');
+    const hc = up.filter(p => p.hold_amount > 0);
+    lostSlabsRows.push([
+      item.type === 'station' ? item.sl : '',
+      item.name,
+      up.length,
+      up.reduce((s, p) => s + (p.lost_amount || 0), 0),
+      hc.length,
+      hc.reduce((s, p) => s + (p.lost_amount || 0), 0),
+      hc.reduce((s, p) => s + (p.hold_amount || 0), 0),
+      hc.filter(p => p.lost_amount < 50000).length,
+      hc.filter(p => p.lost_amount >= 50000 && p.lost_amount <= 100000).length,
+      hc.filter(p => p.lost_amount > 100000 && p.lost_amount <= 1000000).length,
+      hc.filter(p => p.lost_amount > 1000000).length
+    ]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(lostSlabsRows), 'Lost Amount In Hold');
+
+  // 8. MO Wise
+  const moRows = [
+    ['MO Wise Status of NCRP/1930 Complaints As on ' + dateStr],
+    ['S. No.', 'Name of the PS', 'Total', ...MO_WISE_COLUMNS, 'Other / Blanks']
+  ];
+  HIERARCHY_CONFIG.forEach(item => {
+    const pts = getFilteredPetitionsForHierarchy(item, pets);
+    const counts = MO_WISE_COLUMNS.map(m => pts.filter(p => p.mo === m).length);
+    const otherCount = pts.filter(p => !MO_WISE_COLUMNS.includes(p.mo)).length;
+    moRows.push([
+      item.type === 'station' ? item.sl : '',
+      item.name,
+      pts.length,
+      ...counts,
+      otherCount
+    ]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(moRows), 'MO Wise');
+
+  // 9. Guide
+  const guideRows = [
+    ['Fill All Yellow colored head columns in DATA sheet'],
+    [],
+    ['S.No', 'MO', 'Action Taken (Update in Portal options)'],
+    [1, 'Job / Part Time Job', 'Under process'],
+    [2, 'OTP Fraud', 'closed'],
+    [3, 'Screen Sharing (AnyDesk/TeamViewer)', 'rejected'],
+    [4, 'KYC / SIM KYC', 'FIR registered'],
+    [5, 'Fake Customer Care', 'NC Registered'],
+    [6, 'Fake Website', 'No Action'],
+    [7, 'Lottery / Gift Fraud', 'Withdrawal'],
+    [8, 'Loan App Fraud', 'Under process'],
+    [9, 'Digital Arrest', 'Under process / FIR registered'],
+    [10, 'OLX / Fake Seller Fraud', 'closed'],
+    [11, 'Sextortion / Video Call', 'FIR registered'],
+    [12, 'Investment / Stock Market', 'Under process'],
+    [13, 'UPI Related Frauds', 'Under process']
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(guideRows), 'Guide');
+
+  XLSX.writeFile(wb, `Srikakulam_District_Police_NCRP_1930_Master_Sheets_${dateStr}.xlsx`);
+  showToast('Downloaded all 9 sheets successfully in Master Excel Workbook!', 'success');
+}
+
+function exportSingleSheet(sheetName) {
+  if (typeof XLSX === 'undefined') {
+    showToast('SheetJS library loading... please wait', 'warning');
+    return;
+  }
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const wb = XLSX.utils.book_new();
+
+  let tableId = '';
+  if (sheetName === 'Abstract') tableId = 'abstractTable';
+  else if (sheetName === 'Status of Hold & Refund') tableId = 'holdRefundTable';
+  else if (sheetName === 'Status Wise') tableId = 'statusWiseTable';
+  else if (sheetName === 'Time Line') tableId = 'timelineTable';
+  else if (sheetName === 'Status of Hold') tableId = 'holdSlabsTable';
+  else if (sheetName === 'Lost Amount In Hold') tableId = 'lostSlabsTable';
+  else if (sheetName === 'MO Wise') tableId = 'moWiseTable';
+
+  const tableEl = document.getElementById(tableId);
+  if (tableEl) {
+    const ws = XLSX.utils.table_to_sheet(tableEl);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
+    XLSX.writeFile(wb, `Srikakulam_Police_${sheetName.replace(/\s+/g, '_')}_${dateStr}.xlsx`);
+    showToast(`Exported ${sheetName} sheet to Excel!`, 'success');
+  } else {
+    exportExcelAllSheets();
   }
 }
 

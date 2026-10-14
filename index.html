@@ -142,23 +142,35 @@
       <!-- Navigation Tabs -->
       <nav class="nav-tabs-wrapper">
         <button class="nav-tab active" onclick="switchTab('petitionsTab')">
-          📋 Petitions Management (పిటిషన్లు)
+          📋 Master Petitions (24 కాలమ్స్)
           <span class="tab-badge" id="tabBadgePetitions">1,885</span>
         </button>
-        <button class="nav-tab" onclick="switchTab('analyticsTab')">
-          📊 Analytics & Charts (విశ్లేషణ)
-        </button>
         <button class="nav-tab" onclick="switchTab('abstractTab')">
-          📑 Abstract Report (అబ్‌స్ట్రాక్ట్ నివేదిక)
+          📑 Abstract (అబ్‌స్ట్రాక్ట్)
         </button>
         <button class="nav-tab" onclick="switchTab('holdRefundTab')">
-          💰 Hold & Refund (హోల్డ్ & రీఫండ్)
+          💰 Status of Hold & Refund
         </button>
-        <button class="nav-tab" onclick="switchTab('moGuideTab')">
-          🏷️ Modus Operandi Guide (మోసాల రకాలు)
+        <button class="nav-tab" onclick="switchTab('statusWiseTab')">
+          📊 Status Wise
         </button>
         <button class="nav-tab" onclick="switchTab('timelineTab')">
-          ⏳ Timeline & Aging (కాలపరిమితి పెండెన్సీ)
+          ⏳ Time Line (Ageing)
+        </button>
+        <button class="nav-tab" onclick="switchTab('holdSlabsTab')">
+          🔒 Status of Hold Slabs
+        </button>
+        <button class="nav-tab" onclick="switchTab('lostSlabsTab')">
+          💸 Lost Amount In Hold
+        </button>
+        <button class="nav-tab" onclick="switchTab('moWiseTab')">
+          🏷️ MO Wise Matrix
+        </button>
+        <button class="nav-tab" onclick="switchTab('analyticsTab')">
+          📈 Analytics & Charts
+        </button>
+        <button class="nav-tab" onclick="switchTab('moGuideTab')">
+          📖 Guide & SOP
         </button>
         <button class="nav-tab" id="adminUsersTabBtn" style="display: none;" onclick="switchTab('adminUsersTab')">
           🛡️ Station Logins & Settings (అడ్మిన్)
@@ -247,8 +259,11 @@
               <button class="btn-primary" onclick="openExcelImportModal()" style="background: #059669; color: white;">
                 📊 Import Excel / Sheets (ఎక్సెల్ నుండి కొత్తవి చేర్చండి)
               </button>
+              <button class="btn-primary" onclick="exportExcelAllSheets()" style="background: #047857; color: white; font-weight: 700;">
+                📥 Export All Sheets (అన్ని 9 షీట్లతో కూడిన Excel)
+              </button>
               <button class="btn-secondary" onclick="exportCSV()">
-                📥 Export CSV
+                📁 Export Petitions (.xlsx)
               </button>
               <button class="btn-secondary" onclick="window.print()">
                 🖨️ Print View
@@ -404,6 +419,185 @@
         </div>
       </section>
 
+      <!-- TAB 4B: STATUS WISE REPORT -->
+      <section id="statusWiseTab" class="tab-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-size: 1.2rem; color: #0b1e3f;">Status Wise Report (స్టేటస్ వారీగా పూర్తి నివేదిక)</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">Circle & Station-wise breakdown: FIR, Rejected, NC, Closed, No Action, Withdrawal & Under Process</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary" onclick="window.print()">🖨️ Print Statement</button>
+            <button class="btn-primary" onclick="exportSingleSheet('Status Wise')">📊 Export Sheet (.xlsx)</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="statusWiseTable">
+            <thead>
+              <tr>
+                <th>S. No.</th>
+                <th>Name of the PS</th>
+                <th>Total</th>
+                <th class="th-fir">FIR Registered</th>
+                <th>Rejected</th>
+                <th>NC Registered</th>
+                <th class="th-closed">Closed</th>
+                <th>No Action Needed</th>
+                <th>Withdrawal</th>
+                <th class="th-process">Under Process</th>
+              </tr>
+            </thead>
+            <tbody id="statusWiseTableBody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 4C: TIMELINE & AGING -->
+      <section id="timelineTab" class="tab-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-size: 1.2rem; color: #0b1e3f;">Time Line & Pendency Report (కాలపరిమితి పెండెన్సీ నివేదిక)</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">Circle & Station-wise Under Process ageing: Below 1 Week, Below 2 Weeks, Below 1 Month, Above 1 Month, Above 2 Months, Above 3 Months</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary" onclick="window.print()">🖨️ Print Statement</button>
+            <button class="btn-primary" onclick="exportSingleSheet('Time Line')">📊 Export Sheet (.xlsx)</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="timelineTable">
+            <thead>
+              <tr>
+                <th>S. No.</th>
+                <th>Name of the PS</th>
+                <th>Total</th>
+                <th class="th-closed">Closed / FIR</th>
+                <th class="th-process">Under Process</th>
+                <th>Below 1 Week</th>
+                <th>Below 2 Weeks</th>
+                <th>Below 1 Month</th>
+                <th style="color: #d97706;">Above 1 Month</th>
+                <th style="color: #b45309;">Above 2 Months</th>
+                <th style="color: #dc2626; font-weight: 700;">Above 3 Months</th>
+              </tr>
+            </thead>
+            <tbody id="timelineTableBody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 4D: STATUS OF HOLD SLABS -->
+      <section id="holdSlabsTab" class="tab-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-size: 1.2rem; color: #0b1e3f;">Status of Hold Slabs (హోల్డ్ అమౌంట్ స్లాబ్‌ల నివేదిక)</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">Under Process petitions hold amount distribution: Below ₹50,000 | ₹50,000 - ₹1,00,000 | Above ₹1,00,000</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary" onclick="window.print()">🖨️ Print Statement</button>
+            <button class="btn-primary" onclick="exportSingleSheet('Status of Hold')">📊 Export Sheet (.xlsx)</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="holdSlabsTable">
+            <thead>
+              <tr>
+                <th rowspan="2">S. No.</th>
+                <th rowspan="2">Name of the PS</th>
+                <th rowspan="2">Under Process</th>
+                <th rowspan="2">Lost Amount (₹)</th>
+                <th colspan="3" style="text-align: center; background: #0f2b5c;">Hold Details</th>
+                <th colspan="3" style="text-align: center; background: #047857;">Hold Amount Slabs</th>
+              </tr>
+              <tr>
+                <th>No. of Ack</th>
+                <th>Lost Amount (₹)</th>
+                <th class="th-hold">Hold Amount (₹)</th>
+                <th>Below ₹50,000</th>
+                <th>₹50,000 - ₹1,00,000</th>
+                <th class="th-gold">Above ₹1,00,000</th>
+              </tr>
+            </thead>
+            <tbody id="holdSlabsTableBody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 4E: LOST AMOUNT IN HOLD SLABS -->
+      <section id="lostSlabsTab" class="tab-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-size: 1.2rem; color: #0b1e3f;">Lost Amount In Hold Slabs (లాస్ట్ అమౌంట్ స్లాబ్‌ల నివేదిక)</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">Under Process petitions with money frozen - categorized by Lost Amount: &lt; ₹50k | ₹50k-₹1L | ₹1L-₹10L | &gt; ₹10L</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary" onclick="window.print()">🖨️ Print Statement</button>
+            <button class="btn-primary" onclick="exportSingleSheet('Lost Amount In Hold')">📊 Export Sheet (.xlsx)</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="lostSlabsTable">
+            <thead>
+              <tr>
+                <th rowspan="2">S. No.</th>
+                <th rowspan="2">Name of the PS</th>
+                <th rowspan="2">Under Process</th>
+                <th rowspan="2">Lost Amount (₹)</th>
+                <th colspan="3" style="text-align: center; background: #0f2b5c;">Hold Details</th>
+                <th colspan="4" style="text-align: center; background: #b91c1c;">Lost Amount Slabs</th>
+              </tr>
+              <tr>
+                <th>No. of Ack</th>
+                <th>Lost Amount (₹)</th>
+                <th class="th-hold">Hold Amount (₹)</th>
+                <th>Below ₹50,000</th>
+                <th>₹50,000 - ₹1,00,000</th>
+                <th>₹1,00,000 - ₹10,00,000</th>
+                <th class="th-fir">Above ₹10,00,000</th>
+              </tr>
+            </thead>
+            <tbody id="lostSlabsTableBody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 4F: MO WISE MATRIX -->
+      <section id="moWiseTab" class="tab-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-size: 1.2rem; color: #0b1e3f;">MO Wise Status Matrix (మోసాల రకాల వారీగా నివేదిక)</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">Circle & Station-wise petition counts across all 20+ Modus Operandi categories</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary" onclick="window.print()">🖨️ Print Statement</button>
+            <button class="btn-primary" onclick="exportSingleSheet('MO Wise')">📊 Export Sheet (.xlsx)</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="moWiseTable">
+            <thead id="moWiseTableHead">
+              <!-- Dynamically populated headers -->
+            </thead>
+            <tbody id="moWiseTableBody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <!-- TAB 5: MODUS OPERANDI GUIDE -->
       <section id="moGuideTab" class="tab-content" style="display: none;">
         <h2 style="font-size: 1.2rem; color: #0b1e3f; margin-bottom: 6px;">NCRP Modus Operandi (MO) & Standard Operating Procedure</h2>
@@ -413,56 +607,6 @@
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px;" id="moGuideGrid">
           <!-- Dynamic MO Cards -->
-        </div>
-      </section>
-
-      <!-- TAB 6: TIMELINE & AGING -->
-      <section id="timelineTab" class="tab-content" style="display: none;">
-        <h2 style="font-size: 1.2rem; color: #0b1e3f; margin-bottom: 6px;">Petition Ageing & Pendency Analysis (కాలపరిమితి విశ్లేషణ)</h2>
-        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
-          Cases requiring priority disposal: Petitions older than 90 days must be reviewed for immediate FIR registration or Closure.
-        </p>
-
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
-          <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; border-left: 4px solid #dc2626;">
-            <div style="font-size: 0.8rem; font-weight: 600; color: #991b1b;">URGENT ATTENTION (అత్యవసరం)</div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #dc2626; margin: 4px 0;">Above 3 Months (> 90 Days)</div>
-            <div style="font-size: 0.82rem; color: #b91c1c;">1,885 petitions pending from Jan-Oct 2026</div>
-          </div>
-
-          <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 16px; border-left: 4px solid #d97706;">
-            <div style="font-size: 0.8rem; font-weight: 600; color: #92400e;">MODERATE (మధ్యస్థం)</div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #d97706; margin: 4px 0;">1 to 3 Months (30 - 90 Days)</div>
-            <div style="font-size: 0.82rem; color: #b45309;">Requires regular follow-up with banks</div>
-          </div>
-
-          <div style="background: #f0fdf4; border: 1px solid #dcfce7; border-radius: 8px; padding: 16px; border-left: 4px solid #16a34a;">
-            <div style="font-size: 0.8rem; font-weight: 600; color: #166534;">FRESH COMPLAINTS (తాజా పిటిషన్లు)</div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #16a34a; margin: 4px 0;">Below 1 Month (< 30 Days)</div>
-            <div style="font-size: 0.82rem; color: #15803d;">Immediate 1930 freezing window</div>
-          </div>
-        </div>
-
-        <div class="table-responsive">
-          <table class="data-table" id="timelineTable">
-            <thead>
-              <tr>
-                <th>S.No</th>
-                <th>Ack Number</th>
-                <th>PS Name</th>
-                <th>Complainant</th>
-                <th>Date Received</th>
-                <th>Days Pending</th>
-                <th>Lost Amount (₹)</th>
-                <th>Hold Amount (₹)</th>
-                <th>Current Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="timelineTableBody">
-              <!-- Loaded dynamically -->
-            </tbody>
-          </table>
         </div>
       </section>
 
