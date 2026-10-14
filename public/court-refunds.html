@@ -521,6 +521,71 @@
       color: #0f172a;
     }
 
+    /* Form Styles for Add/Edit Modal */
+    .form-section-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #0b1e3f;
+      background: #f1f5f9;
+      padding: 8px 14px;
+      border-radius: 6px;
+      margin: 16px 0 10px 0;
+      border-left: 4px solid var(--court-gold);
+    }
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+    .form-row-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-field label {
+      font-size: 0.73rem;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .form-field input, .form-field select, .form-field textarea {
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      background: #ffffff;
+      color: #0f172a;
+      width: 100%;
+    }
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+      outline: none;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+    .btn-sm-edit {
+      background: #d97706;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 4px;
+      transition: background 0.15s;
+    }
+    .btn-sm-edit:hover {
+      background: #b45309;
+    }
+
     @media print {
       .court-header, .kpi-container-court, .filter-panel, .view-tabs-bar, .court-actions, .btn-sm-view {
         display: none !important;
@@ -570,6 +635,9 @@
       </div>
 
       <div class="court-actions">
+        <button class="btn-court-nav" onclick="openAddCaseModal()" style="background: #16a34a; border-color: #22c55e; color: #ffffff; font-weight: 700; box-shadow: 0 2px 6px rgba(22, 163, 74, 0.4);">
+          ➕ Add New Case / కొత్త కేసు
+        </button>
         <a href="index.html#home" class="btn-court-nav" style="background: rgba(255, 255, 255, 0.22); font-weight: 700;">
           🏠 Portal Home / హోమ్
         </a>
@@ -727,9 +795,12 @@
 
         <div class="filter-bar-footer">
           <div style="font-size: 0.82rem; color: #64748b;">
-            💡 <em>Click any row to open the complete Case Particulars Sheet & Print order details.</em>
+            💡 <em>Click any row to open the complete Case Particulars Sheet, or click <strong>✏️ Edit</strong> to update any of the 23 columns.</em>
           </div>
           <div>
+            <button class="btn-court-nav" onclick="openAddCaseModal()" style="color: #ffffff; background: #16a34a; border-color: #15803d; font-weight: 700; margin-right: 8px;">
+              ➕ Add New Case / కొత్త కేసు
+            </button>
             <button class="btn-court-nav" onclick="resetAllFilters()" style="color: #475569; background: #e2e8f0; border-color: #cbd5e1;">
               ✕ Reset All Filters
             </button>
@@ -832,6 +903,241 @@
     <div class="modal-dialog" id="caseModalBody">
       <!-- Modal Content Populated Dynamically -->
     </div>
+  </div>
+
+  <!-- Add / Edit Case Form Modal (All 23 Columns) -->
+  <div class="modal-overlay" id="caseFormModal" onclick="if(event.target === this) closeCaseFormModal()">
+    <div class="modal-dialog" style="max-width: 920px;">
+      <div class="modal-case-header">
+        <div>
+          <span class="badge badge-gold" id="caseFormBadge">Case Entry</span>
+          <h2 id="caseFormTitle" style="font-size: 1.35rem; color: #0b1e3f; margin: 4px 0;">Add / Edit Court Refund Case</h2>
+          <div style="color: #64748b; font-size: 0.82rem;">Fill or update all official 23 columns. Data will be saved and persisted immediately.</div>
+        </div>
+        <button onclick="closeCaseFormModal()" style="background: none; border: none; font-size: 1.5rem; color: #64748b; cursor: pointer;">✕</button>
+      </div>
+
+      <div class="modal-card">
+        <form id="courtCaseForm" onsubmit="handleCaseFormSubmit(event)">
+          <input type="hidden" id="form_edit_s_no" value="">
+
+          <!-- SECTION 1: Station & FIR Details -->
+          <div class="form-section-title">📌 Section 1: Police Station, FIR & Category (కాలమ్స్ 1 - 6, 20, 23)</div>
+          <div class="form-row-3">
+            <div class="form-field">
+              <label>1. S.No (క్ర.సం)</label>
+              <input type="number" id="form_s_no" required readonly style="background: #f1f5f9; font-weight: 700;">
+            </div>
+            <div class="form-field">
+              <label>3. Police Station (పీఎస్) *</label>
+              <select id="form_police_station" required onchange="handleFormStationChange()">
+                <option value="">Select Police Station</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>2. Circle (సర్కిల్)</label>
+              <input type="text" id="form_circle" placeholder="Circle name" required>
+            </div>
+          </div>
+
+          <div class="form-row-3">
+            <div class="form-field">
+              <label>4. FIR No (క్రైమ్ నం) *</label>
+              <input type="text" id="form_fir_no" placeholder="e.g. 45/2026" required>
+            </div>
+            <div class="form-field">
+              <label>5. Year (సంవత్సరం) *</label>
+              <select id="form_year" required>
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="2021">2021</option>
+                <option value="2027">2027</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>6. Sub-Category (నేరం రకం) *</label>
+              <input type="text" id="form_sub_category" list="categoryList" placeholder="e.g. Job, Investment, Fake Website" required>
+              <datalist id="categoryList">
+                <option value="Investment">
+                <option value="Job">
+                <option value="Digital Arrest">
+                <option value="Screen Sharing">
+                <option value="Fake Customer Care">
+                <option value="Fake Website">
+                <option value="Loan">
+                <option value="OTP">
+                <option value="UPI fraud">
+                <option value="Apk Installation">
+                <option value="Matrimonial">
+              </datalist>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-field">
+              <label>20. Technical Asst (టెక్నికల్ అసిస్టెంట్)</label>
+              <input type="text" id="form_technical_asst" list="techList" placeholder="e.g. Sudheer, Sarat, Satya, Chakri, Eswar">
+              <datalist id="techList">
+                <option value="Sudheer">
+                <option value="Sarat">
+                <option value="Satya">
+                <option value="Chakri">
+                <option value="Eswar">
+                <option value="Aravind">
+                <option value="Own">
+              </datalist>
+            </div>
+            <div class="form-field">
+              <label>23. Stage of the Case (కేసు ప్రస్తుత స్థితి)</label>
+              <input type="text" id="form_stage_of_case" list="stageList" placeholder="e.g. UI, PT, Suspect verification pending">
+              <datalist id="stageList">
+                <option value="UI">
+                <option value="PT">
+                <option value="Suspect verification pending">
+                <option value="Charge Sheet field">
+                <option value="Returned with certain remarks, To be submitted again">
+              </datalist>
+            </div>
+          </div>
+
+          <!-- SECTION 2: Fraud, Lien & Memo Details -->
+          <div class="form-section-title">💰 Section 2: Amounts, Lien & Court Memo (కాలమ్స్ 7 - 11)</div>
+          <div class="form-row-3">
+            <div class="form-field">
+              <label>7. Lost Amount (మోసపోయిన మొత్తం ₹) *</label>
+              <input type="number" id="form_lost" placeholder="0" required min="0">
+            </div>
+            <div class="form-field">
+              <label>8. Lien / Hold (హోల్డ్ మొత్తం ₹)</label>
+              <input type="number" id="form_lien" placeholder="0" min="0">
+            </div>
+            <div class="form-field">
+              <label>9. Memo Filed? (మెమో దాఖలైందా?)</label>
+              <select id="form_memo_filed">
+                <option value="Yes">Yes (దాఖలు చేసినవి)</option>
+                <option value="No">No (ఇంకా దాఖలు కానివి)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-field">
+              <label>10. Memo Filed Amount (మెమో మొత్తం ₹)</label>
+              <input type="number" id="form_memo_filed_amount" placeholder="0" min="0">
+            </div>
+            <div class="form-field">
+              <label>11. Memo Filed Date / Reason if not filed (తేదీ / కారణం)</label>
+              <input type="text" id="form_memo_filed_date_or_reason" placeholder="e.g. 2026-02-27 or Complainant Unwilling">
+            </div>
+          </div>
+
+          <!-- SECTION 3: Hon'ble Court Particulars -->
+          <div class="form-section-title">🏛️ Section 3: Hon'ble Court Orders (కాలమ్స్ 12, 14, 18, 19, 21, 22)</div>
+          <div class="form-row-3">
+            <div class="form-field">
+              <label>12. Court Order Received? (ఆర్డర్ వచ్చిందా?)</label>
+              <select id="form_court_order_received">
+                <option value="Yes">Yes (ఆర్డర్ వచ్చింది)</option>
+                <option value="No">No (ఆర్డర్ పెండింగ్)</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>14. Order Issued Amount (ఆర్డర్ మొత్తం ₹)</label>
+              <input type="number" id="form_court_order_amount" placeholder="0" min="0">
+            </div>
+            <div class="form-field">
+              <label>18. Court Order Received Date (తేదీ)</label>
+              <input type="text" id="form_court_order_date" placeholder="e.g. 2026-04-06 or 11.03.2025">
+            </div>
+          </div>
+
+          <div class="form-row-3">
+            <div class="form-field">
+              <label>21. Court Name (గౌరవ కోర్టు)</label>
+              <input type="text" id="form_court_name" list="courtList" placeholder="e.g. JMFC, Srikakulam">
+              <datalist id="courtList">
+                <option value="JMFC, Srikakulam">
+                <option value="AJMFC Srikakulam">
+                <option value="JMFC, Kotabommali">
+                <option value="JMFC, Sompeta">
+                <option value="JMFC, Tekkali">
+                <option value="JMFC, Itchapuram">
+                <option value="Judicial first class majestrate court, Ponduru">
+                <option value="Junior first class majestrate court, Amadalavalasa">
+                <option value="Junior first class majestrate court, Palasa">
+                <option value="JMFC, Narasannapeta">
+                <option value="JMFC, Pathapatnam">
+                <option value="JMFC, Kothuru">
+              </datalist>
+            </div>
+            <div class="form-field">
+              <label>22. Judge Name (న్యాయమూర్తి)</label>
+              <input type="text" id="form_judge_name" list="judgeList" placeholder="e.g. KM Jamruth Begum, S.Vani">
+              <datalist id="judgeList">
+                <option value="KM Jamruth Begum">
+                <option value="S.Vani">
+                <option value="Sri.K.Srinivasarao">
+                <option value="Smt.B.Ramya">
+                <option value="Sri. Anurag">
+                <option value="Smt. U.Madhudri">
+                <option value="Smt.D.Jyotshna">
+                <option value="Sri.T.Paresh Kumar">
+                <option value="Smt.K.Rani">
+              </datalist>
+            </div>
+            <div class="form-field">
+              <label>19. Reasons for Delay / Remarks</label>
+              <input type="text" id="form_reasons_not_received" placeholder="e.g. Pending at court, Improper Order">
+            </div>
+          </div>
+
+          <!-- SECTION 4: Bank Disbursement Status -->
+          <div class="form-section-title">🏦 Section 4: Bank Refund & Recovery Status (కాలమ్స్ 13, 15, 16, 17)</div>
+          <div class="form-row-2">
+            <div class="form-field">
+              <label>13. Amount Refunded? (రీఫండ్ స్థితి)</label>
+              <select id="form_amount_refunded_status">
+                <option value="Yes">Yes (పూర్తి రీఫండ్ - Full)</option>
+                <option value="Partial">Partial (పాక్షిక రీఫండ్)</option>
+                <option value="No">No / Pending (ఇంకా జమ కాలేదు)</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>15. Refund From Bank (బ్యాంక్ నుండి రీఫండ్ మొత్తం / MRM)</label>
+              <input type="text" id="form_refund_from_bank" placeholder="e.g. 173000 or 165627 + (11000 MRM)">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-field">
+              <label>16. Funds Not Available in Banks (₹)</label>
+              <input type="number" id="form_funds_not_available" placeholder="0" min="0">
+            </div>
+            <div class="form-field">
+              <label>17. To be Refunded From Bank (ఇంకా రావాల్సిన మొత్తం ₹)</label>
+              <input type="text" id="form_to_be_refunded_from_bank" placeholder="e.g. 50000 or 0">
+            </div>
+          </div>
+
+          <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; padding-top: 14px; border-top: 1px solid #e2e8f0;">
+            <button type="button" class="btn-court-nav" onclick="closeCaseFormModal()" style="color: #475569; background: #e2e8f0; border-color: #cbd5e1;">
+              Cancel / రద్దు
+            </button>
+            <button type="submit" class="btn-court-nav btn-court-primary" style="padding: 10px 24px; font-size: 0.95rem;">
+              💾 Save Case Details / వివరాలు సేవ్ చేయండి
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="courtToast" style="position: fixed; bottom: 24px; right: 24px; z-index: 10000; background: #0b1e3f; color: white; padding: 14px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); border-left: 5px solid #10b981; font-weight: 600; font-size: 0.9rem; display: none; align-items: center; gap: 10px;">
+    <span id="courtToastMsg">Notification message</span>
   </div>
 
   <script src="js/court_refunds.js"></script>

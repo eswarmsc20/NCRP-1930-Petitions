@@ -997,6 +997,72 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // 15. COURT REFUNDS API
+    if (pathname.startsWith('/api/court-refunds')) {
+      const courtJsonPath = path.join(__dirname, 'data', 'court_refunds.json');
+      const publicCourtJsonPath = path.join(PUBLIC_DIR, 'data', 'court_refunds.json');
+
+      const readCourtData = () => {
+        if (fs.existsSync(courtJsonPath)) {
+          return JSON.parse(fs.readFileSync(courtJsonPath, 'utf8'));
+        } else if (fs.existsSync(publicCourtJsonPath)) {
+          return JSON.parse(fs.readFileSync(publicCourtJsonPath, 'utf8'));
+        }
+        return null;
+      };
+
+      const writeCourtData = (data) => {
+        const str = JSON.stringify(data, null, 2);
+        try { fs.writeFileSync(courtJsonPath, str, 'utf8'); } catch (e) {}
+        try { fs.writeFileSync(publicCourtJsonPath, str, 'utf8'); } catch (e) {}
+      };
+
+      if (pathname === '/api/court-refunds' && req.method === 'GET') {
+        const data = readCourtData();
+        return sendJson(res, 200, data || {});
+      }
+
+      if (pathname === '/api/court-refunds' && req.method === 'POST') {
+        const body = await parseJsonBody(req);
+        const data = readCourtData();
+        if (data && Array.isArray(data.cases)) {
+          data.cases.push(body);
+          writeCourtData(data);
+          return sendJson(res, 201, { success: true, case: body });
+        }
+        return sendJson(res, 400, { error: 'Failed to save case' });
+      }
+
+      const matchId = pathname.match(/^\/api\/court-refunds\/([^/]+)$/);
+      if (matchId && req.method === 'PUT') {
+        const id = matchId[1];
+        const body = await parseJsonBody(req);
+        const data = readCourtData();
+        if (data && Array.isArray(data.cases)) {
+          const idx = data.cases.findIndex(c => String(c.s_no) === String(id) || String(c['S No']) === String(id));
+          if (idx !== -1) {
+            data.cases[idx] = body;
+          } else {
+            data.cases.push(body);
+          }
+          writeCourtData(data);
+          return sendJson(res, 200, { success: true, case: body });
+        }
+        return sendJson(res, 404, { error: 'Case not found' });
+      }
+
+      if (matchId && req.method === 'DELETE') {
+        const id = matchId[1];
+        const data = readCourtData();
+        if (data && Array.isArray(data.cases)) {
+          data.cases = data.cases.filter(c => String(c.s_no) !== String(id) && String(c['S No']) !== String(id));
+          writeCourtData(data);
+          return sendJson(res, 200, { success: true });
+        }
+        return sendJson(res, 404, { error: 'Case not found' });
+      }
+    }
+
     // Default: Serve frontend static files
     serveStatic(req, res, pathname);
 

@@ -5816,7 +5816,7 @@ window.FALLBACK_COURT_DATA = {
 };
 
 // Srikakulam District Police - Court Refund Memos & Orders Management System
-// JavaScript Logic & State Management
+// JavaScript Logic & State Management with Case Adding & Editing Support
 
 let courtData = null;
 let currentTab = 'casesView';
@@ -5857,6 +5857,7 @@ function formatINRShort(amount) {
 document.addEventListener('DOMContentLoaded', async () => {
   await loadCourtData();
   setupEventListeners();
+  populateFormStations();
   renderKPIs();
   populateDropdownFilters();
   renderCasesTable();
@@ -5878,7 +5879,21 @@ async function loadCourtData() {
   }
 
   if (!courtData && window.FALLBACK_COURT_DATA) {
-    courtData = window.FALLBACK_COURT_DATA;
+    courtData = JSON.parse(JSON.stringify(window.FALLBACK_COURT_DATA));
+  }
+
+  // Check localStorage for persisted user edits or additions
+  const localCases = localStorage.getItem('court_refund_cases_full');
+  if (localCases && courtData) {
+    try {
+      const parsed = JSON.parse(localCases);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        courtData.cases = parsed;
+        recalculateCourtStats();
+      }
+    } catch (e) {
+      console.warn('Error reading court_refund_cases_full:', e);
+    }
   }
 }
 
@@ -5997,7 +6012,6 @@ function renderKPIs() {
 function populateDropdownFilters() {
   if (!courtData || !courtData.cases) return;
 
-  // Tech assistants
   const techSet = new Set();
   const yearSet = new Set();
   courtData.cases.forEach(c => {
@@ -6007,22 +6021,28 @@ function populateDropdownFilters() {
 
   const techSelect = document.getElementById('filterTech');
   if (techSelect) {
+    const currentTech = activeFilters.techAsst;
+    techSelect.innerHTML = '<option value="all">All Tech Assistants (అందరూ)</option>';
     const sortedTech = Array.from(techSet).sort();
     sortedTech.forEach(t => {
       const opt = document.createElement('option');
       opt.value = t;
       opt.textContent = t;
+      if (t === currentTech) opt.selected = true;
       techSelect.appendChild(opt);
     });
   }
 
   const yearSelect = document.getElementById('filterYear');
   if (yearSelect) {
+    const currentYear = activeFilters.year;
+    yearSelect.innerHTML = '<option value="all">All Years (2021-2026)</option>';
     const sortedYears = Array.from(yearSet).sort((a,b) => b - a);
     sortedYears.forEach(y => {
       const opt = document.createElement('option');
       opt.value = y;
       opt.textContent = y;
+      if (String(y) === String(currentYear)) opt.selected = true;
       yearSelect.appendChild(opt);
     });
   }
@@ -6055,6 +6075,68 @@ function populateStationDropdown() {
     if (ps === currentVal) opt.selected = true;
     psSelect.appendChild(opt);
   });
+}
+
+function populateFormStations() {
+  const formPsSelect = document.getElementById('form_police_station');
+  if (!formPsSelect) return;
+
+  formPsSelect.innerHTML = '<option value="">Select Police Station</option>';
+
+  const stations = (courtData && courtData.ps_mapping) ? courtData.ps_mapping : [
+    { ps: 'Srikakulam I Town', circle: 'Srikakulam Rural Circle' },
+    { ps: 'Srikakulam Rural', circle: 'Srikakulam Rural Circle' },
+    { ps: 'Gara', circle: 'Srikakulam Rural Circle' },
+    { ps: 'Srikakulam II Town', circle: 'Srikakulam II Town Circle' },
+    { ps: 'Amadalavalasa', circle: 'Amadalavalasa Circle' },
+    { ps: 'Sarubujjili', circle: 'Amadalavalasa Circle' },
+    { ps: 'Burja', circle: 'Amadalavalasa Circle' },
+    { ps: 'Ponduru', circle: 'Amadalavalasa Circle' },
+    { ps: 'J.R.Puram', circle: 'J.R.Puram Circle' },
+    { ps: 'Etcherla', circle: 'J.R.Puram Circle' },
+    { ps: 'Laveru', circle: 'J.R.Puram Circle' },
+    { ps: 'G. Sigadam', circle: 'J.R.Puram Circle' },
+    { ps: 'Tekkali PS', circle: 'Tekkali PS Circle' },
+    { ps: 'Kotabommali', circle: 'Tekkali Rural Circle' },
+    { ps: 'Santhabommali', circle: 'Tekkali Rural Circle' },
+    { ps: 'Naupada', circle: 'Tekkali Rural Circle' },
+    { ps: 'Nandigam', circle: 'Tekkali Rural Circle' },
+    { ps: 'Narasannapeta', circle: 'Narasannapeta Circle' },
+    { ps: 'Jalumuru', circle: 'Narasannapeta Circle' },
+    { ps: 'Polaki', circle: 'Narasannapeta Circle' },
+    { ps: 'Saravakota', circle: 'Narasannapeta Circle' },
+    { ps: 'Kothuru', circle: 'Kothuru Circle' },
+    { ps: 'Hiramandalam', circle: 'Kothuru Circle' },
+    { ps: 'Pathapatnam', circle: 'Pathapatnam Circle' },
+    { ps: 'Meliaputti', circle: 'Pathapatnam Circle' },
+    { ps: 'Kasibugga', circle: 'Kasibugga Circle' },
+    { ps: 'Vajrapukothuru', circle: 'Kasibugga Rural Circle' },
+    { ps: 'Mandasa', circle: 'Kasibugga Rural Circle' },
+    { ps: 'Sompeta', circle: 'Sompeta Circle' },
+    { ps: 'Baruva', circle: 'Sompeta Circle' },
+    { ps: 'Kanchili', circle: 'Sompeta Circle' },
+    { ps: 'Itchapuram Town', circle: 'Itchapuram Circle' },
+    { ps: 'Itchapuram Rural', circle: 'Itchapuram Circle' },
+    { ps: 'Kaviti', circle: 'Itchapuram Circle' }
+  ];
+
+  stations.forEach(st => {
+    const opt = document.createElement('option');
+    opt.value = st.ps;
+    opt.textContent = `${st.ps} (${st.circle || ''})`;
+    formPsSelect.appendChild(opt);
+  });
+}
+
+function handleFormStationChange() {
+  const ps = document.getElementById('form_police_station').value;
+  const circleInput = document.getElementById('form_circle');
+  if (!ps || !circleInput || !courtData || !courtData.ps_mapping) return;
+
+  const found = courtData.ps_mapping.find(m => m.ps.toLowerCase() === ps.toLowerCase());
+  if (found && found.circle) {
+    circleInput.value = found.circle;
+  }
 }
 
 function getSubDivisionForPS(ps, circle) {
@@ -6110,7 +6192,7 @@ function filterCases() {
     }
 
     // Police Station filter
-    if (activeFilters.ps !== 'all' && c.police_station.trim() !== activeFilters.ps) {
+    if (activeFilters.ps !== 'all' && (c.police_station || '').trim() !== activeFilters.ps) {
       return false;
     }
 
@@ -6302,8 +6384,9 @@ function renderCasesTable() {
         <td style="font-size: 0.78rem; font-weight: 600; color: #0369a1; white-space: nowrap;">${escapeHtml(c.stage_of_case || '-')}</td>
 
         <!-- Action Button -->
-        <td style="text-align: center; position: sticky; right: 0; background: white; z-index: 5;">
-          <button class="btn-sm-view" onclick="event.stopPropagation(); openCaseModal(${c.s_no})">👁️ View</button>
+        <td style="text-align: center; position: sticky; right: 0; background: white; z-index: 5; white-space: nowrap;">
+          <button class="btn-sm-view" onclick="event.stopPropagation(); openCaseModal(${c.s_no})" title="View Details">👁️</button>
+          <button class="btn-sm-edit" onclick="event.stopPropagation(); openEditCaseModal(${c.s_no})" title="Edit Case 23 Columns">✏️ Edit</button>
         </td>
       </tr>
     `;
@@ -6363,7 +6446,7 @@ function renderAbstractTable() {
 
 function openCaseModal(sNo) {
   if (!courtData || !courtData.cases) return;
-  const c = courtData.cases.find(x => x.s_no === sNo);
+  const c = courtData.cases.find(x => Number(x.s_no) === Number(sNo));
   if (!c) return;
 
   const modal = document.getElementById('caseModal');
@@ -6468,9 +6551,11 @@ function openCaseModal(sNo) {
         </table>
       </div>
 
-      <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 10px;">
-        <button class="btn-action" onclick="window.print()">🖨️ Print Case Sheet</button>
-        <button class="btn-primary" onclick="closeCaseModal()">Close</button>
+      <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+        <button class="btn-court-nav" onclick="deleteCase(${c.s_no})" style="background: #fee2e2; border-color: #ef4444; color: #b91c1c; font-weight: 700;">🗑️ Delete Case</button>
+        <button class="btn-court-nav" onclick="closeCaseModal(); openEditCaseModal(${c.s_no})" style="background: #d97706; border-color: #b45309; color: #ffffff; font-weight: 700;">✏️ Edit Case Particulars</button>
+        <button class="btn-court-nav" onclick="window.print()" style="background: #0284c7; border-color: #0369a1; color: white;">🖨️ Print Case Sheet</button>
+        <button class="btn-court-nav" onclick="closeCaseModal()" style="background: #e2e8f0; color: #334155; border-color: #cbd5e1;">Close</button>
       </div>
     </div>
   `;
@@ -6481,6 +6566,320 @@ function openCaseModal(sNo) {
 function closeCaseModal() {
   const modal = document.getElementById('caseModal');
   if (modal) modal.style.display = 'none';
+}
+
+// ==========================================
+// ADD & EDIT CASE FUNCTIONS
+// ==========================================
+
+function openAddCaseModal() {
+  const modal = document.getElementById('caseFormModal');
+  if (!modal) return;
+
+  document.getElementById('form_edit_s_no').value = '';
+  document.getElementById('caseFormBadge').textContent = '➕ New Entry';
+  document.getElementById('caseFormTitle').textContent = 'Add New Court Refund Case / కొత్త కేసు నమోదు';
+
+  // Next S.No
+  const nextSNo = courtData.cases.reduce((max, c) => Math.max(max, Number(c.s_no) || 0), 0) + 1;
+  document.getElementById('form_s_no').value = nextSNo;
+  document.getElementById('form_police_station').value = '';
+  document.getElementById('form_circle').value = '';
+  document.getElementById('form_fir_no').value = '';
+  document.getElementById('form_year').value = '2026';
+  document.getElementById('form_sub_category').value = '';
+  document.getElementById('form_lost').value = '';
+  document.getElementById('form_lien').value = '';
+  document.getElementById('form_memo_filed').value = 'Yes';
+  document.getElementById('form_memo_filed_amount').value = '';
+  document.getElementById('form_memo_filed_date_or_reason').value = '';
+  document.getElementById('form_court_order_received').value = 'Yes';
+  document.getElementById('form_amount_refunded_status').value = 'Yes';
+  document.getElementById('form_court_order_amount').value = '';
+  document.getElementById('form_refund_from_bank').value = '';
+  document.getElementById('form_funds_not_available').value = '';
+  document.getElementById('form_to_be_refunded_from_bank').value = '';
+  document.getElementById('form_court_order_date').value = '';
+  document.getElementById('form_reasons_not_received').value = '';
+  document.getElementById('form_technical_asst').value = '';
+  document.getElementById('form_court_name').value = '';
+  document.getElementById('form_judge_name').value = '';
+  document.getElementById('form_stage_of_case').value = 'UI';
+
+  modal.style.display = 'flex';
+}
+
+function openEditCaseModal(sNo) {
+  if (!courtData || !courtData.cases) return;
+  const c = courtData.cases.find(x => Number(x.s_no) === Number(sNo));
+  if (!c) return;
+
+  const modal = document.getElementById('caseFormModal');
+  if (!modal) return;
+
+  document.getElementById('form_edit_s_no').value = c.s_no;
+  document.getElementById('caseFormBadge').textContent = `✏️ Edit Case #${c.s_no}`;
+  document.getElementById('caseFormTitle').textContent = `Edit Case #${c.s_no} - FIR ${c.fir_no} (${c.police_station})`;
+
+  document.getElementById('form_s_no').value = c.s_no;
+  document.getElementById('form_police_station').value = c.police_station || '';
+  document.getElementById('form_circle').value = c.circle || '';
+  document.getElementById('form_fir_no').value = c.fir_no || '';
+  document.getElementById('form_year').value = c.year || '2026';
+  document.getElementById('form_sub_category').value = c.sub_category || '';
+  document.getElementById('form_lost').value = c.lost || '';
+  document.getElementById('form_lien').value = c.lien || '';
+  document.getElementById('form_memo_filed').value = (c.memo_filed && c.memo_filed.toLowerCase() === 'no') ? 'No' : 'Yes';
+  document.getElementById('form_memo_filed_amount').value = c.memo_filed_amount || '';
+  document.getElementById('form_memo_filed_date_or_reason').value = c.memo_filed_date_or_reason || '';
+  document.getElementById('form_court_order_received').value = (c.court_order_received && c.court_order_received.toLowerCase() === 'no') ? 'No' : 'Yes';
+  
+  let refStat = 'Yes';
+  if (c.amount_refunded_status) {
+    const s = c.amount_refunded_status.toLowerCase();
+    if (s.includes('part')) refStat = 'Partial';
+    else if (s === 'no') refStat = 'No';
+  }
+  document.getElementById('form_amount_refunded_status').value = refStat;
+  document.getElementById('form_court_order_amount').value = c.court_order_amount || '';
+  document.getElementById('form_refund_from_bank').value = c.refund_from_bank_display || (c.refund_from_bank || '');
+  document.getElementById('form_funds_not_available').value = c.funds_not_available || '';
+  document.getElementById('form_to_be_refunded_from_bank').value = c.to_be_refunded_from_bank_display || (c.to_be_refunded_from_bank || '');
+  document.getElementById('form_court_order_date').value = c.court_order_date || '';
+  document.getElementById('form_reasons_not_received').value = c.reasons_not_received || '';
+  document.getElementById('form_technical_asst').value = c.technical_asst || '';
+  document.getElementById('form_court_name').value = c.court_name || '';
+  document.getElementById('form_judge_name').value = c.judge_name || '';
+  document.getElementById('form_stage_of_case').value = c.stage_of_case || '';
+
+  modal.style.display = 'flex';
+}
+
+function closeCaseFormModal() {
+  const modal = document.getElementById('caseFormModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function parseAmountSafe(val) {
+  if (!val) return 0;
+  const str = String(val).replace(/,/g, '').trim();
+  const num = parseInt(str, 10);
+  return isNaN(num) ? 0 : num;
+}
+
+async function handleCaseFormSubmit(e) {
+  e.preventDefault();
+
+  const editSNo = document.getElementById('form_edit_s_no').value;
+  const sNo = editSNo ? parseInt(editSNo, 10) : (courtData.cases.reduce((max, c) => Math.max(max, Number(c.s_no) || 0), 0) + 1);
+
+  const rawRefund = document.getElementById('form_refund_from_bank').value.trim();
+  const rawPending = document.getElementById('form_to_be_refunded_from_bank').value.trim();
+
+  const caseObj = {
+    'S No': String(sNo),
+    's_no': sNo,
+    'Circle': document.getElementById('form_circle').value.trim(),
+    'circle': document.getElementById('form_circle').value.trim(),
+    'POLICE STATION': document.getElementById('form_police_station').value.trim(),
+    'police_station': document.getElementById('form_police_station').value.trim(),
+    'FIR NO': document.getElementById('form_fir_no').value.trim(),
+    'fir_no': document.getElementById('form_fir_no').value.trim(),
+    'Year': document.getElementById('form_year').value,
+    'year': parseInt(document.getElementById('form_year').value, 10),
+    'Sub-Category': document.getElementById('form_sub_category').value.trim(),
+    'sub_category': document.getElementById('form_sub_category').value.trim(),
+    'Lost': document.getElementById('form_lost').value,
+    'lost': parseAmountSafe(document.getElementById('form_lost').value),
+    'lost_display': document.getElementById('form_lost').value,
+    'Lien': document.getElementById('form_lien').value,
+    'lien': parseAmountSafe(document.getElementById('form_lien').value),
+    'lien_display': document.getElementById('form_lien').value,
+    'Memo Filed Yes or No?': document.getElementById('form_memo_filed').value,
+    'memo_filed': document.getElementById('form_memo_filed').value,
+    'Memo Filed Amount': document.getElementById('form_memo_filed_amount').value,
+    'memo_filed_amount': parseAmountSafe(document.getElementById('form_memo_filed_amount').value),
+    'memo_filed_amount_display': document.getElementById('form_memo_filed_amount').value,
+    'Memo Filed date / If Not Filed Reason for not filiing': document.getElementById('form_memo_filed_date_or_reason').value.trim(),
+    'memo_filed_date_or_reason': document.getElementById('form_memo_filed_date_or_reason').value.trim(),
+    'Court order Recieved Yes or No?': document.getElementById('form_court_order_received').value,
+    'court_order_received': document.getElementById('form_court_order_received').value,
+    'Amount Refunded Yes or No or Partial ?': document.getElementById('form_amount_refunded_status').value,
+    'amount_refunded_status': document.getElementById('form_amount_refunded_status').value,
+    'Amount for Which Court Order Was Issued': document.getElementById('form_court_order_amount').value,
+    'court_order_amount': parseAmountSafe(document.getElementById('form_court_order_amount').value),
+    'court_order_amount_display': document.getElementById('form_court_order_amount').value,
+    'Refund From bank': rawRefund,
+    'refund_from_bank': parseAmountSafe(rawRefund),
+    'refund_from_bank_display': rawRefund,
+    'Funds not availble in banks': document.getElementById('form_funds_not_available').value,
+    'funds_not_available': parseAmountSafe(document.getElementById('form_funds_not_available').value),
+    'funds_not_available_display': document.getElementById('form_funds_not_available').value,
+    'To be refunded from Bank': rawPending,
+    'to_be_refunded_from_bank': parseAmountSafe(rawPending),
+    'to_be_refunded_from_bank_display': rawPending,
+    'COURT ORDER RECEIVED DATE': document.getElementById('form_court_order_date').value.trim(),
+    'court_order_date': document.getElementById('form_court_order_date').value.trim(),
+    'Reasons for not Receving Court orders': document.getElementById('form_reasons_not_received').value.trim(),
+    'reasons_not_received': document.getElementById('form_reasons_not_received').value.trim(),
+    'Technical asst': document.getElementById('form_technical_asst').value.trim(),
+    'technical_asst': document.getElementById('form_technical_asst').value.trim(),
+    'Court name': document.getElementById('form_court_name').value.trim(),
+    'court_name': document.getElementById('form_court_name').value.trim(),
+    'Judge Name': document.getElementById('form_judge_name').value.trim(),
+    'judge_name': document.getElementById('form_judge_name').value.trim(),
+    'Stage of the case': document.getElementById('form_stage_of_case').value.trim(),
+    'stage_of_case': document.getElementById('form_stage_of_case').value.trim()
+  };
+
+  if (editSNo) {
+    const idx = courtData.cases.findIndex(c => Number(c.s_no) === sNo);
+    if (idx !== -1) {
+      courtData.cases[idx] = caseObj;
+    }
+  } else {
+    courtData.cases.push(caseObj);
+  }
+
+  // Persist to localStorage
+  localStorage.setItem('court_refund_cases_full', JSON.stringify(courtData.cases));
+
+  // Try saving to backend API if active
+  try {
+    const method = editSNo ? 'PUT' : 'POST';
+    const url = editSNo ? `/api/court-refunds/${sNo}` : '/api/court-refunds';
+    fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(caseObj)
+    }).catch(() => {});
+  } catch (err) {}
+
+  recalculateCourtStats();
+  renderKPIs();
+  populateDropdownFilters();
+  renderCasesTable();
+  renderAbstractTable();
+  closeCaseFormModal();
+
+  showCourtToast(editSNo ? `✓ Case #${sNo} updated successfully!` : `✓ New Case #${sNo} added successfully!`, 'success');
+}
+
+function deleteCase(sNo) {
+  if (!confirm(`Are you sure you want to delete Case #${sNo}? / ఈ కేసును తొలగించాలనుకుంటున్నారా?`)) return;
+
+  courtData.cases = courtData.cases.filter(c => Number(c.s_no) !== Number(sNo));
+  localStorage.setItem('court_refund_cases_full', JSON.stringify(courtData.cases));
+
+  try {
+    fetch(`/api/court-refunds/${sNo}`, { method: 'DELETE' }).catch(() => {});
+  } catch (err) {}
+
+  recalculateCourtStats();
+  renderKPIs();
+  populateDropdownFilters();
+  renderCasesTable();
+  renderAbstractTable();
+  closeCaseModal();
+
+  showCourtToast(`Case #${sNo} removed successfully`, 'info');
+}
+
+function recalculateCourtStats() {
+  if (!courtData || !courtData.cases) return;
+
+  let totalLost = 0;
+  let totalHold = 0;
+  let memosFiledCount = 0;
+  let memosFiledAmount = 0;
+  let memosYetCount = 0;
+  let ordersCount = 0;
+  let ordersAmount = 0;
+  let ordersYetCount = 0;
+  let refFullCount = 0;
+  let refPartialCount = 0;
+  let refFullAmount = 0;
+  let refPartialAmount = 0;
+  let refTotalAmount = 0;
+  let refPendingCount = 0;
+  let refPendingAmount = 0;
+
+  courtData.cases.forEach(c => {
+    const lost = Number(c.lost) || 0;
+    const lien = Number(c.lien) || 0;
+    const isMemo = (c.memo_filed || '').toLowerCase() === 'yes';
+    const memoAmt = Number(c.memo_filed_amount) || 0;
+    const isOrder = (c.court_order_received || '').toLowerCase() === 'yes';
+    const orderAmt = Number(c.court_order_amount) || 0;
+    const refStatus = (c.amount_refunded_status || '').toLowerCase();
+    const refBank = Number(c.refund_from_bank) || 0;
+    const pendingBank = Number(c.to_be_refunded_from_bank) || 0;
+
+    totalLost += lost;
+    totalHold += lien;
+    if (isMemo) {
+      memosFiledCount++;
+      memosFiledAmount += memoAmt;
+    } else {
+      memosYetCount++;
+    }
+
+    if (isOrder) {
+      ordersCount++;
+      ordersAmount += orderAmt;
+    } else {
+      ordersYetCount++;
+    }
+
+    if (refStatus === 'yes') {
+      refFullCount++;
+      refFullAmount += refBank;
+    } else if (refStatus === 'partial') {
+      refPartialCount++;
+      refPartialAmount += refBank;
+    }
+
+    refTotalAmount += refBank;
+
+    if (pendingBank > 0 || (isOrder && refStatus !== 'yes')) {
+      refPendingCount++;
+      refPendingAmount += pendingBank;
+    }
+  });
+
+  courtData.summary = {
+    total_cases: courtData.cases.length,
+    total_lost: totalLost,
+    total_hold: totalHold,
+    memos_filed_count: memosFiledCount,
+    memos_filed_amount: memosFiledAmount,
+    memos_yet_to_file_count: memosYetCount,
+    court_orders_received_count: ordersCount,
+    court_orders_amount: ordersAmount,
+    court_orders_pending_count: ordersYetCount,
+    refunded_full_cases: refFullCount,
+    refunded_partial_cases: refPartialCount,
+    refunded_total_cases: refFullCount + refPartialCount,
+    amount_refunded_full: refFullAmount,
+    amount_refunded_partial: refPartialAmount,
+    total_refunded_amount: refTotalAmount,
+    refund_pending_cases: refPendingCount,
+    refund_pending_amount: refPendingAmount
+  };
+}
+
+function showCourtToast(msg, type = 'success') {
+  const toast = document.getElementById('courtToast');
+  const toastMsg = document.getElementById('courtToastMsg');
+  if (!toast || !toastMsg) return;
+
+  toastMsg.textContent = msg;
+  toast.style.borderLeftColor = type === 'error' ? '#ef4444' : (type === 'info' ? '#3b82f6' : '#10b981');
+  toast.style.display = 'flex';
+
+  setTimeout(() => {
+    toast.style.display = 'none';
+  }, 3500);
 }
 
 function resetAllFilters() {
@@ -6580,3 +6979,10 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
+window.openAddCaseModal = openAddCaseModal;
+window.openEditCaseModal = openEditCaseModal;
+window.closeCaseFormModal = closeCaseFormModal;
+window.handleCaseFormSubmit = handleCaseFormSubmit;
+window.handleFormStationChange = handleFormStationChange;
+window.deleteCase = deleteCase;
