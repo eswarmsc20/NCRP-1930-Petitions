@@ -246,6 +246,9 @@ async function handleStaticApi(url, options = {}) {
     const mo = searchParams.get('mo');
     if (mo) pets = pets.filter(p => p.mo === mo);
 
+    const portalType = searchParams.get('portal_type');
+    if (portalType) pets = pets.filter(p => p.portal_type === portalType);
+
     const search = (searchParams.get('search') || '').toLowerCase().trim();
     if (search) {
       pets = pets.filter(p =>
@@ -848,16 +851,42 @@ async function loadKPISummary() {
   }
 }
 
+let currentTableViewMode = localStorage.getItem('ncrp_view_mode') || 'full';
+
+function setTableViewMode(mode) {
+  currentTableViewMode = mode;
+  localStorage.setItem('ncrp_view_mode', mode);
+
+  const fullBtn = document.getElementById('viewModeFullBtn');
+  const compactBtn = document.getElementById('viewModeCompactBtn');
+  const table = document.getElementById('petitionsTable');
+
+  if (mode === 'full') {
+    if (fullBtn) { fullBtn.className = 'btn-primary'; fullBtn.style.background = '#0b1e3f'; fullBtn.style.color = '#ffffff'; }
+    if (compactBtn) { compactBtn.className = 'btn-secondary'; compactBtn.style.background = ''; compactBtn.style.color = ''; }
+    if (table) table.classList.add('table-sheet-view');
+  } else {
+    if (compactBtn) { compactBtn.className = 'btn-primary'; compactBtn.style.background = '#0b1e3f'; compactBtn.style.color = '#ffffff'; }
+    if (fullBtn) { fullBtn.className = 'btn-secondary'; fullBtn.style.background = ''; fullBtn.style.color = ''; }
+    if (table) table.classList.remove('table-sheet-view');
+  }
+
+  loadPetitions(currentPetitionsPage);
+}
+
 // Load Petitions with filters
 async function loadPetitions(page = 1) {
   currentPetitionsPage = page;
   const tbody = document.getElementById('petitionsTableBody');
-  tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px; color: #64748b;">Loading petitions...</td></tr>`;
+  const colSpanCount = (currentTableViewMode === 'full') ? 25 : 12;
+  tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align: center; padding: 40px; color: #64748b;">Loading petitions... / డేటా లోడ్ అవుతోంది...</td></tr>`;
 
   const search = document.getElementById('searchInput').value.trim();
   const status = document.getElementById('filterStatus').value;
   const mo = document.getElementById('filterMO').value;
-  let ps = currentUser.role === 'station' ? currentUser.psName : document.getElementById('filterPS').value;
+  const portalEl = document.getElementById('filterPortalType');
+  const portalType = portalEl ? portalEl.value : '';
+  let ps = (currentUser && currentUser.role === 'station') ? currentUser.psName : document.getElementById('filterPS').value;
 
   const queryParams = new URLSearchParams({
     page,
@@ -868,17 +897,20 @@ async function loadPetitions(page = 1) {
   });
 
   if (ps) queryParams.set('ps_name', ps);
+  if (portalType) queryParams.set('portal_type', portalType);
 
   try {
     const data = await apiFetch(`/api/petitions?${queryParams.toString()}`);
     renderPetitionsTable(data);
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: #dc2626; padding: 30px;">Error loading petitions: ${err.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align: center; color: #dc2626; padding: 30px;">Error loading petitions: ${err.message}</td></tr>`;
   }
 }
 
 function renderPetitionsTable(data) {
+  const thead = document.getElementById('petitionsTableHead');
   const tbody = document.getElementById('petitionsTableBody');
+  const table = document.getElementById('petitionsTable');
   tbody.innerHTML = '';
 
   document.getElementById('showingCount').textContent = data.total.toLocaleString('en-IN');
@@ -890,8 +922,66 @@ function renderPetitionsTable(data) {
   document.getElementById('currentPageNum').textContent = data.page;
   document.getElementById('totalPagesNum').textContent = data.totalPages || 1;
 
+  const isFullMode = (currentTableViewMode === 'full');
+  if (isFullMode && table) table.classList.add('table-sheet-view');
+  else if (table) table.classList.remove('table-sheet-view');
+
+  // Render Header based on Mode
+  if (thead) {
+    if (isFullMode) {
+      thead.innerHTML = `
+        <tr>
+          <th style="min-width: 50px;">SL NO</th>
+          <th style="min-width: 95px;">Date</th>
+          <th style="min-width: 140px;">Name of the PS</th>
+          <th style="min-width: 130px;">Circle Name</th>
+          <th style="min-width: 80px;">NCRP/1930</th>
+          <th style="min-width: 140px;">Acknowledgement No</th>
+          <th style="min-width: 160px;">Complaint name & Ph no</th>
+          <th style="min-width: 70px;">Victim Age</th>
+          <th style="min-width: 180px;">Complainant Address</th>
+          <th style="min-width: 160px;">Category of Complaint</th>
+          <th style="min-width: 180px;">Sub Category of Complaint</th>
+          <th style="min-width: 110px;">Lost Amount (₹)</th>
+          <th style="min-width: 110px;">Hold Amount (₹)</th>
+          <th class="th-process" style="min-width: 110px;">Status</th>
+          <th style="min-width: 220px;">Action taken by PS</th>
+          <th style="min-width: 95px;">Date of Action</th>
+          <th class="th-fir" style="min-width: 120px;">Whether FIR is Registered (Cr. No.)</th>
+          <th style="min-width: 110px;">Court Memo Filed</th>
+          <th style="min-width: 110px;">Court Order Obtained</th>
+          <th style="min-width: 80px;">No. of Days</th>
+          <th style="min-width: 120px;">Lost Amount Details</th>
+          <th style="min-width: 120px;">Hold Amount Details</th>
+          <th style="min-width: 110px;">Time Line</th>
+          <th style="min-width: 130px;">Case Type (MO)</th>
+          <th style="min-width: 110px; text-align: center;">Action</th>
+        </tr>
+      `;
+    } else {
+      thead.innerHTML = `
+        <tr>
+          <th style="width: 50px;">S.No</th>
+          <th>Date</th>
+          <th>Ack Number</th>
+          <th>Police Station</th>
+          <th>Complainant Details</th>
+          <th>Modus Operandi (MO)</th>
+          <th>Lost Amount (₹)</th>
+          <th>Hold Amount (₹)</th>
+          <th>Status</th>
+          <th>FIR / Cr. No</th>
+          <th>Action Taken</th>
+          <th style="text-align: center;">Action</th>
+        </tr>
+      `;
+    }
+  }
+
+  const colSpanCount = isFullMode ? 25 : 12;
+
   if (data.petitions.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px; color: #64748b;">No petitions found matching the criteria.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align: center; padding: 40px; color: #64748b;">No petitions found matching the criteria. / ఫలితాలు లేవు.</td></tr>`;
     renderPagination(data);
     return;
   }
@@ -904,38 +994,72 @@ function renderPetitionsTable(data) {
     else if (p.status === 'Closed') badgeClass = 'badge-closed';
     else if (p.status === 'Withdrawal') badgeClass = 'badge-withdraw';
     else if (p.status === 'Rejected') badgeClass = 'badge-rejected';
+    else if (p.status === 'No Action') badgeClass = 'badge-withdraw';
 
-    tr.innerHTML = `
-      <td>${p.sl_no || idx + 1}</td>
-      <td style="white-space: nowrap;">${p.petition_date}</td>
-      <td>
-        <strong style="color: #0b1e3f;">${p.ack_no}</strong>
-        <div style="font-size: 0.72rem; color: #64748b;">${p.portal_type}</div>
-      </td>
-      <td>
-        <strong>${p.ps_name}</strong>
-        <div style="font-size: 0.72rem; color: #64748b;">${p.circle_name || ''}</div>
-      </td>
-      <td>
-        <div><strong>${p.complainant_name}</strong></div>
-        <div style="font-size: 0.78rem; color: #2563eb;">${p.complainant_phone ? '📞 ' + p.complainant_phone : ''}</div>
-      </td>
-      <td><span style="font-weight: 600; color: #334155;">${p.mo || 'Other'}</span></td>
-      <td class="amount-loss">${p.lost_amount > 0 ? '₹' + p.lost_amount.toLocaleString('en-IN') : '-'}</td>
-      <td class="amount-hold">${p.hold_amount > 0 ? '₹' + p.hold_amount.toLocaleString('en-IN') : '-'}</td>
-      <td><span class="badge ${badgeClass}">${p.status}</span></td>
-      <td>
-        <span style="font-weight: 600; color: #dc2626;">${p.fir_number || '-'}</span>
-      </td>
-      <td style="max-width: 220px; font-size: 0.78rem; color: #475569;" title="${p.action_taken || ''}">
-        ${p.action_taken ? (p.action_taken.length > 60 ? p.action_taken.slice(0, 60) + '...' : p.action_taken) : '<em style="color:#94a3b8">Pending</em>'}
-      </td>
-      <td style="text-align: center; white-space: nowrap;">
-        <button class="action-btn-sm" onclick="openEditModal(${p.id})">
-          ✏️ Edit Action
-        </button>
-      </td>
-    `;
+    if (isFullMode) {
+      tr.innerHTML = `
+        <td><strong>${p.sl_no || idx + 1}</strong></td>
+        <td>${p.petition_date || '-'}</td>
+        <td><strong>${p.ps_name}</strong></td>
+        <td style="color: #64748b;">${p.circle_name || '-'}</td>
+        <td><span class="badge" style="background:#e0e7ff; color:#3730a3; font-weight:700;">${p.portal_type || 'NCRP'}</span></td>
+        <td><strong style="color: #0b1e3f;">${p.ack_no}</strong></td>
+        <td>
+          <strong>${p.complainant_name || 'Unknown'}</strong>
+          <div style="font-size: 0.74rem; color: #2563eb;">${p.complainant_phone ? '📞 ' + p.complainant_phone : ''}</div>
+        </td>
+        <td>${p.victim_age || '-'}</td>
+        <td style="max-width: 200px; font-size: 0.75rem;" title="${p.complainant_address || ''}">${p.complainant_address || '-'}</td>
+        <td style="font-size: 0.75rem;">${p.category || 'Online Financial Fraud'}</td>
+        <td style="font-size: 0.75rem;">${p.sub_category || '-'}</td>
+        <td class="amount-loss" style="font-weight: 700;">${p.lost_amount > 0 ? '₹' + p.lost_amount.toLocaleString('en-IN') : '-'}</td>
+        <td class="amount-hold" style="font-weight: 700;">${p.hold_amount > 0 ? '₹' + p.hold_amount.toLocaleString('en-IN') : '-'}</td>
+        <td><span class="badge ${badgeClass}">${p.status}</span></td>
+        <td style="max-width: 250px; font-size: 0.75rem; color: #334155;" title="${p.action_taken || ''}">
+          ${p.action_taken ? (p.action_taken.length > 50 ? p.action_taken.slice(0, 50) + '...' : p.action_taken) : '<em style="color:#94a3b8">Pending</em>'}
+        </td>
+        <td>${p.date_of_action || '-'}</td>
+        <td><strong style="color: #dc2626;">${p.fir_number || '-'}</strong></td>
+        <td><span class="badge" style="${p.court_memo_filed === 'Yes' ? 'background:#dcfce7; color:#15803d;' : 'background:#f1f5f9; color:#64748b;'}">${p.court_memo_filed || 'No'}</span></td>
+        <td><span class="badge" style="${p.court_order_obtained === 'Yes' ? 'background:#dcfce7; color:#15803d;' : 'background:#f1f5f9; color:#64748b;'}">${p.court_order_obtained || 'No'}</span></td>
+        <td>${p.no_of_days !== undefined ? p.no_of_days : '-'}</td>
+        <td><span style="font-size: 0.72rem; color: #475569;">${p.loss_bucket || '-'}</span></td>
+        <td><span style="font-size: 0.72rem; color: #475569;">${p.hold_bucket || '-'}</span></td>
+        <td><span class="badge" style="background:#fef3c7; color:#92400e;">${p.timeline_status || 'Under Process'}</span></td>
+        <td><span style="font-weight: 600; color: #1e3a8a;">${p.mo || 'Other'}</span></td>
+        <td style="text-align: center; white-space: nowrap;">
+          <button class="action-btn-sm" onclick="openEditModal(${p.id})">✏️ Edit</button>
+        </td>
+      `;
+    } else {
+      tr.innerHTML = `
+        <td>${p.sl_no || idx + 1}</td>
+        <td style="white-space: nowrap;">${p.petition_date}</td>
+        <td>
+          <strong style="color: #0b1e3f;">${p.ack_no}</strong>
+          <div style="font-size: 0.72rem; color: #64748b;">${p.portal_type}</div>
+        </td>
+        <td>
+          <strong>${p.ps_name}</strong>
+          <div style="font-size: 0.72rem; color: #64748b;">${p.circle_name || ''}</div>
+        </td>
+        <td>
+          <div><strong>${p.complainant_name}</strong></div>
+          <div style="font-size: 0.78rem; color: #2563eb;">${p.complainant_phone ? '📞 ' + p.complainant_phone : ''}</div>
+        </td>
+        <td><span style="font-weight: 600; color: #334155;">${p.mo || 'Other'}</span></td>
+        <td class="amount-loss">${p.lost_amount > 0 ? '₹' + p.lost_amount.toLocaleString('en-IN') : '-'}</td>
+        <td class="amount-hold">${p.hold_amount > 0 ? '₹' + p.hold_amount.toLocaleString('en-IN') : '-'}</td>
+        <td><span class="badge ${badgeClass}">${p.status}</span></td>
+        <td><span style="font-weight: 600; color: #dc2626;">${p.fir_number || '-'}</span></td>
+        <td style="max-width: 220px; font-size: 0.78rem; color: #475569;" title="${p.action_taken || ''}">
+          ${p.action_taken ? (p.action_taken.length > 60 ? p.action_taken.slice(0, 60) + '...' : p.action_taken) : '<em style="color:#94a3b8">Pending</em>'}
+        </td>
+        <td style="text-align: center; white-space: nowrap;">
+          <button class="action-btn-sm" onclick="openEditModal(${p.id})">✏️ Edit Action</button>
+        </td>
+      `;
+    }
     tbody.appendChild(tr);
   });
 
@@ -979,18 +1103,91 @@ function resetFilters() {
   document.getElementById('searchInput').value = '';
   document.getElementById('filterStatus').value = '';
   document.getElementById('filterMO').value = '';
+  const portalEl = document.getElementById('filterPortalType');
+  if (portalEl) portalEl.value = '';
   if (currentUser.role === 'admin') {
     document.getElementById('filterPS').value = '';
   }
   loadPetitions(1);
 }
 
-// Export CSV
+// Export CSV / Excel with All 24 Columns
 function exportCSV() {
-  const search = document.getElementById('searchInput').value.trim();
-  const ps = currentUser.role === 'station' ? currentUser.psName : document.getElementById('filterPS').value;
-  const url = `/api/export/csv?ps_name=${encodeURIComponent(ps)}&search=${encodeURIComponent(search)}`;
-  window.open(url, '_blank');
+  let pets = staticPetitions;
+  if (currentUser && currentUser.role === 'station') {
+    pets = pets.filter(p => p.ps_name === currentUser.psName);
+  }
+
+  const search = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+  const status = document.getElementById('filterStatus').value;
+  const mo = document.getElementById('filterMO').value;
+  const portalEl = document.getElementById('filterPortalType');
+  const portal = portalEl ? portalEl.value : '';
+
+  if (search) {
+    pets = pets.filter(p =>
+      (p.ack_no && p.ack_no.toLowerCase().includes(search)) ||
+      (p.complainant_name && p.complainant_name.toLowerCase().includes(search)) ||
+      (p.complainant_phone && p.complainant_phone.includes(search)) ||
+      (p.fir_number && p.fir_number.toLowerCase().includes(search))
+    );
+  }
+  if (status) pets = pets.filter(p => p.status === status);
+  if (mo) pets = pets.filter(p => p.mo === mo);
+  if (portal) pets = pets.filter(p => p.portal_type === portal);
+
+  const headers = [
+    'SL NO', 'Date', 'Name of the PS', 'Circle Name', 'NCRP/1930', 'Acknowledgement No',
+    'Complaint name & Ph no', 'Victim Age', 'Complainant Address', 'Category of Complaint',
+    'Sub Category of Complaint', 'Lost Amount', 'Hold Amount', 'Status', 'Action taken by PS',
+    'Date of Action', 'Whether FIR is Registered (Cr. No.)', 'Court Memo Filed for Refund in FIR Cases (Yes/No)',
+    'Court Order Obtained or Not', 'No. of Days', 'Lost Amount Details', 'Hold Amount Details', 'Time Line', 'case type'
+  ];
+
+  const rows = pets.map((p, i) => [
+    p.sl_no || (i + 1),
+    p.petition_date || '',
+    p.ps_name || '',
+    p.circle_name || '',
+    p.portal_type || 'NCRP',
+    p.ack_no || '',
+    `${p.complainant_name || ''}\n${p.complainant_phone || ''}`.trim(),
+    p.victim_age || '',
+    p.complainant_address || '',
+    p.category || 'Online Financial Fraud',
+    p.sub_category || 'UPI Related Frauds',
+    p.lost_amount || 0,
+    p.hold_amount || 0,
+    p.status || 'Under Process',
+    p.action_taken || '',
+    p.date_of_action || '',
+    p.fir_number || '',
+    p.court_memo_filed || 'No',
+    p.court_order_obtained || 'No',
+    p.no_of_days !== undefined ? p.no_of_days : '',
+    p.loss_bucket || '',
+    p.hold_bucket || '',
+    p.timeline_status || '',
+    p.mo || 'Other'
+  ]);
+
+  if (typeof XLSX !== 'undefined') {
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "NCRP_Petitions");
+    const dateStr = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `Srikakulam_Police_NCRP_1930_Petitions_${dateStr}.xlsx`);
+    showToast(`Exported ${pets.length} petitions to Excel!`, 'success');
+  } else {
+    const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].map(e => e.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Srikakulam_Police_NCRP_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
 }
 
 // Edit Modal Functions
@@ -1004,9 +1201,13 @@ async function openEditModal(petitionId) {
     document.getElementById('editPSName').value = `${p.ps_name} (${p.circle_name || ''})`;
     document.getElementById('editDate').value = p.petition_date;
     document.getElementById('editComplainant').value = `${p.complainant_name} ${p.complainant_phone ? '(' + p.complainant_phone + ')' : ''}`;
-    document.getElementById('editAddress').value = p.complainant_address || '-';
     document.getElementById('editLostAmount').value = p.lost_amount ? '₹' + p.lost_amount.toLocaleString('en-IN') : '0';
     document.getElementById('editHoldAmount').value = p.hold_amount || 0;
+
+    const catEl = document.getElementById('editCategorySub');
+    if (catEl) catEl.value = `${p.category || '-'} / ${p.sub_category || '-'}`;
+    const timeEl = document.getElementById('editTimeline');
+    if (timeEl) timeEl.value = `${p.no_of_days !== undefined ? p.no_of_days + ' Days' : '-'} (${p.timeline_status || '-'})`;
 
     document.getElementById('editStatus').value = p.status || 'Under Process';
     document.getElementById('editMO').value = p.mo || 'UPI Fraud';

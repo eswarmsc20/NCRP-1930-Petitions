@@ -480,6 +480,20 @@ body {
   font-weight: 800;
 }
 
+/* Master Sheet 24-Column View Styling */
+.table-sheet-view {
+  font-size: 0.78rem !important;
+}
+.table-sheet-view th,
+.table-sheet-view td {
+  padding: 8px 10px !important;
+  white-space: nowrap !important;
+  border-right: 1px solid #e2e8f0;
+}
+.table-sheet-view tr:hover td {
+  background-color: #f1f5f9;
+}
+
 /* Excel Import Dropzone & Preview Styles */
 .dropzone-box {
   border: 2px dashed #94a3b8;

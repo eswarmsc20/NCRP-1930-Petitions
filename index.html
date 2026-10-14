@@ -191,23 +191,36 @@
               <option value="No Action">No Action</option>
             </select>
 
+            <select id="filterPortalType" class="select-filter">
+              <option value="">All Portals (NCRP & 1930)</option>
+              <option value="NCRP">NCRP Portal</option>
+              <option value="1930">1930 Helpline</option>
+            </select>
+
             <select id="filterMO" class="select-filter">
               <option value="">All MO (మోడస్ ఆపరాండీ)</option>
-              <option value="UPI Fraud">UPI Fraud</option>
-              <option value="Job">Job Fraud</option>
+              <option value="Job">Job / Part Time Job Fraud</option>
               <option value="OTP">OTP Fraud</option>
-              <option value="Loan">Loan App</option>
-              <option value="Investment fraud">Investment Fraud</option>
-              <option value="Sextortion">Cyber Sextortion</option>
-              <option value="Digital Arrest">Digital Arrest</option>
-              <option value="Screen Sharing">Screen Sharing</option>
+              <option value="Screen Sharing">Screen Sharing (AnyDesk/TeamViewer)</option>
+              <option value="KYC">KYC / SIM KYC</option>
               <option value="Fake Customer Care">Fake Customer Care</option>
               <option value="Fake Website">Fake Website</option>
-              <option value="E-Commerce">E-Commerce</option>
-              <option value="Credit/Debit Card Fraud">Credit/Debit Card</option>
-              <option value="Social media">Social Media</option>
-              <option value="Matrimonial/Dating">Matrimonial / Dating</option>
-              <option value="Other">Other</option>
+              <option value="Lottery">Lottery / Gift Fraud</option>
+              <option value="Loan">Loan App Fraud</option>
+              <option value="Digital Arrest">Digital Arrest</option>
+              <option value="OLX">OLX Fraud</option>
+              <option value="Gift">Gift Fraud</option>
+              <option value="Facebook impersonating">Facebook / Social Impersonating</option>
+              <option value="Sextortion">Sextortion (వీడియో కాల్ బెదిరింపు)</option>
+              <option value="Social media">Social Media Harassment</option>
+              <option value="Investement fraud">Investment / Trading Fraud</option>
+              <option value="Child pornography">Child Pornography / CSAM</option>
+              <option value="Matrimonial">Matrimonial / Dating Fraud</option>
+              <option value="UPI Fraud">UPI Related Frauds</option>
+              <option value="E-Commerce">E-Commerce / Online Shopping</option>
+              <option value="Credit Card Fraud">Credit/Debit Card Fraud</option>
+              <option value="AEPS">AEPS Fraud</option>
+              <option value="Other">Other Cyber Crime</option>
             </select>
 
             <button class="btn-primary" onclick="applyFilters()">
@@ -244,28 +257,31 @@
           </div>
         </div>
 
+        <!-- View Mode Switcher -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span style="font-size: 0.85rem; font-weight: 700; color: #0b1e3f;">Display View / ప్రదర్శన రకం:</span>
+            <button id="viewModeFullBtn" type="button" class="btn-primary" onclick="setTableViewMode('full')" style="background: #0b1e3f; color: white; font-size: 0.82rem; padding: 6px 14px; font-weight: 700;">
+              📑 24-Column Master Sheet View (అన్ని 24 కాలమ్స్ ఉన్న ఎక్సెల్ షీట్ వ్యూ)
+            </button>
+            <button id="viewModeCompactBtn" type="button" class="btn-secondary" onclick="setTableViewMode('compact')" style="font-size: 0.82rem; padding: 6px 14px;">
+              📋 Compact View (సారాంశ వ్యూ)
+            </button>
+          </div>
+          <div style="font-size: 0.8rem; color: #64748b;">
+            💡 <em>గూగుల్ షీట్ మాదిరిగా పూర్తి 24 కాలమ్స్‌తో చూడటానికి 24-Column Master Sheet View ఉపయోగించండి.</em>
+          </div>
+        </div>
+
         <!-- Data Table -->
-        <div class="table-responsive">
+        <div class="table-responsive" id="petitionsTableContainer">
           <table class="data-table" id="petitionsTable">
-            <thead>
-              <tr>
-                <th style="width: 50px;">S.No</th>
-                <th>Date</th>
-                <th>Ack Number</th>
-                <th>Police Station</th>
-                <th>Complainant Details</th>
-                <th>Modus Operandi (MO)</th>
-                <th>Lost Amount (₹)</th>
-                <th>Hold Amount (₹)</th>
-                <th>Status</th>
-                <th>FIR / Cr. No</th>
-                <th>Action Taken</th>
-                <th style="text-align: center;">Action</th>
-              </tr>
+            <thead id="petitionsTableHead">
+              <!-- Dynamically populated by renderPetitionsTable -->
             </thead>
             <tbody id="petitionsTableBody">
               <tr>
-                <td colspan="12" style="text-align: center; padding: 40px; color: #64748b;">
+                <td colspan="25" style="text-align: center; padding: 40px; color: #64748b;">
                   Loading petitions data... / డేటా లోడ్ అవుతోంది...
                 </td>
               </tr>
@@ -516,6 +532,16 @@
             <div class="form-group">
               <label class="form-label">Address</label>
               <input type="text" id="editAddress" class="form-input" readonly>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Category / Sub-Category</label>
+              <input type="text" id="editCategorySub" class="form-input" readonly>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Days Pending / Timeline</label>
+              <input type="text" id="editTimeline" class="form-input" readonly>
             </div>
 
             <div class="form-group">
