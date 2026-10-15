@@ -138,18 +138,19 @@ function getDataBasePath() {
   return window.location.origin + path + "data/";
 }
 
-const NCRP_APP_VERSION = '5.5';
+const NCRP_APP_VERSION = '5.6';
 
-let currentSelectedYear = '2026';
-window.currentSelectedYear = '2026';
+let currentSelectedYear = 'all';
+window.currentSelectedYear = 'all';
 
 function selectYearFilter(yr, btnEl) {
-  currentSelectedYear = yr;
+  currentSelectedYear = yr || 'all';
   const selectEl = document.getElementById('filterYear');
-  if (selectEl) selectEl.value = yr;
+  if (selectEl) selectEl.value = currentSelectedYear;
 
-  document.querySelectorAll('.year-pill').forEach(btn => btn.classList.remove('active'));
-  if (btnEl) btnEl.classList.add('active');
+  document.querySelectorAll('.year-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-year') === currentSelectedYear);
+  });
 
   loadKPISummary();
   loadStations();
@@ -159,7 +160,7 @@ window.selectYearFilter = selectYearFilter;
 
 function onYearChange() {
   const selectEl = document.getElementById('filterYear');
-  currentSelectedYear = selectEl ? selectEl.value : '2026';
+  currentSelectedYear = selectEl ? selectEl.value : 'all';
 
   document.querySelectorAll('.year-pill').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-year') === currentSelectedYear);
@@ -340,7 +341,7 @@ async function handleStaticApi(url, options = {}) {
 
   // 4. Stations
   if (pathname === '/api/stations') {
-    const year = searchParams.get('year') || currentSelectedYear || '2026';
+    const year = searchParams.get('year') || currentSelectedYear || 'all';
     let petsForStations = staticPetitions;
     if (year && year !== 'all') {
       petsForStations = petsForStations.filter(p => getPetitionYear(p) === String(year));
@@ -387,7 +388,7 @@ async function handleStaticApi(url, options = {}) {
   // 5. KPI
   if (pathname === '/api/reports/kpi') {
     const savedUser = JSON.parse(localStorage.getItem('ncrp_session_user') || '{}');
-    const year = searchParams.get('year') || currentSelectedYear || '2026';
+    const year = searchParams.get('year') || currentSelectedYear || 'all';
     let pets = staticPetitions;
     if (year && year !== 'all') {
       pets = pets.filter(p => getPetitionYear(p) === String(year));
@@ -419,7 +420,7 @@ async function handleStaticApi(url, options = {}) {
     const savedUser = JSON.parse(localStorage.getItem('ncrp_session_user') || '{}');
     let pets = [...staticPetitions];
 
-    const year = searchParams.get('year') || currentSelectedYear || '2026';
+    const year = searchParams.get('year') || currentSelectedYear || 'all';
     if (year && year !== 'all') {
       pets = pets.filter(p => getPetitionYear(p) === String(year));
     }
@@ -466,7 +467,17 @@ async function handleStaticApi(url, options = {}) {
       if (valA === undefined || valA === null) valA = '';
       if (valB === undefined || valB === null) valB = '';
 
-      if (sortBy === 'lost_amount' || sortBy === 'hold_amount' || sortBy === 'refund_amount' || sortBy === 'sl_no' || sortBy === 'id') {
+      if (sortBy === 'sl_no') {
+        const yrA = parseInt(a.year, 10) || 2026;
+        const yrB = parseInt(b.year, 10) || 2026;
+        if (yrA !== yrB) {
+          return sortOrder === 'desc' ? yrB - yrA : yrA - yrB;
+        }
+        const numA = parseFloat(valA) || 0;
+        const numB = parseFloat(valB) || 0;
+        return sortOrder === 'desc' ? numB - numA : numA - numB;
+      }
+      if (sortBy === 'lost_amount' || sortBy === 'hold_amount' || sortBy === 'refund_amount' || sortBy === 'id') {
         const numA = parseFloat(valA) || 0;
         const numB = parseFloat(valB) || 0;
         return sortOrder === 'desc' ? numB - numA : numA - numB;
@@ -1328,7 +1339,7 @@ window.logout = logout;
 async function loadStations() {
   try {
     const yearEl = document.getElementById('filterYear');
-    const year = yearEl ? yearEl.value : (currentSelectedYear || '2026');
+    const year = yearEl ? yearEl.value : (currentSelectedYear || 'all');
     const data = await apiFetch('/api/stations?year=' + encodeURIComponent(year));
     allStationsList = data.stations;
 
@@ -1367,7 +1378,7 @@ async function loadStations() {
 async function loadKPISummary() {
   try {
     const yearEl = document.getElementById('filterYear');
-    const year = yearEl ? yearEl.value : (currentSelectedYear || '2026');
+    const year = yearEl ? yearEl.value : (currentSelectedYear || 'all');
     const data = await apiFetch('/api/reports/kpi?year=' + encodeURIComponent(year));
     const s = data.stats;
 
@@ -1490,7 +1501,7 @@ async function loadPetitions(page = 1) {
   });
 
   const yearEl = document.getElementById('filterYear');
-  const yearVal = yearEl ? yearEl.value : (currentSelectedYear || '2026');
+  const yearVal = yearEl ? yearEl.value : (currentSelectedYear || 'all');
   if (yearVal) queryParams.set('year', yearVal);
 
   if (ps) queryParams.set('ps_name', ps);
@@ -1737,7 +1748,7 @@ function resetFilters() {
 function exportCSV() {
   let pets = staticPetitions;
   const yearEl = document.getElementById('filterYear');
-  const year = yearEl ? yearEl.value : (currentSelectedYear || '2026');
+  const year = yearEl ? yearEl.value : (currentSelectedYear || 'all');
   if (year && year !== 'all') {
     pets = pets.filter(p => getPetitionYear(p) === String(year));
   }

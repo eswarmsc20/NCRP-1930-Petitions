@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Srikakulam District Police | NCRP & 1930 Management System</title>
-  <link rel="stylesheet" href="./css/style.css?v=4.9">
+  <link rel="stylesheet" href="./css/style.css?v=5.6">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="./js/xlsx.full.min.js"></script>
 </head>
@@ -391,20 +391,34 @@
       </div>
     </header>
 
+    <!-- Global Year Filter Header Banner -->
+    <div class="global-year-selector-wrap" style="background: linear-gradient(135deg, #0b1e3f 0%, #1e3a8a 100%); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid #3b82f6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.15);">
+      <div style="display: flex; align-items: center; gap: 8px; color: #ffffff;">
+        <span style="font-size: 1.2rem;">📅</span>
+        <span style="font-size: 0.95rem; font-weight: 800; letter-spacing: 0.4px;">SELECT PORTAL YEAR / సంవత్సరం ఎంచుకోండి:</span>
+      </div>
+      <div class="year-pills-bar" style="margin: 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: transparent; border: none; padding: 0;">
+        <button class="year-pill active" data-year="all" onclick="selectYearFilter('all', this)" style="font-weight: 800;">📅 All Years / మొత్తం (2,003)</button>
+        <button class="year-pill" data-year="2026" onclick="selectYearFilter('2026', this)">📅 2026 (1,899)</button>
+        <button class="year-pill" data-year="2020" onclick="selectYearFilter('2020', this)">📅 2020 (90)</button>
+        <button class="year-pill" data-year="2019" onclick="selectYearFilter('2019', this)">📅 2019 (14)</button>
+      </div>
+    </div>
+
     <!-- KPI Ribbon -->
     <div class="kpi-ribbon">
       <div class="kpi-grid">
         <div class="kpi-card kpi-blue">
           <div class="kpi-label">Total Petitions</div>
           <div class="kpi-telugu">మొత్తం పిటిషన్లు</div>
-          <div class="kpi-value" id="kpiTotalPetitions">1,899</div>
-          <div class="kpi-sub" id="kpiPortalBreakdown">NCRP: 1,306 • 1930: 593</div>
+          <div class="kpi-value" id="kpiTotalPetitions">2,003</div>
+          <div class="kpi-sub" id="kpiPortalBreakdown">NCRP: 1,410 • 1930: 593</div>
         </div>
 
         <div class="kpi-card kpi-red">
           <div class="kpi-label">Total Lost Amount</div>
           <div class="kpi-telugu">కోల్పోయిన మొత్తం</div>
-          <div class="kpi-value" id="kpiTotalLost">₹10.44 Cr</div>
+          <div class="kpi-value" id="kpiTotalLost">₹10.75 Cr</div>
           <div class="kpi-sub">Across All Cases</div>
         </div>
 
@@ -451,7 +465,7 @@
       <nav class="nav-tabs-wrapper">
         <button class="nav-tab active" onclick="switchTab('petitionsTab')">
           📋 Master Petitions (24 కాలమ్స్)
-          <span class="tab-badge" id="tabBadgePetitions">1,899</span>
+          <span class="tab-badge" id="tabBadgePetitions">2,003</span>
         </button>
         <a href="court-refunds.html" class="nav-tab" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: #fefce8; color: #854d0e; font-weight: 700;">
           ⚖️ Court Refund Orders (2021-2026)
@@ -500,18 +514,18 @@
           <!-- Year Selector Quick Pills -->
           <div class="year-pills-bar">
             <span style="font-size: 0.85rem; font-weight: 800; color: #0b1e3f; display: flex; align-items: center; gap: 5px;">📅 Select Year (సంవత్సరం):</span>
-            <button class="year-pill active" data-year="2026" onclick="selectYearFilter('2026', this)">📅 2026 (1,899)</button>
+            <button class="year-pill active" data-year="all" onclick="selectYearFilter('all', this)">📅 All Years / మొత్తం (2,003)</button>
+            <button class="year-pill" data-year="2026" onclick="selectYearFilter('2026', this)">📅 2026 (1,899)</button>
             <button class="year-pill" data-year="2020" onclick="selectYearFilter('2020', this)">📅 2020 (90)</button>
             <button class="year-pill" data-year="2019" onclick="selectYearFilter('2019', this)">📅 2019 (14)</button>
-            <button class="year-pill" data-year="all" onclick="selectYearFilter('all', this)">📅 All Years / మొత్తం (2,003)</button>
           </div>
 
           <div class="filter-row">
             <select id="filterYear" class="select-filter" onchange="onYearChange()" style="font-weight: 700; border-color: #3b82f6; background: #eff6ff; color: #1e3a8a;">
-              <option value="2026" selected>📅 Year: 2026 (1,899)</option>
+              <option value="all" selected>📅 All Years / మొత్తం (2,003)</option>
+              <option value="2026">📅 Year: 2026 (1,899)</option>
               <option value="2020">📅 Year: 2020 (90)</option>
               <option value="2019">📅 Year: 2019 (14)</option>
-              <option value="all">📅 All Years / మొత్తం (2,003)</option>
             </select>
 
             <div class="search-input-wrap">
@@ -1851,6 +1865,6 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="./js/app.js?v=5.4"></script>
+  <script src="./js/app.js?v=5.6"></script>
 </body>
 </html>
