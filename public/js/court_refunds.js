@@ -5988,26 +5988,72 @@ function switchView(tabId) {
 }
 
 function renderKPIs() {
-  if (!courtData || !courtData.summary) return;
-  const s = courtData.summary;
+  if (!courtData) return;
+  const userStation = getEffectiveUserStation();
 
-  document.getElementById('kpiTotalCases').textContent = s.total_cases;
-  document.getElementById('kpiTotalLost').textContent = formatINRShort(s.total_lost);
-  document.getElementById('kpiTotalLostExact').textContent = formatINR(s.total_lost);
-  document.getElementById('kpiTotalHold').textContent = formatINRShort(s.total_hold);
-  document.getElementById('kpiTotalHoldExact').textContent = formatINR(s.total_hold);
+  let targetCases = courtData.cases || [];
+  if (userStation) {
+    targetCases = targetCases.filter(c => isUserStationMatch(c.police_station, userStation));
+  }
 
-  document.getElementById('kpiMemosFiled').textContent = `${s.memos_filed_count} / ${s.total_cases}`;
-  document.getElementById('kpiMemoAmount').textContent = formatINRShort(s.memos_filed_amount);
+  let totalCases, totalLost, totalHold, memosFiledCount, memosFiledAmount, courtOrdersCount, courtOrdersAmount, refundedTotalCases, refundedFullCases, refundedPartialCases, totalRefundedAmount, pendingRefundCases, pendingRefundAmount;
 
-  document.getElementById('kpiCourtOrders').textContent = s.court_orders_received_count;
-  document.getElementById('kpiCourtOrdersAmount').textContent = formatINRShort(s.court_orders_amount);
+  if (userStation) {
+    totalCases = targetCases.length;
+    totalLost = targetCases.reduce((sum, c) => sum + (Number(c.lost) || 0), 0);
+    totalHold = targetCases.reduce((sum, c) => sum + (Number(c.lien) || 0), 0);
+    const filedList = targetCases.filter(c => (c.memo_filed || '').toLowerCase() === 'yes');
+    memosFiledCount = filedList.length;
+    memosFiledAmount = filedList.reduce((sum, c) => sum + (Number(c.memo_filed_amount) || 0), 0);
+    const ordersList = targetCases.filter(c => (c.court_order_received || '').toLowerCase() === 'yes');
+    courtOrdersCount = ordersList.length;
+    courtOrdersAmount = ordersList.reduce((sum, c) => sum + (Number(c.court_order_amount) || 0), 0);
+    const fullList = targetCases.filter(c => (c.amount_refunded_status || '').toLowerCase() === 'yes');
+    refundedFullCases = fullList.length;
+    const partialList = targetCases.filter(c => (c.amount_refunded_status || '').toLowerCase() === 'partial');
+    refundedPartialCases = partialList.length;
+    refundedTotalCases = refundedFullCases + refundedPartialCases;
+    totalRefundedAmount = targetCases.reduce((sum, c) => sum + (Number(c.total_amount_refunded_to_victim) || Number(c.refund_from_bank) || 0), 0);
+    const pendingList = targetCases.filter(c => (Number(c.to_be_refunded_from_bank) || 0) > 0 || (Number(c.refund_pending_amount) || 0) > 0);
+    pendingRefundCases = pendingList.length;
+    pendingRefundAmount = targetCases.reduce((sum, c) => sum + (Number(c.to_be_refunded_from_bank) || Number(c.refund_pending_amount) || 0), 0);
+  } else {
+    const s = courtData.summary || {};
+    totalCases = s.total_cases || (targetCases.length);
+    totalLost = s.total_lost || 0;
+    totalHold = s.total_hold || 0;
+    memosFiledCount = s.memos_filed_count || 0;
+    memosFiledAmount = s.memos_filed_amount || 0;
+    courtOrdersCount = s.court_orders_received_count || 0;
+    courtOrdersAmount = s.court_orders_amount || 0;
+    refundedFullCases = s.refunded_full_cases || 0;
+    refundedPartialCases = s.refunded_partial_cases || 0;
+    refundedTotalCases = s.refunded_total_cases || 0;
+    totalRefundedAmount = s.total_refunded_amount || 0;
+    pendingRefundCases = s.refund_pending_cases || 0;
+    pendingRefundAmount = s.refund_pending_amount || 0;
+  }
 
-  document.getElementById('kpiTotalRefunded').textContent = formatINRShort(s.total_refunded_amount);
-  document.getElementById('kpiRefundCases').textContent = `${s.refunded_total_cases} Cases (${s.refunded_full_cases} Full, ${s.refunded_partial_cases} Partial)`;
+  document.getElementById('kpiTotalCases').textContent = totalCases;
+  document.getElementById('kpiTotalLost').textContent = formatINRShort(totalLost);
+  document.getElementById('kpiTotalLostExact').textContent = formatINR(totalLost);
+  document.getElementById('kpiTotalHold').textContent = formatINRShort(totalHold);
+  document.getElementById('kpiTotalHoldExact').textContent = formatINR(totalHold);
 
-  document.getElementById('kpiRefundPending').textContent = formatINRShort(s.refund_pending_amount);
-  document.getElementById('kpiPendingCases').textContent = `${s.refund_pending_cases} Cases Awaiting Disbursement`;
+  document.getElementById('kpiMemosFiled').textContent = `${memosFiledCount} / ${totalCases}`;
+  document.getElementById('kpiMemoAmount').textContent = formatINRShort(memosFiledAmount);
+
+  document.getElementById('kpiCourtOrders').textContent = courtOrdersCount;
+  document.getElementById('kpiCourtOrdersAmount').textContent = formatINRShort(courtOrdersAmount);
+
+  document.getElementById('kpiTotalRefunded').textContent = formatINRShort(totalRefundedAmount);
+  document.getElementById('kpiRefundCases').textContent = `${refundedTotalCases} Cases (${refundedFullCases} Full, ${refundedPartialCases} Partial)`;
+
+  document.getElementById('kpiRefundPending').textContent = formatINRShort(pendingRefundAmount);
+  document.getElementById('kpiPendingCases').textContent = `${pendingRefundCases} Cases Awaiting Disbursement`;
+
+  const badgeEl = document.getElementById('casesCountBadge');
+  if (badgeEl) badgeEl.textContent = `${totalCases} Cases`;
 }
 
 function populateDropdownFilters() {
@@ -6055,6 +6101,20 @@ function populateStationDropdown() {
   if (!courtData || !courtData.cases) return;
   const psSelect = document.getElementById('filterPS');
   if (!psSelect) return;
+
+  const userStation = getEffectiveUserStation();
+  if (userStation) {
+    psSelect.innerHTML = `<option value="${userStation}">${userStation} (🔒 Your Police Station)</option>`;
+    psSelect.value = userStation;
+    psSelect.disabled = true;
+    activeFilters.ps = userStation;
+
+    const subDivSelect = document.getElementById('filterSubDivision');
+    if (subDivSelect) {
+      subDivSelect.disabled = true;
+    }
+    return;
+  }
 
   const currentVal = activeFilters.ps;
   psSelect.innerHTML = '<option value="all">All Police Stations (అన్ని పీఎస్‌లు)</option>';
@@ -6127,6 +6187,15 @@ function populateFormStations() {
     opt.textContent = `${st.ps} (${st.circle || ''})`;
     formPsSelect.appendChild(opt);
   });
+
+  if (userStation) {
+    const match = stations.find(s => isUserStationMatch(s.ps, userStation));
+    if (match) {
+      formPsSelect.value = match.ps;
+      handleFormStationChange();
+    }
+    formPsSelect.disabled = true;
+  }
 }
 
 function handleFormStationChange() {
@@ -6134,7 +6203,7 @@ function handleFormStationChange() {
   const circleInput = document.getElementById('form_circle');
   if (!ps || !circleInput || !courtData || !courtData.ps_mapping) return;
 
-  const found = courtData.ps_mapping.find(m => m.ps.toLowerCase() === ps.toLowerCase());
+  const found = courtData.ps_mapping.find(m => isUserStationMatch(m.ps, ps));
   if (found && found.circle) {
     circleInput.value = found.circle;
   }
@@ -6147,7 +6216,7 @@ function getSubDivisionForPS(ps, circle) {
     return 'Srikakulam Sub-Division';
   }
 
-  const found = courtData.ps_mapping.find(m => m.ps.toLowerCase() === (ps || '').toLowerCase());
+  const found = courtData.ps_mapping.find(m => isUserStationMatch(m.ps, ps));
   if (found && found.sub_division) return found.sub_division;
 
   if (circle) {
@@ -6164,8 +6233,14 @@ function getSubDivisionForPS(ps, circle) {
 function filterCases() {
   if (!courtData || !courtData.cases) return [];
   const q = activeFilters.search;
+  const userStation = getEffectiveUserStation();
 
   return courtData.cases.filter(c => {
+    // Role-based Access Control: If logged in as station, ONLY show their station's cases!
+    if (userStation && !isUserStationMatch(c.police_station, userStation)) {
+      return false;
+    }
+
     // Search filter across major fields
     if (q) {
       const haystack = [
@@ -6186,14 +6261,14 @@ function filterCases() {
       if (!haystack.includes(q)) return false;
     }
 
-    // Sub-division filter
-    if (activeFilters.subDivision !== 'all') {
+    // Sub-division filter (admin only)
+    if (!userStation && activeFilters.subDivision !== 'all') {
       const subDiv = getSubDivisionForPS(c.police_station, c.circle);
       if (subDiv !== activeFilters.subDivision) return false;
     }
 
-    // Police Station filter
-    if (activeFilters.ps !== 'all' && (c.police_station || '').trim() !== activeFilters.ps) {
+    // Police Station filter (admin only)
+    if (!userStation && activeFilters.ps !== 'all' && (c.police_station || '').trim() !== activeFilters.ps) {
       return false;
     }
 
@@ -6268,15 +6343,20 @@ function renderCasesTable() {
   const filtered = filterCases();
   const sorted = sortCases(filtered);
 
+  const userStation = getEffectiveUserStation();
   if (countBadge) {
-    countBadge.textContent = `Showing ${sorted.length} of ${courtData ? courtData.cases.length : 83} Cases`;
+    if (userStation) {
+      countBadge.textContent = `${sorted.length} Cases (${userStation})`;
+    } else {
+      countBadge.textContent = `Showing ${sorted.length} of ${courtData ? courtData.cases.length : 83} Cases`;
+    }
   }
 
   if (sorted.length === 0) {
     tbody.innerHTML = `
       <tr>
         <td colspan="24" style="text-align: center; padding: 40px; color: #64748b;">
-          🔍 No court refund cases matched your filters.<br>
+          ${userStation ? `మీ పోలీస్ స్టేషన్ (<strong>${userStation}</strong>) పరిధిలో కోర్టు రీఫండ్ కేసులు ఏవీ సరిపోలలేదు.<br><span style="font-size:0.82rem; color:#94a3b8;">(No matching court refund cases for ${userStation})</span>` : '🔍 No court refund cases matched your filters.'}<br>
           <button class="btn-action" onclick="resetAllFilters()" style="margin-top: 10px;">Clear Filters</button>
         </td>
       </tr>
@@ -6400,11 +6480,14 @@ function renderAbstractTable() {
   const tbody = document.getElementById('abstractTableBody');
   if (!tbody || !courtData || !courtData.abstract) return;
 
+  const userStation = getEffectiveUserStation();
+
   let html = '';
   courtData.abstract.forEach(r => {
     let rowClass = '';
     let nameStyle = 'font-weight: 500;';
     let bgStyle = '';
+    const isMyStation = userStation && r.type === 'station' && isUserStationMatch(r.name, userStation);
 
     if (r.type === 'grand_total') {
       rowClass = 'row-grand-total';
@@ -6418,12 +6501,17 @@ function renderAbstractTable() {
       rowClass = 'row-circle';
       nameStyle = 'font-weight: 600; color: #1e293b; font-style: italic;';
       bgStyle = 'background: #f8fafc; font-weight: 600;';
+    } else if (isMyStation) {
+      bgStyle = 'background: #fef9c3 !important; outline: 2px solid #ca8a04;';
+      nameStyle = 'font-weight: 800; color: #854d0e;';
     }
+
+    const nameLabel = isMyStation ? `${escapeHtml(r.name)} <span style="background:#ca8a04; color:white; font-size:0.68rem; margin-left:6px; padding:2px 6px; border-radius:10px; font-weight:700;">⭐ YOUR PS</span>` : escapeHtml(r.name);
 
     html += `
       <tr class="${rowClass}" style="${bgStyle}">
         <td style="text-align: center; font-weight: 600;">${r.sl_no || ''}</td>
-        <td style="${nameStyle}">${escapeHtml(r.name)}</td>
+        <td style="${nameStyle}">${nameLabel}</td>
         <td style="text-align: center; font-weight: 700;">${r.total_cases}</td>
         <td style="text-align: right; color: #b91c1c; font-weight: 600;">${formatINR(r.lost_amount)}</td>
         <td style="text-align: right; color: #047857; font-weight: 600;">${formatINR(r.hold_amount)}</td>
@@ -6607,6 +6695,21 @@ function openAddCaseModal() {
   document.getElementById('form_judge_name').value = '';
   document.getElementById('form_stage_of_case').value = 'UI';
 
+  const userStation = getEffectiveUserStation();
+  const psSelect = document.getElementById('form_police_station');
+  if (userStation && psSelect) {
+    for (let i = 0; i < psSelect.options.length; i++) {
+      if (isUserStationMatch(psSelect.options[i].value, userStation)) {
+        psSelect.selectedIndex = i;
+        break;
+      }
+    }
+    psSelect.disabled = true;
+    handleFormStationChange();
+  } else if (psSelect) {
+    psSelect.disabled = false;
+  }
+
   modal.style.display = 'flex';
 }
 
@@ -6649,12 +6752,18 @@ function openEditCaseModal(sNo) {
   document.getElementById('caseFormBadge').textContent = `✏️ Edit Case #${currentSNo}`;
   document.getElementById('caseFormTitle').textContent = `Edit Case #${currentSNo} - FIR ${firNumber} (${psName})`;
 
+  const userStation = getEffectiveUserStation();
+  if (userStation && !isUserStationMatch(psName, userStation)) {
+    showCourtToast('ఈ కేసును ఎడిట్ చేయడానికి మీకు అనుమతి లేదు (Access Denied: Only your PS cases can be edited)', 'error');
+    return;
+  }
+
   // Ensure police station option exists in dropdown
   const psSelect = document.getElementById('form_police_station');
   if (psSelect && psName) {
     let exists = false;
     for (let i = 0; i < psSelect.options.length; i++) {
-      if (psSelect.options[i].value.toLowerCase() === String(psName).trim().toLowerCase()) {
+      if (isUserStationMatch(psSelect.options[i].value, psName)) {
         psSelect.selectedIndex = i;
         exists = true;
         break;
@@ -6666,6 +6775,11 @@ function openEditCaseModal(sNo) {
       newOpt.textContent = psName;
       newOpt.selected = true;
       psSelect.appendChild(newOpt);
+    }
+    if (userStation) {
+      psSelect.disabled = true;
+    } else {
+      psSelect.disabled = false;
     }
   }
 
@@ -6876,6 +6990,13 @@ async function handleCaseFormSubmit(e) {
 }
 
 function deleteCase(sNo) {
+  const userStation = getEffectiveUserStation();
+  const targetCase = courtData && courtData.cases ? courtData.cases.find(c => Number(c.s_no) === Number(sNo) || Number(c['S No']) === Number(sNo)) : null;
+  if (userStation && targetCase && !isUserStationMatch(targetCase.police_station, userStation)) {
+    showCourtToast('ఈ కేసును తొలగించడానికి మీకు అనుమతి లేదు (Access Denied: Only your PS cases can be deleted)', 'error');
+    return;
+  }
+
   if (!confirm(`Are you sure you want to delete Case #${sNo}? / ఈ కేసును తొలగించాలనుకుంటున్నారా?`)) return;
 
   courtData.cases = courtData.cases.filter(c => Number(c.s_no) !== Number(sNo));
@@ -6993,10 +7114,11 @@ function showCourtToast(msg, type = 'success') {
 }
 
 function resetAllFilters() {
+  const userStation = getEffectiveUserStation();
   activeFilters = {
     search: '',
     subDivision: 'all',
-    ps: 'all',
+    ps: userStation || 'all',
     year: 'all',
     memo: 'all',
     courtOrder: 'all',
@@ -7007,9 +7129,9 @@ function resetAllFilters() {
   const searchInput = document.getElementById('courtSearchInput');
   if (searchInput) searchInput.value = '';
   const subDivSelect = document.getElementById('filterSubDivision');
-  if (subDivSelect) subDivSelect.value = 'all';
+  if (subDivSelect && !userStation) subDivSelect.value = 'all';
   const psSelect = document.getElementById('filterPS');
-  if (psSelect) psSelect.value = 'all';
+  if (psSelect) psSelect.value = userStation || 'all';
   const yearSelect = document.getElementById('filterYear');
   if (yearSelect) yearSelect.value = 'all';
   const memoSelect = document.getElementById('filterMemo');
@@ -7098,15 +7220,46 @@ window.handleFormStationChange = handleFormStationChange;
 window.deleteCase = deleteCase;
 
 
+let currentSessionUser = null;
+
 function loadSessionUser() {
   try {
     const raw = localStorage.getItem('ncrp_session_user');
     if (raw) {
-      const u = JSON.parse(raw);
+      currentSessionUser = JSON.parse(raw);
       const nameEl = document.getElementById('userDisplayName');
       const circleEl = document.getElementById('userCircleLabel');
-      if (nameEl) nameEl.textContent = u.displayName || u.username || 'DPO / District Admin, Srikakulam';
-      if (circleEl) circleEl.textContent = `(${u.circle || u.subDivision || 'District HQ Circle'})`;
+      if (nameEl) nameEl.textContent = currentSessionUser.displayName || currentSessionUser.username || 'DPO / District Admin, Srikakulam';
+      if (circleEl) circleEl.textContent = `(${currentSessionUser.circle || currentSessionUser.subDivision || 'District HQ Circle'})`;
     }
-  } catch (e) {}
+  } catch (e) {
+    currentSessionUser = null;
+  }
+}
+
+function normalizeStationName(s) {
+  if (!s) return '';
+  return String(s).toLowerCase()
+    .replace(/police station/g, '')
+    .replace(/\bps\b/g, '')
+    .replace(/\btown\b/g, 't')
+    .replace(/\brural\b/g, 'r')
+    .replace(/itchapuram/g, 'ichapuram')
+    .replace(/\bii\b/g, '2')
+    .replace(/\bi\b/g, '1')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function isUserStationMatch(caseStation, userPsName) {
+  if (!caseStation || !userPsName) return false;
+  const c = normalizeStationName(caseStation);
+  const u = normalizeStationName(userPsName);
+  return c === u || c.includes(u) || u.includes(c);
+}
+
+function getEffectiveUserStation() {
+  if (currentSessionUser && currentSessionUser.role === 'station' && currentSessionUser.psName) {
+    return currentSessionUser.psName;
+  }
+  return null;
 }

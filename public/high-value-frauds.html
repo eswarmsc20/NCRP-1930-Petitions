@@ -1309,17 +1309,48 @@
     let filteredCases = [];
 
     
+    let currentSessionUser = null;
+
     function loadSessionUser() {
       try {
         const raw = localStorage.getItem('ncrp_session_user');
         if (raw) {
-          const u = JSON.parse(raw);
+          currentSessionUser = JSON.parse(raw);
           const nameEl = document.getElementById('userDisplayName');
           const circleEl = document.getElementById('userCircleLabel');
-          if (nameEl) nameEl.textContent = u.displayName || u.username || 'DPO / District Admin, Srikakulam';
-          if (circleEl) circleEl.textContent = `(${u.circle || u.subDivision || 'District HQ Circle'})`;
+          if (nameEl) nameEl.textContent = currentSessionUser.displayName || currentSessionUser.username || 'DPO / District Admin, Srikakulam';
+          if (circleEl) circleEl.textContent = `(${currentSessionUser.circle || currentSessionUser.subDivision || 'District HQ Circle'})`;
         }
-      } catch (e) {}
+      } catch (e) {
+        currentSessionUser = null;
+      }
+    }
+
+    function normalizeStationName(s) {
+      if (!s) return '';
+      return String(s).toLowerCase()
+        .replace(/police station/g, '')
+        .replace(/\bps\b/g, '')
+        .replace(/\btown\b/g, 't')
+        .replace(/\brural\b/g, 'r')
+        .replace(/itchapuram/g, 'ichapuram')
+        .replace(/\bii\b/g, '2')
+        .replace(/\bi\b/g, '1')
+        .replace(/[^a-z0-9]/g, '');
+    }
+
+    function isUserStationMatch(caseStation, userPsName) {
+      if (!caseStation || !userPsName) return false;
+      const c = normalizeStationName(caseStation);
+      const u = normalizeStationName(userPsName);
+      return c === u || c.includes(u) || u.includes(c);
+    }
+
+    function getEffectiveUserStation() {
+      if (currentSessionUser && currentSessionUser.role === 'station' && currentSessionUser.psName) {
+        return currentSessionUser.psName;
+      }
+      return null;
     }
 
     // Initialize Page
@@ -1350,6 +1381,12 @@
       }
 
       if (!highValueData.cases) highValueData.cases = [];
+      highValueData.allCases = [...highValueData.cases];
+
+      const userStation = getEffectiveUserStation();
+      if (userStation) {
+        highValueData.cases = highValueData.allCases.filter(c => isUserStationMatch(c.ps_name, userStation));
+      }
       filteredCases = [...highValueData.cases];
     }
 
@@ -1373,16 +1410,27 @@
     function populateFilterDropdowns() {
       const psSelect = document.getElementById('filter-ps');
       const moSelect = document.getElementById('filter-mo');
+      const userStation = getEffectiveUserStation();
 
-      const stations = Array.from(new Set(highValueData.cases.map(c => c.ps_name).filter(Boolean))).sort();
-      stations.forEach(ps => {
-        const opt = document.createElement('option');
-        opt.value = ps;
-        opt.textContent = ps;
-        psSelect.appendChild(opt);
-      });
+      psSelect.innerHTML = '';
+      if (userStation) {
+        psSelect.innerHTML = `<option value="${userStation}">${userStation} (🔒 Your Police Station)</option>`;
+        psSelect.value = userStation;
+        psSelect.disabled = true;
+      } else {
+        psSelect.innerHTML = '<option value="ALL">అన్ని పోలీస్ స్టేషన్లు (All)</option>';
+        const stations = Array.from(new Set(highValueData.allCases.map(c => c.ps_name).filter(Boolean))).sort();
+        stations.forEach(ps => {
+          const opt = document.createElement('option');
+          opt.value = ps;
+          opt.textContent = ps;
+          psSelect.appendChild(opt);
+        });
+      }
 
-      const mos = Array.from(new Set(highValueData.cases.map(c => c.sub_category).filter(Boolean))).sort();
+      moSelect.innerHTML = '<option value="ALL">అన్ని నేరాల రకాలు (All MOs)</option>';
+      const targetList = userStation ? highValueData.cases : (highValueData.allCases || highValueData.cases);
+      const mos = Array.from(new Set(targetList.map(c => c.sub_category).filter(Boolean))).sort();
       mos.forEach(mo => {
         const opt = document.createElement('option');
         opt.value = mo;
@@ -1402,6 +1450,7 @@
 
     // 1. Render Summary KPI Cards
     function renderSummaryCards() {
+      const userStation = getEffectiveUserStation();
       const cases = highValueData.cases;
       const totalLost = cases.reduce((sum, c) => sum + (Number(c.amount_lost) || 0), 0);
       const totalFrozen = cases.reduce((sum, c) => sum + (Number(c.amount_frozen) || 0), 0);
@@ -1428,6 +1477,53 @@
       document.getElementById('tab-count-all').textContent = cases.length;
       const kpiRef = document.getElementById('kpi-amount-refunded');
       if (kpiRef) kpiRef.textContent = formatLakhsCrores(totalRefunded);
+
+      // Urgent Banner update
+      const urgentBanner = document.querySelector('.urgent-banner');
+      if (urgentBanner) {
+        if (underProcessCount > 0) {
+          urgentBanner.style.display = 'block';
+          const pLost = cases.filter(c => c.status === 'Under Process').reduce((s, c) => s + (Number(c.amount_lost) || 0), 0);
+          const pFrozen = cases.filter(c => c.status === 'Under Process').reduce((s, c) => s + (Number(c.amount_frozen) || 0), 0);
+          urgentBanner.innerHTML = `
+            <div class="urgent-banner-inner">
+              <div class="urgent-banner-text">
+                <div class="urgent-icon">⚠️</div>
+                <div>
+                  <h3 class="urgent-title">అత్యవసర చర్య అవసరం: ${underProcessCount} కేసు${underProcessCount > 1 ? 'లు' : ''} ఇంకా ఎఫ్‌ఐఆర్ నమోదు కావాల్సి ఉంది!</h3>
+                  <p class="urgent-desc">
+                    ${userStation ? `మీ పోలీస్ స్టేషన్ (${userStation}) పరిధిలో` : 'శ్రీకాకుళం జిల్లా పరిధిలో'} మొత్తం నష్టం: ${formatINR(pLost)}, ఫ్రీజ్ చేసిన మొత్తం: ${formatINR(pFrozen)}. వెంటనే ఎఫ్‌ఐఆర్ నమోదు చేయవలసి ఉంది.
+                  </p>
+                </div>
+              </div>
+              <div class="urgent-actions">
+                <button class="btn-urgent-action" onclick="filterByStatus('Under Process')">
+                  🚨 పెండింగ్ కేసులు చూడండి (View ${underProcessCount} Pending)
+                </button>
+              </div>
+            </div>
+          `;
+        } else {
+          if (userStation) {
+            urgentBanner.style.display = 'block';
+            urgentBanner.innerHTML = `
+              <div class="urgent-banner-inner" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-color: #86efac; border-left-color: #16a34a;">
+                <div class="urgent-banner-text">
+                  <div class="urgent-icon">✅</div>
+                  <div>
+                    <h3 class="urgent-title" style="color: #166534;">అభినందనలు! అన్ని ₹10 లక్షలు పైబడిన కేసులలో ఎఫ్‌ఐఆర్ నమోదైంది!</h3>
+                    <p class="urgent-desc" style="color: #15803d;">
+                      మీ పోలీస్ స్టేషన్ (<strong>${userStation}</strong>) పరిధిలోని అన్ని ₹10L+ కేసులలో ఎఫ్‌ఐఆర్ నమోదు విజయవంతంగా పూర్తయింది. పెండింగ్ ఎఫ్‌ఐఆర్‌లు ఏవీ లేవు.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else {
+            urgentBanner.style.display = 'none';
+          }
+        }
+      }
     }
 
     // 2. Render Main Complaints Table
@@ -1436,8 +1532,9 @@
       tbody.innerHTML = '';
 
       if (filteredCases.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 30px; color: #64748b;">
-          ఫిల్టర్ చేసిన ప్రమాణాలకు సరిపోలే కేసులు ఏవీ లేవు (No matching cases found)
+        const userStation = getEffectiveUserStation();
+        tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px; color: #64748b;">
+          ${userStation ? `మీ పోలీస్ స్టేషన్ (<strong>${userStation}</strong>) పరిధిలో ₹10 లక్షలు & ఆపై భారీ మోసాల కేసులు ఏవీ లేవు / సరిపోలలేదు.<br><span style="font-size:0.82rem; color:#94a3b8;">(No ₹10L+ cases found for ${userStation})</span>` : 'ఫిల్టర్ చేసిన ప్రమాణాలకు సరిపోలే కేసులు ఏవీ లేవు (No matching cases found)'}
         </td></tr>`;
         updateVisibleCounts(0, 0, 0);
         return;
@@ -1695,11 +1792,14 @@
 
     // Filter Logic
     function applyFilters() {
+      const userStation = getEffectiveUserStation();
       const query = document.getElementById('filter-search').value.toLowerCase().trim();
       const psVal = document.getElementById('filter-ps').value;
       const statusVal = document.getElementById('filter-status').value;
       const moVal = document.getElementById('filter-mo').value;
       const amountVal = document.getElementById('filter-amount').value;
+      const refundEl = document.getElementById('filter-refund-status');
+      const refundVal = refundEl ? refundEl.value : 'ALL';
 
       filteredCases = highValueData.cases.filter(c => {
         // Search query
@@ -1713,8 +1813,8 @@
           if (!matchQuery) return false;
         }
 
-        // PS Filter
-        if (psVal !== 'ALL' && c.ps_name !== psVal) return false;
+        // PS Filter (admin only)
+        if (!userStation && psVal !== 'ALL' && c.ps_name !== psVal) return false;
 
         // Status Filter
         if (statusVal !== 'ALL') {
@@ -1754,11 +1854,17 @@
     }
 
     function resetFilters() {
+      const userStation = getEffectiveUserStation();
       document.getElementById('filter-search').value = '';
-      document.getElementById('filter-ps').value = 'ALL';
+      if (!userStation) {
+        document.getElementById('filter-ps').value = 'ALL';
+      }
       document.getElementById('filter-status').value = 'ALL';
       document.getElementById('filter-mo').value = 'ALL';
       document.getElementById('filter-amount').value = 'ALL';
+      const refEl = document.getElementById('filter-refund-status');
+      if (refEl) refEl.value = 'ALL';
+
       filteredCases = [...highValueData.cases];
       renderComplaintsTable();
     }
@@ -1805,16 +1911,46 @@
     function openAddCaseModal() {
       document.getElementById('form-add-case').reset();
       document.getElementById('add-date').value = new Date().toISOString().split('T')[0];
+      const userStation = getEffectiveUserStation();
+      const psInput = document.getElementById('add-ps-name');
+      if (psInput) {
+        if (userStation) {
+          psInput.value = userStation.toUpperCase();
+          psInput.readOnly = true;
+          psInput.style.backgroundColor = '#f1f5f9';
+        } else {
+          psInput.value = '';
+          psInput.readOnly = false;
+          psInput.style.backgroundColor = '';
+        }
+      }
       openModal('modal-add-case');
     }
 
     function openEditCaseModal(slNo) {
-      const c = highValueData.cases.find(x => x.sl_no === slNo);
+      const allList = (highValueData.allCases && highValueData.allCases.length) ? highValueData.allCases : highValueData.cases;
+      const c = allList.find(x => x.sl_no === slNo);
       if (!c) return;
 
+      const userStation = getEffectiveUserStation();
+      if (userStation && !isUserStationMatch(c.ps_name, userStation)) {
+        alert(`క్షమించండి! మీరు మీ పోలీస్ స్టేషన్ (${userStation}) కేసులను మాత్రమే సవరించగలరు. (Access Denied: You can only edit cases belonging to your station)`);
+        return;
+      }
+
       document.getElementById('edit-sl-no').value = c.sl_no;
-      document.getElementById('edit-ps-name').value = c.ps_name;
-      document.getElementById('edit-date').value = c.date_of_complaint;
+      const psInput = document.getElementById('edit-ps-name');
+      if (psInput) {
+        psInput.value = c.ps_name || '';
+        if (userStation) {
+          psInput.readOnly = true;
+          psInput.style.backgroundColor = '#f1f5f9';
+        } else {
+          psInput.readOnly = false;
+          psInput.style.backgroundColor = '';
+        }
+      }
+      document.getElementById('edit-date').value = c.date_of_complaint || '';
       document.getElementById('edit-ack-no').value = String(c.acknowledgement_no || '').replace(/\n/g, ', ');
       document.getElementById('edit-amount-lost').value = c.amount_lost;
       document.getElementById('edit-amount-frozen').value = c.amount_frozen;
@@ -1835,9 +1971,12 @@
     async function handleSaveNewCase(e) {
       e.preventDefault();
 
+      const userStation = getEffectiveUserStation();
+      const psNameVal = userStation ? userStation.toUpperCase() : document.getElementById('add-ps-name').value.trim().toUpperCase();
+
       const newCase = {
-        sl_no: highValueData.cases.length + 1,
-        ps_name: document.getElementById('add-ps-name').value.trim().toUpperCase(),
+        sl_no: (highValueData.allCases ? highValueData.allCases.length : highValueData.cases.length) + 1,
+        ps_name: psNameVal,
         date_of_complaint: document.getElementById('add-date').value,
         acknowledgement_no: document.getElementById('add-ack-no').value.trim(),
         acknowledgements_count: document.getElementById('add-ack-no').value.trim().split('\n').filter(Boolean).length || 1,
@@ -1863,17 +2002,29 @@
 
         if (res.ok) {
           const result = await res.json();
-          highValueData.cases.push(result.case || newCase);
+          const savedCase = result.case || newCase;
+          if (highValueData.allCases) highValueData.allCases.push(savedCase);
+          if (!userStation || isUserStationMatch(savedCase.ps_name, userStation)) {
+            highValueData.cases.push(savedCase);
+          }
         } else {
-          highValueData.cases.push(newCase);
+          if (highValueData.allCases) highValueData.allCases.push(newCase);
+          if (!userStation || isUserStationMatch(newCase.ps_name, userStation)) {
+            highValueData.cases.push(newCase);
+          }
         }
       } catch (err) {
-        highValueData.cases.push(newCase);
+        if (highValueData.allCases) highValueData.allCases.push(newCase);
+        if (!userStation || isUserStationMatch(newCase.ps_name, userStation)) {
+          highValueData.cases.push(newCase);
+        }
       }
 
       closeModal('modal-add-case');
-      filteredCases = [...highValueData.cases];
-      renderAll();
+      applyFilters();
+      renderSummaryCards();
+      renderPendingFirsTable();
+      renderMoAnalytics();
       alert('కొత్త కేసు విజయవంతంగా జోడించబడింది! (New case added successfully!)');
     }
 
@@ -1881,8 +2032,10 @@
     async function handleSaveEditCase(e) {
       e.preventDefault();
       const slNo = Number(document.getElementById('edit-sl-no').value);
-      const idx = highValueData.cases.findIndex(c => c.sl_no === slNo);
-      if (idx === -1) return;
+      const allList = highValueData.allCases || highValueData.cases;
+      const allIdx = allList.findIndex(c => c.sl_no === slNo);
+      const caseIdx = highValueData.cases.findIndex(c => c.sl_no === slNo);
+      if (allIdx === -1 && caseIdx === -1) return;
 
       const updatedFields = {
         amount_lost: Number(document.getElementById('edit-amount-lost').value),
@@ -1891,7 +2044,9 @@
         fir_no_date: document.getElementById('edit-fir-no').value.trim(),
         complainant_name: document.getElementById('edit-complainant-name').value.trim(),
         complainant_mobile: document.getElementById('edit-complainant-mobile').value.trim(),
-        remarks: document.getElementById('edit-remarks').value.trim()
+        remarks: document.getElementById('edit-remarks').value.trim(),
+        refund_status: document.getElementById('edit-refund-status') ? document.getElementById('edit-refund-status').value : 'Pending',
+        refund_amount: document.getElementById('edit-refund-amount') ? Number(document.getElementById('edit-refund-amount').value) || 0 : 0
       };
 
       try {
@@ -1903,12 +2058,16 @@
 
         if (res.ok) {
           const result = await res.json();
-          highValueData.cases[idx] = result.case || { ...highValueData.cases[idx], ...updatedFields };
+          const updated = result.case || { ...(allList[allIdx] || highValueData.cases[caseIdx]), ...updatedFields };
+          if (allIdx !== -1) allList[allIdx] = updated;
+          if (caseIdx !== -1) highValueData.cases[caseIdx] = updated;
         } else {
-          highValueData.cases[idx] = { ...highValueData.cases[idx], ...updatedFields };
+          if (allIdx !== -1) allList[allIdx] = { ...allList[allIdx], ...updatedFields };
+          if (caseIdx !== -1) highValueData.cases[caseIdx] = { ...highValueData.cases[caseIdx], ...updatedFields };
         }
       } catch (err) {
-        highValueData.cases[idx] = { ...highValueData.cases[idx], ...updatedFields };
+        if (allIdx !== -1) allList[allIdx] = { ...allList[allIdx], ...updatedFields };
+        if (caseIdx !== -1) highValueData.cases[caseIdx] = { ...highValueData.cases[caseIdx], ...updatedFields };
       }
 
       closeModal('modal-edit-case');
