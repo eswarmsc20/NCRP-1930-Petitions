@@ -18,7 +18,8 @@
       "closed": 3,
       "withdrawal": 3,
       "under_process": 2
-    }
+    },
+    "total_amount_refunded": 2307124
   },
   "cases": [
     {
@@ -35,7 +36,9 @@
       "fir_no_date": "170/2025 dt 24.11.2025",
       "complainant_name": "Raiti Raju",
       "complainant_mobile": "7731068314",
-      "remarks": ""
+      "remarks": "",
+      "refund_status": "Memo Filed",
+      "refund_amount": 50000
     },
     {
       "sl_no": 2,
@@ -51,7 +54,9 @@
       "fir_no_date": "166/2025 dt 04.11.2025",
       "complainant_name": "P Sunitha",
       "complainant_mobile": "9581651991",
-      "remarks": ""
+      "remarks": "",
+      "refund_status": "Full Refund",
+      "refund_amount": 351390
     },
     {
       "sl_no": 3,
@@ -67,7 +72,9 @@
       "fir_no_date": "394/2025 dt 30.12.2025",
       "complainant_name": "Duvvada Shanmukharao",
       "complainant_mobile": "8688314238",
-      "remarks": "Major Digital Arrest case with 3 acknowledgements"
+      "remarks": "Major Digital Arrest case with 3 acknowledgements",
+      "refund_status": "Under Process",
+      "refund_amount": 0
     },
     {
       "sl_no": 4,
@@ -83,7 +90,9 @@
       "fir_no_date": "59/2026 dt 05-03-2026",
       "complainant_name": "Dusi Vuha",
       "complainant_mobile": "8074136140",
-      "remarks": ""
+      "remarks": "",
+      "refund_status": "Court Order Issued",
+      "refund_amount": 0
     },
     {
       "sl_no": 5,
@@ -99,7 +108,9 @@
       "fir_no_date": "58/2026 dt 01-05-2026",
       "complainant_name": "M RIYAZ BAIG",
       "complainant_mobile": "6370755308",
-      "remarks": ""
+      "remarks": "",
+      "refund_status": "Under Process",
+      "refund_amount": 0
     },
     {
       "sl_no": 6,
@@ -115,7 +126,9 @@
       "fir_no_date": "04/2026 dt 01.07.2026",
       "complainant_name": "CHANDRA SHAKAR",
       "complainant_mobile": "9182793637",
-      "remarks": ""
+      "remarks": "",
+      "refund_status": "Full Refund",
+      "refund_amount": 249271
     },
     {
       "sl_no": 7,
@@ -131,7 +144,9 @@
       "fir_no_date": "52/2025",
       "complainant_name": "Majula Revathi",
       "complainant_mobile": "9963754497",
-      "remarks": ""
+      "remarks": "",
+      "refund_status": "Full Refund",
+      "refund_amount": 1000000
     },
     {
       "sl_no": 8,
@@ -147,7 +162,9 @@
       "fir_no_date": "33/2026 dt 07-04-2026",
       "complainant_name": "Chalapathirao",
       "complainant_mobile": "9989622601",
-      "remarks": "Major Digital Arrest case"
+      "remarks": "Major Digital Arrest case",
+      "refund_status": "Pending",
+      "refund_amount": 10528
     },
     {
       "sl_no": 9,
@@ -163,7 +180,9 @@
       "fir_no_date": "157/2025 dt 30.10.2025",
       "complainant_name": "MURALI KRISHNA MODHALAVALSA",
       "complainant_mobile": "9121303030",
-      "remarks": ""
+      "remarks": "",
+      "refund_status": "Partial Refund",
+      "refund_amount": 290000
     },
     {
       "sl_no": 10,
@@ -179,7 +198,9 @@
       "fir_no_date": "12/2026 dt 19-01-2026",
       "complainant_name": "Korada Asha",
       "complainant_mobile": "9966498624",
-      "remarks": "₹9.04L frozen (53.7% recovery)"
+      "remarks": "₹9.04L frozen (53.7% recovery)",
+      "refund_status": "Partial Refund",
+      "refund_amount": 138101
     },
     {
       "sl_no": 11,
@@ -195,7 +216,9 @@
       "fir_no_date": "11/2026 dt 10-03-2026",
       "complainant_name": "Silla Srinivasarao",
       "complainant_mobile": "9440062081",
-      "remarks": "Major case: ₹1.03 Cr lost, ₹35 Lakhs frozen"
+      "remarks": "Major case: ₹1.03 Cr lost, ₹35 Lakhs frozen",
+      "refund_status": "Partial Refund",
+      "refund_amount": 182834
     },
     {
       "sl_no": 12,
@@ -211,7 +234,9 @@
       "fir_no_date": "40/2026 dt 19-03-2026",
       "complainant_name": "Ch. Krishna Mohan",
       "complainant_mobile": "9440196269",
-      "remarks": "Digital Arrest: ₹56.25L lost, ₹12.63L frozen"
+      "remarks": "Digital Arrest: ₹56.25L lost, ₹12.63L frozen",
+      "refund_status": "Memo Filed",
+      "refund_amount": 0
     },
     {
       "sl_no": 13,
@@ -227,7 +252,9 @@
       "fir_no_date": "41/2026 dt 19-03-2026",
       "complainant_name": "Ravada Venkata Siva Prasad",
       "complainant_mobile": "9502170170",
-      "remarks": "Crypto Fraud across 7 acknowledgements"
+      "remarks": "Crypto Fraud across 7 acknowledgements",
+      "refund_status": "Pending",
+      "refund_amount": 0
     },
     {
       "sl_no": 14,
@@ -243,7 +270,9 @@
       "fir_no_date": "272/2025 dt 22.11.2025",
       "complainant_name": "BBSR MURTHY",
       "complainant_mobile": "9440843670",
-      "remarks": ""
+      "remarks": "",
+      "refund_status": "Partial Refund",
+      "refund_amount": 35000
     },
     {
       "sl_no": 15,
@@ -259,7 +288,9 @@
       "fir_no_date": "T/r to VSP City Cr.No.29/2026 VSP Cyber PS",
       "complainant_name": "Pappala Subash Kumar",
       "complainant_mobile": "8179739633",
-      "remarks": "Transferred to Visakhapatnam City Cyber Crime PS"
+      "remarks": "Transferred to Visakhapatnam City Cyber Crime PS",
+      "refund_status": "Pending",
+      "refund_amount": 0
     },
     {
       "sl_no": 16,
@@ -275,7 +306,9 @@
       "fir_no_date": "T/r to VSP Cyber crime PS FIR",
       "complainant_name": "Dilleswara rao kanakala",
       "complainant_mobile": "7842234576",
-      "remarks": "Transferred to Visakhapatnam Cyber Crime PS FIR"
+      "remarks": "Transferred to Visakhapatnam Cyber Crime PS FIR",
+      "refund_status": "Pending",
+      "refund_amount": 0
     },
     {
       "sl_no": 17,
@@ -291,7 +324,9 @@
       "fir_no_date": "T/R State Nodal (Karnataka State)",
       "complainant_name": "B Meena Kumari",
       "complainant_mobile": "9705874190",
-      "remarks": "Transferred to Karnataka State Nodal; ₹18.65L frozen"
+      "remarks": "Transferred to Karnataka State Nodal; ₹18.65L frozen",
+      "refund_status": "Pending",
+      "refund_amount": 0
     },
     {
       "sl_no": 18,
@@ -307,7 +342,9 @@
       "fir_no_date": "",
       "complainant_name": "KOPPALA SUDHAKAR",
       "complainant_mobile": "7032051877",
-      "remarks": "Closed"
+      "remarks": "Closed",
+      "refund_status": "No Action",
+      "refund_amount": 0
     },
     {
       "sl_no": 19,
@@ -323,7 +360,9 @@
       "fir_no_date": "",
       "complainant_name": "Koppala Sudhakar",
       "complainant_mobile": "7032051877",
-      "remarks": "Withdrawal by complainant"
+      "remarks": "Withdrawal by complainant",
+      "refund_status": "Withdrawn",
+      "refund_amount": 0
     },
     {
       "sl_no": 20,
@@ -339,7 +378,9 @@
       "fir_no_date": "",
       "complainant_name": "Kotipalli Naveen",
       "complainant_mobile": "9515793812",
-      "remarks": "Withdrawal by complainant"
+      "remarks": "Withdrawal by complainant",
+      "refund_status": "Withdrawn",
+      "refund_amount": 0
     },
     {
       "sl_no": 21,
@@ -355,7 +396,9 @@
       "fir_no_date": "",
       "complainant_name": "Sanjay Kumar Ijju",
       "complainant_mobile": "8190009729",
-      "remarks": "Withdrawal by complainant"
+      "remarks": "Withdrawal by complainant",
+      "refund_status": "Withdrawn",
+      "refund_amount": 0
     },
     {
       "sl_no": 22,
@@ -371,7 +414,9 @@
       "fir_no_date": "75/2026 dt 08-06-2026",
       "complainant_name": "Dileep Kumar Korada",
       "complainant_mobile": "9959060463",
-      "remarks": ""
+      "remarks": "",
+      "refund_status": "Pending",
+      "refund_amount": 0
     },
     {
       "sl_no": 23,
@@ -387,7 +432,9 @@
       "fir_no_date": "",
       "complainant_name": "B NAGESWARA RAO",
       "complainant_mobile": "7989494020",
-      "remarks": "URGENT ACTION: FIR yet to be registered! ₹55.8L lost, ₹12.14L frozen"
+      "remarks": "URGENT ACTION: FIR yet to be registered! ₹55.8L lost, ₹12.14L frozen",
+      "refund_status": "Pending",
+      "refund_amount": 0
     },
     {
       "sl_no": 24,
@@ -403,7 +450,9 @@
       "fir_no_date": "81/2026 dt 08-06-2026",
       "complainant_name": "DSAN Raju",
       "complainant_mobile": "9490168895",
-      "remarks": ""
+      "remarks": "",
+      "refund_status": "Under Process",
+      "refund_amount": 0
     },
     {
       "sl_no": 25,
@@ -419,7 +468,9 @@
       "fir_no_date": "Transfer to Telangana",
       "complainant_name": "Duba Jagadeeswara Rao",
       "complainant_mobile": "9908611834",
-      "remarks": "Transferred to Telangana State Police"
+      "remarks": "Transferred to Telangana State Police",
+      "refund_status": "Pending",
+      "refund_amount": 0
     },
     {
       "sl_no": 26,
@@ -435,7 +486,9 @@
       "fir_no_date": "61/2026 dt 13-06-2026",
       "complainant_name": "SRAVAN BORA",
       "complainant_mobile": "9550609005",
-      "remarks": ""
+      "remarks": "",
+      "refund_status": "Memo Filed",
+      "refund_amount": 0
     },
     {
       "sl_no": 27,
@@ -451,7 +504,9 @@
       "fir_no_date": "",
       "complainant_name": "A Prabhakara Rao",
       "complainant_mobile": "9553337333",
-      "remarks": "Closed"
+      "remarks": "Closed",
+      "refund_status": "No Action",
+      "refund_amount": 0
     },
     {
       "sl_no": 28,
@@ -467,7 +522,9 @@
       "fir_no_date": "",
       "complainant_name": "Kalivarapu Papa ratnam",
       "complainant_mobile": "9440550554",
-      "remarks": "Closed"
+      "remarks": "Closed",
+      "refund_status": "No Action",
+      "refund_amount": 0
     },
     {
       "sl_no": 29,
@@ -483,7 +540,9 @@
       "fir_no_date": "",
       "complainant_name": "Santha Murthy",
       "complainant_mobile": "8106537225",
-      "remarks": "URGENT ACTION: FIR yet to be registered! ₹33.5L lost, ₹2.83L frozen"
+      "remarks": "URGENT ACTION: FIR yet to be registered! ₹33.5L lost, ₹2.83L frozen",
+      "refund_status": "Pending",
+      "refund_amount": 0
     },
     {
       "sl_no": 30,
@@ -499,7 +558,9 @@
       "fir_no_date": "T/r to VSP Cyber crime PS FIR 102/2026 dt 08-06-2026",
       "complainant_name": "Challa Srinivasa Rao",
       "complainant_mobile": "8555963484",
-      "remarks": "Transferred to VSP Cyber Crime PS (FIR 102/2026)"
+      "remarks": "Transferred to VSP Cyber Crime PS (FIR 102/2026)",
+      "refund_status": "Pending",
+      "refund_amount": 0
     },
     {
       "sl_no": 31,
@@ -515,7 +576,9 @@
       "fir_no_date": "41/2026 dt 19-03-2026",
       "complainant_name": "Ravada Venkata Shiva Prasad",
       "complainant_mobile": "9502170170",
-      "remarks": "3 Acknowledgements linked to FIR 41/2026"
+      "remarks": "3 Acknowledgements linked to FIR 41/2026",
+      "refund_status": "Pending",
+      "refund_amount": 0
     }
   ],
   "unit_comparison": [

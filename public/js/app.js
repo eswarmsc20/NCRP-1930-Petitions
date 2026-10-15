@@ -1165,6 +1165,7 @@ function renderPetitionsTable(data) {
           <th style="min-width: 120px; cursor: pointer; user-select: none;" onclick="sortTableBy('lost_amount')" title="Click to sort">Lost Amount (₹)${getSortHeaderIndicator('lost_amount')}</th>
           <th style="min-width: 120px; cursor: pointer; user-select: none;" onclick="sortTableBy('hold_amount')" title="Click to sort">Hold Amount (₹)${getSortHeaderIndicator('hold_amount')}</th>
           <th class="th-refund" style="min-width: 125px; cursor: pointer; user-select: none;" onclick="sortTableBy('refund_amount')" title="Click to sort">Refund Amount (₹)${getSortHeaderIndicator('refund_amount')}</th>
+          <th style="min-width: 125px; background: #065f46; color: #a7f3d0;">Refund Status (రీఫండ్ స్థితి)</th>
           <th class="th-process" style="min-width: 110px; cursor: pointer; user-select: none;" onclick="sortTableBy('status')" title="Click to sort">Status${getSortHeaderIndicator('status')}</th>
           <th class="col-action-taken" style="min-width: 240px; max-width: 360px;">Action taken by PS</th>
           <th style="min-width: 95px;">Date of Action</th>
@@ -1191,6 +1192,7 @@ function renderPetitionsTable(data) {
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('lost_amount')" title="Click to sort">Lost Amount (₹)${getSortHeaderIndicator('lost_amount')}</th>
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('hold_amount')" title="Click to sort">Hold Amount (₹)${getSortHeaderIndicator('hold_amount')}</th>
           <th class="th-refund" style="cursor: pointer; user-select: none;" onclick="sortTableBy('refund_amount')" title="Click to sort">Refund Amount (₹)${getSortHeaderIndicator('refund_amount')}</th>
+          <th style="min-width: 120px; background: #065f46; color: #a7f3d0;">Refund Status</th>
           <th style="cursor: pointer; user-select: none;" onclick="sortTableBy('status')" title="Click to sort">Status${getSortHeaderIndicator('status')}</th>
           <th>FIR / Cr. No</th>
           <th class="col-action-taken" style="min-width: 220px; max-width: 320px;">Action Taken</th>
@@ -1200,7 +1202,7 @@ function renderPetitionsTable(data) {
     }
   }
 
-  const colSpanCount = isFullMode ? 26 : 13;
+  const colSpanCount = isFullMode ? 27 : 14;
 
   if (data.petitions.length === 0) {
     tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align: center; padding: 40px; color: #64748b;">No petitions found matching the criteria. / ఫలితాలు లేవు.</td></tr>`;
@@ -1237,6 +1239,15 @@ function renderPetitionsTable(data) {
         <td class="amount-loss" style="font-weight: 700;">${p.lost_amount > 0 ? '₹' + p.lost_amount.toLocaleString('en-IN') : '-'}</td>
         <td class="amount-hold" style="font-weight: 700;">${p.hold_amount > 0 ? '₹' + p.hold_amount.toLocaleString('en-IN') : '-'}</td>
         <td class="amount-refund" style="font-weight: 700; color: #059669;">${p.refund_amount > 0 ? '₹' + p.refund_amount.toLocaleString('en-IN') : '-'}</td>
+        <td>
+          ${(() => {
+            if (p.refund_amount > 0) return '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">✓ Refunded</span>';
+            if (p.court_order_obtained === 'Yes') return '<span class="badge" style="background:#dbeafe; color:#1d4ed8; font-weight:600;">⚖️ Order Issued</span>';
+            if (p.court_memo_filed === 'Yes') return '<span class="badge" style="background:#fef3c7; color:#92400e; font-weight:600;">📝 Memo Filed</span>';
+            if (p.hold_amount > 0) return '<span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:600;">🔒 Hold Secured</span>';
+            return '<span class="badge" style="background:#f1f5f9; color:#94a3b8;">Pending</span>';
+          })()}
+        </td>
         <td><span class="badge ${badgeClass}">${p.status}</span></td>
         <td class="cell-wrap td-action-taken" style="font-size: 0.75rem; color: #334155;" title="${p.action_taken || ''}">
           ${p.action_taken ? p.action_taken : '<em style="color:#94a3b8">Pending</em>'}
@@ -1274,6 +1285,15 @@ function renderPetitionsTable(data) {
         <td class="amount-loss">${p.lost_amount > 0 ? '₹' + p.lost_amount.toLocaleString('en-IN') : '-'}</td>
         <td class="amount-hold">${p.hold_amount > 0 ? '₹' + p.hold_amount.toLocaleString('en-IN') : '-'}</td>
         <td class="amount-refund" style="font-weight: 700; color: #059669;">${p.refund_amount > 0 ? '₹' + p.refund_amount.toLocaleString('en-IN') : '-'}</td>
+        <td>
+          ${(() => {
+            if (p.refund_amount > 0) return '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">✓ Refunded</span>';
+            if (p.court_order_obtained === 'Yes') return '<span class="badge" style="background:#dbeafe; color:#1d4ed8; font-weight:600;">⚖️ Order Issued</span>';
+            if (p.court_memo_filed === 'Yes') return '<span class="badge" style="background:#fef3c7; color:#92400e; font-weight:600;">📝 Memo Filed</span>';
+            if (p.hold_amount > 0) return '<span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:600;">🔒 Hold Secured</span>';
+            return '<span class="badge" style="background:#f1f5f9; color:#94a3b8;">Pending</span>';
+          })()}
+        </td>
         <td><span class="badge ${badgeClass}">${p.status}</span></td>
         <td><span style="font-weight: 600; color: #dc2626;">${p.fir_number || '-'}</span></td>
         <td class="cell-wrap td-action-taken" style="font-size: 0.78rem; color: #475569;" title="${p.action_taken || ''}">
