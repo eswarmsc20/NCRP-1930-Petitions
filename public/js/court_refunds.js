@@ -7222,6 +7222,33 @@ window.deleteCase = deleteCase;
 
 let currentSessionUser = null;
 
+function getTimeBasedGreeting(user) {
+  const hour = new Date().getHours();
+  let timeText = 'Good Morning';
+  let timeTextTe = 'శుభోదయం';
+  let icon = '☀️';
+
+  if (hour >= 12 && hour < 17) {
+    timeText = 'Good Afternoon';
+    timeTextTe = 'శుభ మధ్యాహ్నం';
+    icon = '🌤️';
+  } else if (hour >= 17 && hour < 21) {
+    timeText = 'Good Evening';
+    timeTextTe = 'శుభ సాయంత్రం';
+    icon = '🌆';
+  } else if (hour >= 21 || hour < 4) {
+    timeText = 'Good Evening';
+    timeTextTe = 'శుభ రాత్రి';
+    icon = '🌙';
+  }
+
+  const isStation = !user || user.role === 'station' || user.psName;
+  const stationName = (user && (user.psName || user.displayName)) ? (user.psName || user.displayName) : 'Srikakulam Police Station';
+  const operatorTitle = isStation ? `E-COPS Operator, ${stationName}` : (user ? (user.displayName || 'District Administrator') : 'District Administrator');
+
+  return { timeText, timeTextTe, icon, stationName, operatorTitle, fullEn: `${timeText} ${icon} ${operatorTitle}` };
+}
+
 function loadSessionUser() {
   try {
     const raw = localStorage.getItem('ncrp_session_user');
@@ -7229,13 +7256,44 @@ function loadSessionUser() {
       currentSessionUser = JSON.parse(raw);
       const nameEl = document.getElementById('userDisplayName');
       const circleEl = document.getElementById('userCircleLabel');
-      if (nameEl) nameEl.textContent = currentSessionUser.displayName || currentSessionUser.username || 'DPO / District Admin, Srikakulam';
+      const greeting = getTimeBasedGreeting(currentSessionUser);
+      if (nameEl) nameEl.textContent = `${greeting.icon} ${greeting.operatorTitle}`;
       if (circleEl) circleEl.textContent = `(${currentSessionUser.circle || currentSessionUser.subDivision || 'District HQ Circle'})`;
     }
   } catch (e) {
     currentSessionUser = null;
   }
 }
+
+function openLogoutThankYouModal() {
+  const modal = document.getElementById('logoutThankYouModal');
+  if (!modal) {
+    confirmLogout();
+    return;
+  }
+  const stLabel = document.getElementById('logoutModalStationName');
+  if (stLabel) {
+    const isStation = !currentSessionUser || currentSessionUser.role === 'station' || currentSessionUser.psName;
+    const name = (currentSessionUser && (currentSessionUser.psName || currentSessionUser.displayName)) || 'Srikakulam District Police';
+    stLabel.textContent = isStation ? `👮 E-COPS Operator, ${name}` : `👮 District Administrator (${name})`;
+  }
+  modal.style.display = 'flex';
+}
+
+function closeLogoutThankYouModal() {
+  const modal = document.getElementById('logoutThankYouModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function confirmLogout() {
+  localStorage.removeItem('ncrp_session_user');
+  localStorage.removeItem('ncrp_token');
+  window.location.href = 'index.html';
+}
+
+window.openLogoutThankYouModal = openLogoutThankYouModal;
+window.closeLogoutThankYouModal = closeLogoutThankYouModal;
+window.confirmLogout = confirmLogout;
 
 function normalizeStationName(s) {
   if (!s) return '';

@@ -690,19 +690,74 @@ function showLoginScreen() {
   if (home) home.style.display = 'none';
 }
 
+function getTimeBasedGreeting(user) {
+  const hour = new Date().getHours();
+  let timeText = 'Good Morning';
+  let timeTextTe = 'శుభోదయం';
+  let icon = '☀️';
+
+  if (hour >= 12 && hour < 17) {
+    timeText = 'Good Afternoon';
+    timeTextTe = 'శుభ మధ్యాహ్నం';
+    icon = '🌤️';
+  } else if (hour >= 17 && hour < 21) {
+    timeText = 'Good Evening';
+    timeTextTe = 'శుభ సాయంత్రం';
+    icon = '🌆';
+  } else if (hour >= 21 || hour < 4) {
+    timeText = 'Good Evening';
+    timeTextTe = 'శుభ రాత్రి';
+    icon = '🌙';
+  }
+
+  const isStation = !user || user.role === 'station' || user.psName;
+  const stationName = (user && (user.psName || user.displayName)) ? (user.psName || user.displayName) : 'Srikakulam Police Station';
+  const operatorTitle = isStation ? `E-COPS Operator, ${stationName}` : (user ? (user.displayName || 'District Administrator') : 'District Administrator');
+  const operatorTitleTe = isStation ? `E-COPS ఆపరేటర్, ${stationName}` : (user ? (user.displayName || 'జిల్లా అడ్మినిస్ట్రేటర్') : 'జిల్లా అడ్మినిస్ట్రేటర్');
+
+  return {
+    timeText,
+    timeTextTe,
+    icon,
+    stationName,
+    operatorTitle,
+    operatorTitleTe,
+    fullEn: `${timeText} ${icon} ${operatorTitle}`,
+    fullTe: `${timeTextTe}! ${operatorTitleTe}`
+  };
+}
+
 function renderAuthenticatedUI(preferredScreen = null) {
   const login = document.getElementById('loginScreen');
   if (login) login.style.display = 'none';
 
+  const greeting = getTimeBasedGreeting(currentUser);
   const displayName = currentUser.displayName || currentUser.username || 'Authorized Police Station';
   const circleText = currentUser.circle ? `(${currentUser.circle})` : '';
 
-  if (document.getElementById('userDisplayName')) document.getElementById('userDisplayName').textContent = displayName;
+  if (document.getElementById('userDisplayName')) document.getElementById('userDisplayName').textContent = `${greeting.icon} ${greeting.operatorTitle}`;
   if (document.getElementById('userCircleLabel')) document.getElementById('userCircleLabel').textContent = circleText;
-  if (document.getElementById('homeUserDisplayName')) document.getElementById('homeUserDisplayName').textContent = displayName;
+  if (document.getElementById('homeUserDisplayName')) document.getElementById('homeUserDisplayName').textContent = `${greeting.icon} ${greeting.operatorTitle}`;
   if (document.getElementById('homeUserCircleLabel')) document.getElementById('homeUserCircleLabel').textContent = circleText;
   if (document.getElementById('homeBannerStation')) document.getElementById('homeBannerStation').textContent = displayName;
   if (document.getElementById('homeBannerCircle')) document.getElementById('homeBannerCircle').textContent = currentUser.circle ? `${currentUser.circle} Circle` : 'District Cyber Command';
+
+  // Dynamic Time-based Greeting in Portal Welcome Banner
+  const gTitle = document.getElementById('homeWelcomeGreeting');
+  if (gTitle) {
+    gTitle.innerHTML = `${greeting.timeText} ${greeting.icon} <span style="color: #fde047;">${greeting.operatorTitle}</span>`;
+  }
+  const gTe = document.getElementById('homeWelcomeTelugu');
+  if (gTe) {
+    gTe.textContent = `${greeting.fullTe} - డిస్ట్రిక్ట్ సైబర్ క్రైమ్ మేనేజ్‌మెంట్ & రికవరీ వ్యవస్థకు స్వాగతం`;
+  }
+  const gPill = document.getElementById('homeGreetingPill');
+  if (gPill) {
+    const iconEl = document.getElementById('homeGreetingIcon');
+    const textEl = document.getElementById('homeGreetingTimeText');
+    if (iconEl) iconEl.textContent = greeting.icon;
+    if (textEl) textEl.textContent = greeting.timeText;
+  }
 
   if (currentUser.role === 'admin') {
     document.getElementById('adminUsersTabBtn').style.display = 'inline-flex';
@@ -779,7 +834,8 @@ function setupEventListeners() {
       currentToken = data.token;
       localStorage.setItem('ncrp_token', currentToken);
       currentUser = data.user;
-      showToast(`Welcome ${currentUser.displayName}!`, 'success');
+      const greeting = getTimeBasedGreeting(currentUser);
+      showToast(`${greeting.timeText} ${greeting.icon} ${greeting.operatorTitle}! పోర్టల్‌కు స్వాగతం.`, 'success', 6000);
       renderAuthenticatedUI();
     } catch (err) {
       if (errBox) {
@@ -954,16 +1010,47 @@ function setupEventListeners() {
   setupExcelDropzone();
 }
 
-// Logout
-function logout() {
+// Logout & Thank You Modal
+function openLogoutThankYouModal() {
+  const modal = document.getElementById('logoutThankYouModal');
+  if (!modal) {
+    confirmLogout();
+    return;
+  }
+  const stLabel = document.getElementById('logoutModalStationName');
+  if (stLabel) {
+    const user = currentUser || JSON.parse(localStorage.getItem('ncrp_session_user') || '{}');
+    const isStation = !user.role || user.role === 'station' || user.psName;
+    const name = user.psName || user.displayName || 'Srikakulam District Police';
+    stLabel.textContent = isStation ? `👮 E-COPS Operator, ${name}` : `👮 District Administrator (${name})`;
+  }
+  modal.style.display = 'flex';
+}
+
+function closeLogoutThankYouModal() {
+  const modal = document.getElementById('logoutThankYouModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function confirmLogout() {
+  closeLogoutThankYouModal();
   apiFetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
   localStorage.removeItem('ncrp_token');
   localStorage.removeItem('ncrp_session_user');
   currentToken = null;
   currentUser = null;
   showLoginScreen();
-  showToast('Logged out safely', 'info');
+  showToast('ధన్యవాదాలు! సురక్షితంగా లాగౌట్ అయ్యారు. (Logged out safely)', 'info', 5000);
 }
+
+function logout() {
+  openLogoutThankYouModal();
+}
+
+window.openLogoutThankYouModal = openLogoutThankYouModal;
+window.closeLogoutThankYouModal = closeLogoutThankYouModal;
+window.confirmLogout = confirmLogout;
+window.logout = logout;
 
 // Load Police Stations
 async function loadStations() {

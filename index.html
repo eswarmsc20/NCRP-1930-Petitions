@@ -94,8 +94,11 @@
       <!-- Welcome Banner -->
       <div class="portal-welcome-banner">
         <div class="portal-welcome-text">
-          <h2>Welcome to Cyber Crime Command Center</h2>
-          <div class="telugu-welcome">డిస్ట్రిక్ట్ సైబర్ క్రైమ్ మేనేజ్‌మెంట్ & రికవరీ వ్యవస్థకు స్వాగతం</div>
+          <div class="portal-greeting-pill" id="homeGreetingPill">
+            <span id="homeGreetingIcon">☀️</span> <span id="homeGreetingTimeText">Good Morning</span>
+          </div>
+          <h2 id="homeWelcomeGreeting">Welcome to Cyber Crime Command Center</h2>
+          <div class="telugu-welcome" id="homeWelcomeTelugu">డిస్ట్రిక్ట్ సైబర్ క్రైమ్ మేనేజ్‌మెంట్ & రికవరీ వ్యవస్థకు స్వాగతం</div>
           <p>Select a departmental module below to access records, manage petitions, and track recoveries:</p>
         </div>
         <div class="portal-welcome-badge">
@@ -1423,6 +1426,131 @@
         <button type="button" class="btn-secondary" onclick="closeStationStatementModal()">Close</button>
         <button type="button" class="btn-gold" onclick="window.print()">
           🖨️ Print / Download PDF Statement (ప్రింట్ చేయండి)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thank You & Cyber Cell Technical Support Modal -->
+  <div id="logoutThankYouModal" class="modal-overlay" style="display: none; z-index: 99999;">
+    <div class="modal-thankyou-card">
+      <div class="thankyou-header">
+        <div class="thankyou-logos">
+          <img src="./images/ap_police_logo.png" alt="AP Police" class="thankyou-logo-img" title="Andhra Pradesh Police">
+          <div style="text-align: center;">
+            <div class="thankyou-badge-title">SRIKAKULAM DISTRICT POLICE</div>
+            <div style="font-size: 0.76rem; color: #93c5fd; font-weight: 600;">CYBER CRIME COMMAND PORTAL</div>
+          </div>
+          <img src="./images/srikakulam_police_logo.png" alt="Srikakulam Police" class="thankyou-logo-img" title="Srikakulam District Police">
+        </div>
+        <h2 class="thankyou-main-title">🙏 ధన్యవాదాలు! THANK YOU</h2>
+        <div class="thankyou-station-tag" id="logoutModalStationName">👮 E-COPS Operator, Srikakulam District Police</div>
+        <div class="thankyou-telugu-sub">శ్రీకాకుళం జిల్లా సైబర్ క్రైమ్ పోర్టల్ సేవలను వినియోగించినందుకు ధన్యవాదాలు! విధుల నిర్వహణ విజయవంతంగా పూర్తయింది.</div>
+      </div>
+
+      <div class="thankyou-body">
+        <div class="tech-support-box">
+          <div class="tech-support-title">
+            <span style="font-size: 1.25rem;">🛠️</span> Any Technical Problem? Contact Cyber Cell Team
+          </div>
+          <div class="tech-support-sub">
+            పోర్టల్‌లో ఏదైనా సాంకేతిక సమస్య ఎదురైనా లేదా సహాయం కావాలన్నా వెంటనే క్రింది సైబర్ సెల్ బృందాన్ని సంప్రదించండి:
+          </div>
+
+          <div class="tech-contacts-grid">
+            <!-- 1. Sarat Chakradhar -->
+            <div class="contact-card">
+              <div class="contact-info">
+                <div class="contact-name">
+                  <span>👮‍♂️ Sarat Chakradhar</span>
+                </div>
+                <div class="contact-role">Cyber Cell Team, Srikakulam</div>
+                <div class="contact-phone-badge">
+                  <span>📱 9515777779</span>
+                </div>
+              </div>
+              <div class="contact-actions">
+                <a href="tel:9515777779" class="btn-contact-call" title="Call Sarat Chakradhar">
+                  📞 Call
+                </a>
+                <a href="https://wa.me/919515777779" target="_blank" class="btn-contact-wa" title="WhatsApp Sarat Chakradhar">
+                  💬 WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <!-- 2. Satya Narayana -->
+            <div class="contact-card">
+              <div class="contact-info">
+                <div class="contact-name">
+                  <span>👮‍♂️ Satya Narayana</span>
+                </div>
+                <div class="contact-role">Cyber Cell Team, Srikakulam</div>
+                <div class="contact-phone-badge">
+                  <span>📱 6303339562</span>
+                </div>
+              </div>
+              <div class="contact-actions">
+                <a href="tel:6303339562" class="btn-contact-call" title="Call Satya Narayana">
+                  📞 Call
+                </a>
+                <a href="https://wa.me/916303339562" target="_blank" class="btn-contact-wa" title="WhatsApp Satya Narayana">
+                  💬 WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <!-- 3. Giri -->
+            <div class="contact-card">
+              <div class="contact-info">
+                <div class="contact-name">
+                  <span>👮‍♂️ Giri</span>
+                </div>
+                <div class="contact-role">Cyber Cell Team, Srikakulam</div>
+                <div class="contact-phone-badge">
+                  <span>📱 9492253421</span>
+                </div>
+              </div>
+              <div class="contact-actions">
+                <a href="tel:9492253421" class="btn-contact-call" title="Call Giri">
+                  📞 Call
+                </a>
+                <a href="https://wa.me/919492253421" target="_blank" class="btn-contact-wa" title="WhatsApp Giri">
+                  💬 WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <!-- 4. Eswar -->
+            <div class="contact-card">
+              <div class="contact-info">
+                <div class="contact-name">
+                  <span>👮‍♂️ Eswar</span>
+                </div>
+                <div class="contact-role">Cyber Cell Team, Srikakulam</div>
+                <div class="contact-phone-badge">
+                  <span>📱 7893505185</span>
+                </div>
+              </div>
+              <div class="contact-actions">
+                <a href="tel:7893505185" class="btn-contact-call" title="Call Eswar">
+                  📞 Call
+                </a>
+                <a href="https://wa.me/917893505185" target="_blank" class="btn-contact-wa" title="WhatsApp Eswar">
+                  💬 WhatsApp
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="thankyou-footer">
+        <button type="button" class="btn-secondary" onclick="closeLogoutThankYouModal()" style="padding: 9px 18px; font-weight: 700; border-radius: 8px;">
+          ↩️ Stay on Portal / క్యాన్సల్
+        </button>
+        <button type="button" class="btn-danger" onclick="confirmLogout()" style="background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%); color: white; border: none; padding: 10px 22px; font-weight: 800; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);">
+          ⏻ Complete Logout / లాగౌట్ అవ్వండి
         </button>
       </div>
     </div>
