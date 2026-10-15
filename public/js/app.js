@@ -118,7 +118,7 @@ function getDataBasePath() {
   return window.location.origin + path + "data/";
 }
 
-const NCRP_APP_VERSION = '5.1';
+const NCRP_APP_VERSION = '5.2';
 
 // Clear obsolete or corrupted localStorage caches on app version upgrade
 try {
@@ -149,6 +149,9 @@ async function ensureStaticData(forceRefresh = false) {
     delete savedEdits[1886];
     delete savedEdits['1886'];
     delete savedEdits['20210260054770'];
+    delete savedEdits['20210260054519'];
+    delete savedEdits[1880];
+    delete savedEdits['1880'];
     localStorage.setItem("ncrp_local_edits", JSON.stringify(savedEdits));
 
     staticPetitions.forEach(p => {
