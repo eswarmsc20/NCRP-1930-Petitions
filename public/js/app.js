@@ -834,9 +834,7 @@ function setupEventListeners() {
       currentToken = data.token;
       localStorage.setItem('ncrp_token', currentToken);
       currentUser = data.user;
-      const greeting = getTimeBasedGreeting(currentUser);
-      showToast(`${greeting.timeText} ${greeting.icon} ${greeting.operatorTitle}! పోర్టల్‌కు స్వాగతం.`, 'success', 6000);
-      renderAuthenticatedUI();
+      showLoginWelcomeCard(currentUser);
     } catch (err) {
       if (errBox) {
         errBox.textContent = '⚠️ ' + (err.message || 'Login failed. Please check credentials.');
@@ -1010,46 +1008,112 @@ function setupEventListeners() {
   setupExcelDropzone();
 }
 
-// Logout & Thank You Modal
-function openLogoutThankYouModal() {
-  const modal = document.getElementById('logoutThankYouModal');
+// Login Welcome Card & Auto-Direct
+let welcomeTimer = null;
+let welcomeInterval = null;
+
+function showLoginWelcomeCard(user) {
+  const modal = document.getElementById('loginWelcomeModal');
   if (!modal) {
-    confirmLogout();
+    renderAuthenticatedUI();
     return;
   }
-  const stLabel = document.getElementById('logoutModalStationName');
-  if (stLabel) {
-    const user = currentUser || JSON.parse(localStorage.getItem('ncrp_session_user') || '{}');
-    const isStation = !user.role || user.role === 'station' || user.psName;
-    const name = user.psName || user.displayName || 'Srikakulam District Police';
-    stLabel.textContent = isStation ? `👮 E-COPS Operator, ${name}` : `👮 District Administrator (${name})`;
+
+  const greeting = getTimeBasedGreeting(user);
+  const isStation = !user || user.role === 'station' || user.psName;
+  const stationName = (user && (user.psName || user.displayName)) ? (user.psName || user.displayName) : 'Srikakulam Police Station';
+  const opTitle = isStation ? `E-COPS Operator, ${stationName}` : (user.displayName || 'District Administrator');
+
+  const timePill = document.getElementById('welcomeModalTimePill');
+  if (timePill) timePill.textContent = `${greeting.icon} ${greeting.timeText}`;
+
+  const greetTitle = document.getElementById('welcomeModalGreeting');
+  if (greetTitle) greetTitle.textContent = `${greeting.timeText} ${greeting.icon}`;
+
+  const stTitle = document.getElementById('welcomeModalStation');
+  if (stTitle) stTitle.textContent = opTitle;
+
+  const teluguMsg = document.getElementById('welcomeModalTelugu');
+  if (teluguMsg) teluguMsg.textContent = `${greeting.timeTextTe}! ${greeting.operatorTitleTe} - శ్రీకాకుళం జిల్లా సైబర్ క్రైమ్ కమాండ్ పోర్టల్‌కు స్వాగతం!`;
+
+  const countNum = document.getElementById('welcomeCountNum');
+  const progFill = document.getElementById('welcomeProgressFill');
+  if (countNum) countNum.textContent = '3';
+  if (progFill) {
+    progFill.style.transition = 'none';
+    progFill.style.width = '0%';
+    setTimeout(() => {
+      progFill.style.transition = 'width 3s linear';
+      progFill.style.width = '100%';
+    }, 50);
   }
+
   modal.style.display = 'flex';
+
+  let remaining = 3;
+  if (welcomeInterval) clearInterval(welcomeInterval);
+  welcomeInterval = setInterval(() => {
+    remaining--;
+    if (countNum) countNum.textContent = String(remaining);
+    if (remaining <= 0) {
+      clearInterval(welcomeInterval);
+    }
+  }, 1000);
+
+  if (welcomeTimer) clearTimeout(welcomeTimer);
+  welcomeTimer = setTimeout(() => {
+    proceedToPortalFromWelcome();
+  }, 3100);
 }
 
-function closeLogoutThankYouModal() {
-  const modal = document.getElementById('logoutThankYouModal');
+function proceedToPortalFromWelcome() {
+  if (welcomeTimer) clearTimeout(welcomeTimer);
+  if (welcomeInterval) clearInterval(welcomeInterval);
+  const modal = document.getElementById('loginWelcomeModal');
   if (modal) modal.style.display = 'none';
+  renderAuthenticatedUI();
 }
 
-function confirmLogout() {
-  closeLogoutThankYouModal();
+window.showLoginWelcomeCard = showLoginWelcomeCard;
+window.proceedToPortalFromWelcome = proceedToPortalFromWelcome;
+
+// Logout & Thank You Modal
+function logout() {
+  const savedUser = currentUser || JSON.parse(localStorage.getItem('ncrp_session_user') || '{}');
+  
+  // 1. Immediately terminate session and remove all tokens
   apiFetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
   localStorage.removeItem('ncrp_token');
   localStorage.removeItem('ncrp_session_user');
   currentToken = null;
   currentUser = null;
+
+  // 2. Open Thank You modal with Technical Support Contacts
+  const modal = document.getElementById('logoutThankYouModal');
+  if (modal) {
+    const stLabel = document.getElementById('logoutModalStationName');
+    if (stLabel) {
+      const isStation = !savedUser.role || savedUser.role === 'station' || savedUser.psName;
+      const name = savedUser.psName || savedUser.displayName || 'Srikakulam District Police';
+      stLabel.textContent = isStation ? `👮 E-COPS Operator, ${name}` : `👮 District Administrator (${name})`;
+    }
+    modal.style.display = 'flex';
+  } else {
+    finishLogoutRedirect();
+  }
+}
+
+function finishLogoutRedirect() {
+  const modal = document.getElementById('logoutThankYouModal');
+  if (modal) modal.style.display = 'none';
   showLoginScreen();
-  showToast('ధన్యవాదాలు! సురక్షితంగా లాగౌట్ అయ్యారు. (Logged out safely)', 'info', 5000);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function logout() {
-  openLogoutThankYouModal();
-}
-
-window.openLogoutThankYouModal = openLogoutThankYouModal;
-window.closeLogoutThankYouModal = closeLogoutThankYouModal;
-window.confirmLogout = confirmLogout;
+window.openLogoutThankYouModal = logout;
+window.closeLogoutThankYouModal = finishLogoutRedirect;
+window.confirmLogout = finishLogoutRedirect;
+window.finishLogoutRedirect = finishLogoutRedirect;
 window.logout = logout;
 
 // Load Police Stations

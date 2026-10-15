@@ -1565,34 +1565,43 @@
     }
 
     function openLogoutThankYouModal() {
-      const modal = document.getElementById('logoutThankYouModal');
-      if (!modal) {
-        confirmLogout();
-        return;
-      }
-      const stLabel = document.getElementById('logoutModalStationName');
-      if (stLabel) {
-        const isStation = !currentSessionUser || currentSessionUser.role === 'station' || currentSessionUser.psName;
-        const name = (currentSessionUser && (currentSessionUser.psName || currentSessionUser.displayName)) || 'Srikakulam District Police';
-        stLabel.textContent = isStation ? `👮 E-COPS Operator, ${name}` : `👮 District Administrator (${name})`;
-      }
-      modal.style.display = 'flex';
-    }
+      const savedUser = currentSessionUser || JSON.parse(localStorage.getItem('ncrp_session_user') || '{}');
 
-    function closeLogoutThankYouModal() {
-      const modal = document.getElementById('logoutThankYouModal');
-      if (modal) modal.style.display = 'none';
-    }
-
-    function confirmLogout() {
+      // Immediately clear credentials so session is terminated
       localStorage.removeItem('ncrp_session_user');
       localStorage.removeItem('ncrp_token');
+      currentSessionUser = null;
+
+      const modal = document.getElementById('logoutThankYouModal');
+      if (modal) {
+        const stLabel = document.getElementById('logoutModalStationName');
+        if (stLabel) {
+          const isStation = !savedUser.role || savedUser.role === 'station' || savedUser.psName;
+          const name = savedUser.psName || savedUser.displayName || 'Srikakulam District Police';
+          stLabel.textContent = isStation ? `👮 E-COPS Operator, ${name}` : `👮 District Administrator (${name})`;
+        }
+        modal.style.display = 'flex';
+      } else {
+        finishLogoutRedirect();
+      }
+    }
+
+    function finishLogoutRedirect() {
       window.location.href = 'index.html';
     }
 
+    function closeLogoutThankYouModal() {
+      finishLogoutRedirect();
+    }
+
+    function confirmLogout() {
+      finishLogoutRedirect();
+    }
+
     window.openLogoutThankYouModal = openLogoutThankYouModal;
-    window.closeLogoutThankYouModal = closeLogoutThankYouModal;
-    window.confirmLogout = confirmLogout;
+    window.closeLogoutThankYouModal = finishLogoutRedirect;
+    window.confirmLogout = finishLogoutRedirect;
+    window.finishLogoutRedirect = finishLogoutRedirect;
 
     function normalizeStationName(s) {
       if (!s) return '';
@@ -2495,12 +2504,9 @@
         </div>
       </div>
 
-      <div class="thankyou-footer">
-        <button type="button" class="btn-court-nav" onclick="closeLogoutThankYouModal()" style="padding: 9px 18px; font-weight: 700; border-radius: 8px; background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; cursor: pointer;">
-          ↩️ Stay on Portal / క్యాన్సల్
-        </button>
-        <button type="button" onclick="confirmLogout()" style="background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%); color: white; border: none; padding: 10px 22px; font-weight: 800; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);">
-          ⏻ Complete Logout / లాగౌట్ అవ్వండి
+      <div class="thankyou-footer" style="justify-content: center;">
+        <button type="button" onclick="finishLogoutRedirect()" style="background: linear-gradient(135deg, #1e3a8a 0%, #0b1e3f 100%); color: white; border: 1px solid #3b82f6; padding: 12px 32px; font-weight: 800; font-size: 0.95rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(11, 30, 63, 0.35);">
+          🔒 Back to Login Screen / లాగిన్ పేజీకి వెళ్లండి
         </button>
       </div>
     </div>

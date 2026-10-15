@@ -7266,34 +7266,43 @@ function loadSessionUser() {
 }
 
 function openLogoutThankYouModal() {
-  const modal = document.getElementById('logoutThankYouModal');
-  if (!modal) {
-    confirmLogout();
-    return;
-  }
-  const stLabel = document.getElementById('logoutModalStationName');
-  if (stLabel) {
-    const isStation = !currentSessionUser || currentSessionUser.role === 'station' || currentSessionUser.psName;
-    const name = (currentSessionUser && (currentSessionUser.psName || currentSessionUser.displayName)) || 'Srikakulam District Police';
-    stLabel.textContent = isStation ? `👮 E-COPS Operator, ${name}` : `👮 District Administrator (${name})`;
-  }
-  modal.style.display = 'flex';
-}
+  const savedUser = currentSessionUser || JSON.parse(localStorage.getItem('ncrp_session_user') || '{}');
 
-function closeLogoutThankYouModal() {
-  const modal = document.getElementById('logoutThankYouModal');
-  if (modal) modal.style.display = 'none';
-}
-
-function confirmLogout() {
+  // Immediately clear credentials so session is terminated
   localStorage.removeItem('ncrp_session_user');
   localStorage.removeItem('ncrp_token');
+  currentSessionUser = null;
+
+  const modal = document.getElementById('logoutThankYouModal');
+  if (modal) {
+    const stLabel = document.getElementById('logoutModalStationName');
+    if (stLabel) {
+      const isStation = !savedUser.role || savedUser.role === 'station' || savedUser.psName;
+      const name = savedUser.psName || savedUser.displayName || 'Srikakulam District Police';
+      stLabel.textContent = isStation ? `👮 E-COPS Operator, ${name}` : `👮 District Administrator (${name})`;
+    }
+    modal.style.display = 'flex';
+  } else {
+    finishLogoutRedirect();
+  }
+}
+
+function finishLogoutRedirect() {
   window.location.href = 'index.html';
 }
 
+function closeLogoutThankYouModal() {
+  finishLogoutRedirect();
+}
+
+function confirmLogout() {
+  finishLogoutRedirect();
+}
+
 window.openLogoutThankYouModal = openLogoutThankYouModal;
-window.closeLogoutThankYouModal = closeLogoutThankYouModal;
-window.confirmLogout = confirmLogout;
+window.closeLogoutThankYouModal = finishLogoutRedirect;
+window.confirmLogout = finishLogoutRedirect;
+window.finishLogoutRedirect = finishLogoutRedirect;
 
 function normalizeStationName(s) {
   if (!s) return '';
