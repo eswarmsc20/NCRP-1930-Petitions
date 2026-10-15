@@ -70,7 +70,7 @@ function getDataBasePath() {
   return window.location.origin + path + "data/";
 }
 
-const NCRP_APP_VERSION = '4.7';
+const NCRP_APP_VERSION = '4.8';
 
 // Clear obsolete or corrupted localStorage caches on app version upgrade
 try {
@@ -716,15 +716,17 @@ function getTimeBasedGreeting(user) {
     icon = '🌙';
   }
 
-  const isStation = !user || user.role === 'station' || user.psName;
+  const isAdmin = Boolean(user && (user.role === 'admin' || user.username === 'admin' || user.username === 'cybercell_sklm'));
   const stationName = (user && (user.psName || user.displayName)) ? (user.psName || user.displayName) : 'Srikakulam Police Station';
-  const operatorTitle = isStation ? `E-COPS Operator, ${stationName}` : (user ? (user.displayName || 'District Administrator') : 'District Administrator');
-  const operatorTitleTe = isStation ? `E-COPS ఆపరేటర్, ${stationName}` : (user ? (user.displayName || 'జిల్లా అడ్మినిస్ట్రేటర్') : 'జిల్లా అడ్మినిస్ట్రేటర్');
+  
+  const operatorTitle = isAdmin ? 'Dear Admin' : `E-COPS Operator, ${stationName}`;
+  const operatorTitleTe = isAdmin ? 'గౌరవనీయ అడ్మిన్ (Dear Admin)' : `E-COPS ఆపరేటర్, ${stationName}`;
 
   return {
     timeText,
     timeTextTe,
     icon,
+    isAdmin,
     stationName,
     operatorTitle,
     operatorTitleTe,
@@ -738,15 +740,16 @@ function renderAuthenticatedUI(preferredScreen = null) {
   if (login) login.style.display = 'none';
 
   const greeting = getTimeBasedGreeting(currentUser);
-  const displayName = currentUser.displayName || currentUser.username || 'Authorized Police Station';
-  const circleText = currentUser.circle ? `(${currentUser.circle})` : '';
+  const isAdmin = greeting.isAdmin;
+  const displayName = isAdmin ? 'Dear Admin' : (currentUser.displayName || currentUser.username || 'Authorized Police Station');
+  const circleText = isAdmin ? '(District Police Office HQ)' : (currentUser.circle ? `(${currentUser.circle})` : '');
 
   if (document.getElementById('userDisplayName')) document.getElementById('userDisplayName').textContent = `${greeting.icon} ${greeting.operatorTitle}`;
   if (document.getElementById('userCircleLabel')) document.getElementById('userCircleLabel').textContent = circleText;
   if (document.getElementById('homeUserDisplayName')) document.getElementById('homeUserDisplayName').textContent = `${greeting.icon} ${greeting.operatorTitle}`;
   if (document.getElementById('homeUserCircleLabel')) document.getElementById('homeUserCircleLabel').textContent = circleText;
-  if (document.getElementById('homeBannerStation')) document.getElementById('homeBannerStation').textContent = displayName;
-  if (document.getElementById('homeBannerCircle')) document.getElementById('homeBannerCircle').textContent = currentUser.circle ? `${currentUser.circle} Circle` : 'District Cyber Command';
+  if (document.getElementById('homeBannerStation')) document.getElementById('homeBannerStation').textContent = isAdmin ? 'District Police Office, Srikakulam' : displayName;
+  if (document.getElementById('homeBannerCircle')) document.getElementById('homeBannerCircle').textContent = isAdmin ? 'District Cyber Command (Admin)' : (currentUser.circle ? `${currentUser.circle} Circle` : 'District Cyber Command');
 
   // Dynamic Time-based Greeting in Portal Welcome Banner
   const gTitle = document.getElementById('homeWelcomeGreeting');
@@ -1032,21 +1035,31 @@ function showLoginWelcomeCard(user, autoDirect = true) {
 
   const targetUser = user || currentUser;
   const greeting = getTimeBasedGreeting(targetUser);
-  const isStation = !targetUser || targetUser.role === 'station' || targetUser.psName;
-  const stationName = (targetUser && (targetUser.psName || targetUser.displayName)) ? (targetUser.psName || targetUser.displayName) : 'Srikakulam Police Station';
-  const opTitle = isStation ? `👮 E-COPS Operator, ${stationName}` : `👮 District Administrator (${targetUser.displayName || 'HQ'})`;
+  const isAdmin = greeting.isAdmin;
+  const stationName = greeting.stationName;
+  const opTitle = isAdmin 
+    ? `👮‍♂️ Dear Admin (District Police Office, Srikakulam)` 
+    : `👮 E-COPS Operator, ${stationName}`;
 
   const timePill = document.getElementById('welcomeModalTimePill');
   if (timePill) timePill.textContent = `${greeting.icon} ${greeting.timeText}`;
 
   const greetTitle = document.getElementById('welcomeModalGreeting');
-  if (greetTitle) greetTitle.textContent = `🙏 ${greeting.timeText}! స్వాగతం / WELCOME`;
+  if (greetTitle) {
+    greetTitle.textContent = isAdmin 
+      ? `🙏 ${greeting.timeText}! స్వాగతం Dear Admin / WELCOME` 
+      : `🙏 ${greeting.timeText}! స్వాగతం / WELCOME`;
+  }
 
   const stTitle = document.getElementById('welcomeModalStationName') || document.getElementById('welcomeModalStation');
   if (stTitle) stTitle.textContent = opTitle;
 
   const teluguMsg = document.getElementById('welcomeModalTelugu');
-  if (teluguMsg) teluguMsg.textContent = `${greeting.timeTextTe}! ${greeting.operatorTitleTe} - శ్రీకాకుళం జిల్లా సైబర్ క్రైమ్ కమాండ్ పోర్టల్‌కు స్వాగతం! మీ స్టేషన్ లాగిన్ విజయవంతంగా పూర్తయింది.`;
+  if (teluguMsg) {
+    teluguMsg.textContent = isAdmin
+      ? `${greeting.timeTextTe}! గౌరవనీయ అడ్మిన్ (Dear Admin) గారు - శ్రీకాకుళం జిల్లా సైబర్ క్రైమ్ కమాండ్ పోర్టల్‌కు స్వాగతం! మీ అడ్మిన్ లాగిన్ విజయవంతంగా పూర్తయింది. జిల్లా వ్యాప్తంగా అన్ని పోలీస్ స్టేషన్ల NCRP పిటిషన్లు, కోర్టు రీఫండ్లు మరియు మేజర్ సైబర్ కేసుల పర్యవేక్షణ సిద్ధంగా ఉన్నాయి.`
+      : `${greeting.timeTextTe}! ${greeting.operatorTitleTe} - శ్రీకాకుళం జిల్లా సైబర్ క్రైమ్ కమాండ్ పోర్టల్‌కు స్వాగతం! మీ స్టేషన్ లాగిన్ విజయవంతంగా పూర్తయింది.`;
+  }
 
   const btn = document.getElementById('btnEnterPortalNow');
 
@@ -1091,7 +1104,8 @@ window.proceedToPortalFromWelcome = proceedToPortalFromWelcome;
 // Logout & Thank You Modal
 function logout() {
   const savedUser = currentUser || JSON.parse(localStorage.getItem('ncrp_session_user') || '{}');
-  
+  const isAdmin = Boolean(savedUser && (savedUser.role === 'admin' || savedUser.username === 'admin' || savedUser.username === 'cybercell_sklm'));
+
   // 1. Immediately terminate session and remove all tokens
   apiFetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
   localStorage.removeItem('ncrp_token');
@@ -1104,9 +1118,21 @@ function logout() {
   if (modal) {
     const stLabel = document.getElementById('logoutModalStationName');
     if (stLabel) {
-      const isStation = !savedUser.role || savedUser.role === 'station' || savedUser.psName;
-      const name = savedUser.psName || savedUser.displayName || 'Srikakulam District Police';
-      stLabel.textContent = isStation ? `👮 E-COPS Operator, ${name}` : `👮 District Administrator (${name})`;
+      stLabel.textContent = isAdmin 
+        ? '👮‍♂️ Dear Admin (District Police Office, Srikakulam)' 
+        : `👮 E-COPS Operator, ${savedUser.psName || savedUser.displayName || 'Srikakulam District Police'}`;
+    }
+    const greetLabel = document.getElementById('logoutModalGreeting');
+    if (greetLabel) {
+      greetLabel.textContent = isAdmin 
+        ? '🙏 ధన్యవాదాలు Dear Admin! THANK YOU' 
+        : '🙏 ధన్యవాదాలు! THANK YOU';
+    }
+    const teluguLabel = document.getElementById('logoutModalTelugu');
+    if (teluguLabel) {
+      teluguLabel.textContent = isAdmin
+        ? 'గౌరవనీయ అడ్మిన్ (Dear Admin) గారు, శ్రీకాకుళం జిల్లా సైబర్ క్రైమ్ పోర్టల్ పర్యవేక్షణ విజయవంతంగా పూర్తయింది. మీ సేవలకు ధన్యవాదాలు!'
+        : 'శ్రీకాకుళం జిల్లా సైబర్ క్రైమ్ పోర్టల్ సేవలను వినియోగించినందుకు ధన్యవాదాలు! విధుల నిర్వహణ విజయవంతంగా పూర్తయింది.';
     }
     modal.style.display = 'flex';
   } else {
