@@ -859,9 +859,9 @@ td.cell-wrap,
 
 .login-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 14px;
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
   overflow: hidden;
   border-top: 4px solid var(--accent-gold);
