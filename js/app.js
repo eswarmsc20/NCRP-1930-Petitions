@@ -52,6 +52,39 @@ function determinePortalType(ackNo) {
 }
 window.determinePortalType = determinePortalType;
 
+// Date Parser Helper (DD-MM-YYYY or ISO)
+function parsePetitionDateToTime(dStr) {
+  if (!dStr) return 0;
+  const parts = String(dStr).trim().split(/[-/]/);
+  if (parts.length === 3) {
+    let day = parseInt(parts[0], 10);
+    let month = parseInt(parts[1], 10) - 1;
+    let year = parseInt(parts[2], 10);
+    if (year < 100) year += 2000;
+    return new Date(year, month, day).getTime();
+  }
+  return new Date(dStr).getTime() || 0;
+}
+window.parsePetitionDateToTime = parsePetitionDateToTime;
+
+// Date-Wise Serial Number Re-indexer
+function reindexPetitionsDateWise(pets) {
+  if (!Array.isArray(pets)) return pets;
+  pets.sort((a, b) => {
+    const tA = parsePetitionDateToTime(a.petition_date);
+    const tB = parsePetitionDateToTime(b.petition_date);
+    if (tA !== tB) return tA - tB;
+    return (a.sl_no || 0) - (b.sl_no || 0);
+  });
+  pets.forEach((p, idx) => {
+    p.sl_no = idx + 1;
+    p.id = idx + 1;
+  });
+  return pets;
+}
+window.reindexPetitionsDateWise = reindexPetitionsDateWise;
+
+
 function formatINR(val) {
   const num = parseFloat(val) || 0;
   if (num >= 10000000) {
@@ -85,7 +118,7 @@ function getDataBasePath() {
   return window.location.origin + path + "data/";
 }
 
-const NCRP_APP_VERSION = '4.8';
+const NCRP_APP_VERSION = '4.9';
 
 // Clear obsolete or corrupted localStorage caches on app version upgrade
 try {
@@ -134,7 +167,7 @@ async function ensureStaticData(forceRefresh = false) {
     if (validAdded.length !== addedPetitions.length) {
       localStorage.setItem("ncrp_local_added", JSON.stringify(validAdded));
     }
-    staticPetitions = [...validAdded, ...staticPetitions];
+    staticPetitions = reindexPetitionsDateWise([...validAdded, ...staticPetitions]);
 
     staticDataLoaded = true;
   } catch (err) {
@@ -339,18 +372,12 @@ async function handleStaticApi(url, options = {}) {
         return sortOrder === 'desc' ? numB - numA : numA - numB;
       }
       if (sortBy === 'petition_date') {
-        const parseD = (d) => {
-          if (!d) return 0;
-          const parts = String(d).split(/[-/]/);
-          if (parts.length === 3) {
-            if (parts[0].length === 4) return new Date(parts[0], parts[1]-1, parts[2]).getTime();
-            return new Date(parts[2], parts[1]-1, parts[0]).getTime();
-          }
-          return new Date(d).getTime() || 0;
-        };
-        const tA = parseD(valA);
-        const tB = parseD(valB);
-        return sortOrder === 'desc' ? tB - tA : tA - tB;
+        const tA = parsePetitionDateToTime(valA);
+        const tB = parsePetitionDateToTime(valB);
+        if (tA !== tB) {
+          return sortOrder === 'desc' ? tB - tA : tA - tB;
+        }
+        return sortOrder === 'desc' ? ((b.sl_no || 0) - (a.sl_no || 0)) : ((a.sl_no || 0) - (b.sl_no || 0));
       }
       return sortOrder === 'desc' ? String(valB).localeCompare(String(valA)) : String(valA).localeCompare(String(valB));
     });
@@ -484,7 +511,7 @@ async function handleStaticApi(url, options = {}) {
       created_at: new Date().toISOString()
     };
 
-    staticPetitions.unshift(newPet);
+    staticPetitions = reindexPetitionsDateWise([newPet, ...staticPetitions]);
 
     // Save in localStorage
     const added = JSON.parse(localStorage.getItem('ncrp_local_added') || '[]');
@@ -564,7 +591,7 @@ async function handleStaticApi(url, options = {}) {
     }
 
     if (newlyAdded.length > 0) {
-      staticPetitions = [...newlyAdded, ...staticPetitions];
+      staticPetitions = reindexPetitionsDateWise([...newlyAdded, ...staticPetitions]);
       const added = JSON.parse(localStorage.getItem('ncrp_local_added') || '[]');
       localStorage.setItem('ncrp_local_added', JSON.stringify([...newlyAdded, ...added]));
     }
@@ -2046,7 +2073,7 @@ async function autoImportExcelRows(matrix, fileName) {
 
   if (newlyImported.length > 0) {
     // 1. Prepend to staticPetitions
-    staticPetitions = [...newlyImported, ...staticPetitions];
+    staticPetitions = reindexPetitionsDateWise([...newlyImported, ...staticPetitions]);
 
     // 2. Persist to localStorage
     const localAdded = JSON.parse(localStorage.getItem('ncrp_local_added') || '[]');
