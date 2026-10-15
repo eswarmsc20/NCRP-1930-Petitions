@@ -5855,6 +5855,7 @@ function formatINRShort(amount) {
 
 // Initializer
 document.addEventListener('DOMContentLoaded', async () => {
+  loadSessionUser();
   await loadCourtData();
   setupEventListeners();
   populateFormStations();
@@ -7095,3 +7096,17 @@ window.closeCaseFormModal = closeCaseFormModal;
 window.handleCaseFormSubmit = handleCaseFormSubmit;
 window.handleFormStationChange = handleFormStationChange;
 window.deleteCase = deleteCase;
+
+
+function loadSessionUser() {
+  try {
+    const raw = localStorage.getItem('ncrp_session_user');
+    if (raw) {
+      const u = JSON.parse(raw);
+      const nameEl = document.getElementById('userDisplayName');
+      const circleEl = document.getElementById('userCircleLabel');
+      if (nameEl) nameEl.textContent = u.displayName || u.username || 'DPO / District Admin, Srikakulam';
+      if (circleEl) circleEl.textContent = `(${u.circle || u.subDivision || 'District HQ Circle'})`;
+    }
+  } catch (e) {}
+}

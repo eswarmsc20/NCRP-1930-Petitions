@@ -712,40 +712,51 @@
 <body>
 
   <!-- Top Header -->
-  <header class="court-header">
-    <div class="court-header-content">
-      <div class="court-brand">
-        <img src="images/ap_police_logo.png" alt="AP Police Logo">
-        <div class="court-titles">
+    <!-- Official Uniform Police Header with Flanking Emblems and Centered Titles -->
+  <header class="police-header">
+    <div class="header-container">
+      <div class="police-branding">
+        <div class="police-emblem emblem-left" title="Andhra Pradesh Police">
+          <img src="./images/ap_police_logo.png" alt="Andhra Pradesh Police" class="police-emblem-img">
+        </div>
+        <div class="police-titles">
           <h1>
             SRIKAKULAM DISTRICT POLICE
-            <span class="badge-court-tag">COURT REFUNDS TRACKER</span>
+            <span class="portal-tag" style="background: rgba(16, 185, 129, 0.25); border: 1px solid #34d399; color: #a7f3d0;">COURT REFUNDS TRACKER</span>
           </h1>
-          <p>న్యాయస్థానాల్లో దాఖలు చేసిన రీఫండ్ మెమోలు & బాధితులకు జమ అయిన రికవరీ వివరాలు (2021 - 2026)</p>
+          <div class="telugu-sub">శ్రీకాకుళం జిల్లా పోలీస్ - కోర్టు రీఫండ్ మెమోలు & ఆర్డర్స్ సమగ్ర నిర్వహణ వ్యవస్థ (2021-2026)</div>
+        </div>
+        <div class="police-emblem emblem-right" title="Srikakulam District Police">
+          <img src="./images/srikakulam_police_logo.png" alt="Srikakulam District Police" class="police-emblem-img">
         </div>
       </div>
 
-      <div class="court-actions">
-        <button class="btn-court-nav" onclick="openAddCaseModal()" style="background: #16a34a; border-color: #22c55e; color: #ffffff; font-weight: 700; box-shadow: 0 2px 6px rgba(22, 163, 74, 0.4);">
-          ➕ Add New Case / కొత్త కేసు
-        </button>
-        <a href="index.html#home" class="btn-court-nav" style="background: rgba(255, 255, 255, 0.22); font-weight: 700;">
+      <div class="header-user-panel">
+        <div class="station-badge">
+          <div class="badge-icon"></div>
+          <span id="userDisplayName">DPO / District Admin, Srikakulam</span>
+          <span id="userCircleLabel" style="font-size: 0.72rem; color: #fde047;">(District HQ Circle)</span>
+        </div>
+        <a href="index.html#home" class="btn-header" style="background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.4); color: #ffffff; font-weight: 700;" title="Return to Portal Home Module Selector">
           🏠 Portal Home / హోమ్
         </a>
-        <a href="index.html#ncrp" class="btn-court-nav btn-court-primary">
-          📋 1. NCRP 1930 Portal (1,886 Petitions)
+        <a href="index.html#ncrp" class="btn-header" style="background: rgba(59, 130, 246, 0.25); border-color: #60a5fa; color: #93c5fd; font-weight: 700;" title="Module 1: NCRP & 1930 Master Petitions">
+          📋 1. NCRP 1930 (1,886 Petitions)
         </a>
-        <a href="high-value-frauds.html" class="btn-court-nav" style="background: rgba(220, 38, 38, 0.85); border-color: #f87171; color: white; font-weight: 700;" title="Major Cyber Frauds ₹10 Lakhs & Above">
-          🚨 3. Major Frauds ₹10L+ (31 Cases)
+        <a href="high-value-frauds.html" class="btn-header" style="background: rgba(220, 38, 38, 0.25); border-color: #f87171; color: #fca5a5; font-weight: 700;" title="Module 3: Major Cyber Frauds ₹10L+">
+          🚨 3. Major Frauds (₹10L+)
         </a>
-        <button class="btn-court-nav" onclick="exportCourtCasesToCSV()">
+        <button class="btn-header" onclick="openAddCaseModal()" style="background: #16a34a; border-color: #22c55e; color: #ffffff; font-weight: 700;">
+          ➕ Add New Case / కొత్త కేసు
+        </button>
+        <button class="btn-header" onclick="exportCourtCasesToCSV()">
           📥 Export CSV / Excel
         </button>
-        <button class="btn-court-nav" onclick="window.print()">
+        <button class="btn-header" onclick="window.print()">
           🖨️ Print Report
         </button>
-        <button class="btn-court-nav" onclick="location.reload()">
-          🔄 Refresh
+        <button class="btn-header btn-logout" onclick="window.location.href='index.html#logout'">
+          ⏻ Logout
         </button>
       </div>
     </div>

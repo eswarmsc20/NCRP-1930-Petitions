@@ -718,34 +718,51 @@
 <body>
 
   <!-- Top Executive Header -->
-  <header class="hv-header">
-    <div class="hv-header-content">
-      <div class="hv-brand">
-        <img src="images/police_logo.png" alt="AP Police Logo" onerror="this.src='images/logo.png'">
-        <div class="hv-titles">
+    <!-- Official Uniform Police Header with Flanking Emblems and Centered Titles -->
+  <header class="police-header">
+    <div class="header-container">
+      <div class="police-branding">
+        <div class="police-emblem emblem-left" title="Andhra Pradesh Police">
+          <img src="./images/ap_police_logo.png" alt="Andhra Pradesh Police" class="police-emblem-img">
+        </div>
+        <div class="police-titles">
           <h1>
-            <span>🛡️ SRIKAKULAM DISTRICT POLICE</span>
-            <span class="badge-hv-tag">₹10 Lakhs & Above (Major Frauds)</span>
+            SRIKAKULAM DISTRICT POLICE
+            <span class="portal-tag" style="background: rgba(220, 38, 38, 0.3); border: 1px solid #ef4444; color: #fca5a5;">MAJOR CYBER FRAUDS (₹10L+)</span>
           </h1>
-          <p>జాతీయ సైబర్ క్రైమ్ రిపోర్టింగ్ పోర్టల్ (NCRP) & 1930 - భారీ సైబర్ మోసాల పర్యవేక్షణ మాడ్యూల్</p>
+          <div class="telugu-sub">శ్రీకాకుళం జిల్లా పోలీస్ - ₹10 లక్షలు & ఆపై భారీ సైబర్ మోసాల పర్యవేక్షణ & ఎఫ్‌ఐఆర్ ట్రాకింగ్ వ్యవస్థ</div>
+        </div>
+        <div class="police-emblem emblem-right" title="Srikakulam District Police">
+          <img src="./images/srikakulam_police_logo.png" alt="Srikakulam District Police" class="police-emblem-img">
         </div>
       </div>
 
-      <div class="hv-actions">
-        <a href="index.html" class="btn-hv-nav" title="Back to All Complaints">
-          📋 ప్రధాన పోర్టల్ (All Petitions)
+      <div class="header-user-panel">
+        <div class="station-badge">
+          <div class="badge-icon"></div>
+          <span id="userDisplayName">DPO / District Admin, Srikakulam</span>
+          <span id="userCircleLabel" style="font-size: 0.72rem; color: #fde047;">(District HQ Circle)</span>
+        </div>
+        <a href="index.html#home" class="btn-header" style="background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.4); color: #ffffff; font-weight: 700;" title="Return to Portal Home Module Selector">
+          🏠 Portal Home / హోమ్
         </a>
-        <a href="court-refunds.html" class="btn-hv-nav" style="background: rgba(16, 185, 129, 0.25); border-color: #34d399; color: #a7f3d0;" title="Court Refund Memos">
-          ⚖️ కోర్టు రీఫండ్స్ (Court Refunds)
+        <a href="index.html#ncrp" class="btn-header" style="background: rgba(59, 130, 246, 0.25); border-color: #60a5fa; color: #93c5fd; font-weight: 700;" title="Module 1: NCRP 1930 Master Petitions">
+          📋 1. NCRP 1930 (1,886 Petitions)
         </a>
-        <button onclick="openAddCaseModal()" class="btn-hv-nav btn-hv-primary">
+        <a href="court-refunds.html" class="btn-header" style="background: rgba(16, 185, 129, 0.25); border-color: #34d399; color: #a7f3d0; font-weight: 700;" title="Module 2: Court Refund Orders">
+          ⚖️ 2. Court Refunds (83 Cases)
+        </a>
+        <button class="btn-header" onclick="openAddCaseModal()" style="background: #dc2626; border-color: #ef4444; color: #ffffff; font-weight: 700;">
           ➕ కొత్త కేసు చేర్చండి (Add Case)
         </button>
-        <button onclick="exportToCsv()" class="btn-hv-nav" title="Export to Excel / CSV">
+        <button class="btn-header" onclick="exportToCsv()">
           📥 Export CSV
         </button>
-        <button onclick="window.print()" class="btn-hv-nav" title="Print Official Memo">
-          🖨️ Print Report
+        <button class="btn-header" onclick="window.print()">
+          🖨️ Print Memo
+        </button>
+        <button class="btn-header btn-logout" onclick="window.location.href='index.html#logout'">
+          ⏻ Logout
         </button>
       </div>
     </div>
@@ -1288,8 +1305,23 @@
 
     let filteredCases = [];
 
+    
+    function loadSessionUser() {
+      try {
+        const raw = localStorage.getItem('ncrp_session_user');
+        if (raw) {
+          const u = JSON.parse(raw);
+          const nameEl = document.getElementById('userDisplayName');
+          const circleEl = document.getElementById('userCircleLabel');
+          if (nameEl) nameEl.textContent = u.displayName || u.username || 'DPO / District Admin, Srikakulam';
+          if (circleEl) circleEl.textContent = `(${u.circle || u.subDivision || 'District HQ Circle'})`;
+        }
+      } catch (e) {}
+    }
+
     // Initialize Page
     document.addEventListener('DOMContentLoaded', async () => {
+      loadSessionUser();
       await loadHighValueData();
       populateFilterDropdowns();
       renderAll();
