@@ -63889,6 +63889,40 @@
     "id": 1880,
     "sl_no": 1880,
     "petition_date": "12-10-2026",
+    "ps_name": "Jalumuru",
+    "circle_name": "Narasannapeta Circle",
+    "sub_division": "Tekkali Sub-Division",
+    "portal_type": "NCRP",
+    "ack_no": "20210260054519",
+    "complainant_name": "Gudiya Rama Krishna",
+    "complainant_phone": "9492689954",
+    "victim_age": "",
+    "complainant_address": "Timadam Village, Jalumuru, Pincode: 532427",
+    "category": "Online and Social Media Related Crime",
+    "sub_category": "Cyber Bullying / Stalking / Sexting",
+    "lost_amount": 0,
+    "hold_amount": 0,
+    "refund_amount": 0,
+    "status": "Under Process",
+    "mo": "Sextortion",
+    "action_taken": "",
+    "date_of_action": "",
+    "fir_number": "",
+    "court_memo_filed": "No",
+    "court_order_obtained": "No",
+    "remarks": "",
+    "no_of_days": 2,
+    "timeline_status": "Below 1 Week",
+    "loss_bucket": "BELOW 10L",
+    "hold_bucket": "No Hold",
+    "updated_by": null,
+    "updated_at": "2026-10-14 05:16:11",
+    "created_at": "2026-10-14 05:16:11"
+  },
+  {
+    "id": 1881,
+    "sl_no": 1881,
+    "petition_date": "12-10-2026",
     "ps_name": "Ponduru",
     "circle_name": "Amadalavalasa Circle",
     "sub_division": "Srikakulam Sub-Division",
@@ -63920,8 +63954,8 @@
     "created_at": "2026-10-14 05:16:11"
   },
   {
-    "id": 1881,
-    "sl_no": 1881,
+    "id": 1882,
+    "sl_no": 1882,
     "petition_date": "13-10-2026",
     "ps_name": "Srikakulam II Town",
     "circle_name": "Srikakulam II Town Circle",
@@ -63954,8 +63988,8 @@
     "created_at": "2026-10-14 05:16:11"
   },
   {
-    "id": 1882,
-    "sl_no": 1882,
+    "id": 1883,
+    "sl_no": 1883,
     "petition_date": "13-10-2026",
     "ps_name": "Tekkali PS",
     "circle_name": "Tekkali PS Circle",
@@ -63988,8 +64022,8 @@
     "created_at": "2026-10-14 05:16:11"
   },
   {
-    "id": 1883,
-    "sl_no": 1883,
+    "id": 1884,
+    "sl_no": 1884,
     "petition_date": "13-10-2026",
     "ps_name": "Kaviti",
     "circle_name": "Itchapuram Circle",
@@ -64022,8 +64056,8 @@
     "created_at": "2026-10-14 05:16:11"
   },
   {
-    "id": 1884,
-    "sl_no": 1884,
+    "id": 1885,
+    "sl_no": 1885,
     "petition_date": "13-10-2026",
     "ps_name": "Srikakulam II Town",
     "circle_name": "Srikakulam II Town Circle",
@@ -64056,8 +64090,8 @@
     "created_at": "2026-10-14 05:16:11"
   },
   {
-    "id": 1885,
-    "sl_no": 1885,
+    "id": 1886,
+    "sl_no": 1886,
     "petition_date": "13-10-2026",
     "ps_name": "Srikakulam II Town",
     "circle_name": "Srikakulam II Town Circle",
@@ -64088,8 +64122,8 @@
     "created_at": "2026-10-13T10:00:00.000Z"
   },
   {
-    "id": 1886,
-    "sl_no": 1886,
+    "id": 1887,
+    "sl_no": 1887,
     "petition_date": "14-10-2026",
     "ps_name": "Burja",
     "circle_name": "Amadalavalasa Circle",
@@ -64122,8 +64156,8 @@
     "created_at": "2026-10-15T13:31:36.640Z"
   },
   {
-    "id": 1887,
-    "sl_no": 1887,
+    "id": 1888,
+    "sl_no": 1888,
     "petition_date": "14-10-2026",
     "ps_name": "Burja",
     "circle_name": "Amadalavalasa Circle",
@@ -64156,8 +64190,8 @@
     "created_at": "2026-10-15T13:31:36.640Z"
   },
   {
-    "id": 1888,
-    "sl_no": 1888,
+    "id": 1889,
+    "sl_no": 1889,
     "petition_date": "14-10-2026",
     "ps_name": "Srikakulam Rural",
     "circle_name": "Srikakulam Rural Circle",
@@ -64190,8 +64224,8 @@
     "created_at": "2026-10-15T13:31:36.640Z"
   },
   {
-    "id": 1889,
-    "sl_no": 1889,
+    "id": 1890,
+    "sl_no": 1890,
     "petition_date": "14-10-2026",
     "ps_name": "Sompeta",
     "circle_name": "Sompeta Circle",
@@ -64224,8 +64258,8 @@
     "created_at": "2026-10-15T13:31:36.640Z"
   },
   {
-    "id": 1890,
-    "sl_no": 1890,
+    "id": 1891,
+    "sl_no": 1891,
     "petition_date": "14-10-2026",
     "ps_name": "Etcherla",
     "circle_name": "J.R.Puram Circle",
@@ -64258,8 +64292,8 @@
     "created_at": "2026-10-15T13:31:36.640Z"
   },
   {
-    "id": 1891,
-    "sl_no": 1891,
+    "id": 1892,
+    "sl_no": 1892,
     "petition_date": "14-10-2026",
     "ps_name": "Ponduru",
     "circle_name": "Amadalavalasa Circle",
@@ -64292,8 +64326,8 @@
     "created_at": "2026-10-15T13:31:36.641Z"
   },
   {
-    "id": 1892,
-    "sl_no": 1892,
+    "id": 1893,
+    "sl_no": 1893,
     "petition_date": "14-10-2026",
     "ps_name": "Srikakulam II Town",
     "circle_name": "Srikakulam II Town Circle",
@@ -64326,8 +64360,8 @@
     "created_at": "2026-10-15T13:31:36.641Z"
   },
   {
-    "id": 1893,
-    "sl_no": 1893,
+    "id": 1894,
+    "sl_no": 1894,
     "petition_date": "14-10-2026",
     "ps_name": "Srikakulam II Town",
     "circle_name": "Srikakulam II Town Circle",
@@ -64360,8 +64394,8 @@
     "created_at": "2026-10-15T13:31:36.641Z"
   },
   {
-    "id": 1894,
-    "sl_no": 1894,
+    "id": 1895,
+    "sl_no": 1895,
     "petition_date": "14-10-2026",
     "ps_name": "Srikakulam II Town",
     "circle_name": "Srikakulam II Town Circle",
@@ -64394,8 +64428,8 @@
     "created_at": "2026-10-15T13:31:36.641Z"
   },
   {
-    "id": 1895,
-    "sl_no": 1895,
+    "id": 1896,
+    "sl_no": 1896,
     "petition_date": "14-10-2026",
     "ps_name": "Srikakulam II Town",
     "circle_name": "Srikakulam II Town Circle",
@@ -64428,8 +64462,8 @@
     "created_at": "2026-10-15T13:31:36.641Z"
   },
   {
-    "id": 1896,
-    "sl_no": 1896,
+    "id": 1897,
+    "sl_no": 1897,
     "petition_date": "15-10-2026",
     "ps_name": "Srikakulam I Town",
     "circle_name": "Srikakulam Rural Circle",
@@ -64462,8 +64496,8 @@
     "created_at": "2026-10-15T13:31:36.641Z"
   },
   {
-    "id": 1897,
-    "sl_no": 1897,
+    "id": 1898,
+    "sl_no": 1898,
     "petition_date": "15-10-2026",
     "ps_name": "Jalumuru",
     "circle_name": "Narasannapeta Circle",
@@ -64496,8 +64530,8 @@
     "created_at": "2026-10-15T13:31:36.641Z"
   },
   {
-    "id": 1898,
-    "sl_no": 1898,
+    "id": 1899,
+    "sl_no": 1899,
     "petition_date": "15-10-2026",
     "ps_name": "Srikakulam II Town",
     "circle_name": "Srikakulam II Town Circle",
