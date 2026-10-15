@@ -82,7 +82,7 @@ function getPetitionYear(p) {
 }
 window.getPetitionYear = getPetitionYear;
 
-// Date-Wise Serial Number Re-indexer (Year-Wise Sequential)
+// Date-Wise Serial Number Re-indexer (Global Continuous Sequential 1 to Last)
 function reindexPetitionsDateWise(pets) {
   if (!Array.isArray(pets)) return pets;
   pets.sort((a, b) => {
@@ -92,12 +92,10 @@ function reindexPetitionsDateWise(pets) {
     return (a.sl_no || 0) - (b.sl_no || 0);
   });
   
-  const yearCounts = {};
   pets.forEach((p, idx) => {
     p.id = idx + 1;
+    p.sl_no = idx + 1;
     const yr = getPetitionYear(p);
-    yearCounts[yr] = (yearCounts[yr] || 0) + 1;
-    p.sl_no = yearCounts[yr];
     p.year = parseInt(yr, 10);
   });
   return pets;
