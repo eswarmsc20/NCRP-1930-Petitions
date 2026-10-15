@@ -67,7 +67,22 @@ function parsePetitionDateToTime(dStr) {
 }
 window.parsePetitionDateToTime = parsePetitionDateToTime;
 
-// Date-Wise Serial Number Re-indexer
+// Petition Year Extractor
+function getPetitionYear(p) {
+  if (!p) return '2026';
+  if (p.year) return String(p.year);
+  const d = String(p.petition_date || '');
+  const parts = d.split(/[-/]/);
+  if (parts.length === 3) {
+    let y = parseInt(parts[2], 10);
+    if (y < 100) y += 2000;
+    return String(y);
+  }
+  return '2026';
+}
+window.getPetitionYear = getPetitionYear;
+
+// Date-Wise Serial Number Re-indexer (Year-Wise Sequential)
 function reindexPetitionsDateWise(pets) {
   if (!Array.isArray(pets)) return pets;
   pets.sort((a, b) => {
@@ -76,9 +91,14 @@ function reindexPetitionsDateWise(pets) {
     if (tA !== tB) return tA - tB;
     return (a.sl_no || 0) - (b.sl_no || 0);
   });
+  
+  const yearCounts = {};
   pets.forEach((p, idx) => {
-    p.sl_no = idx + 1;
     p.id = idx + 1;
+    const yr = getPetitionYear(p);
+    yearCounts[yr] = (yearCounts[yr] || 0) + 1;
+    p.sl_no = yearCounts[yr];
+    p.year = parseInt(yr, 10);
   });
   return pets;
 }
@@ -118,7 +138,38 @@ function getDataBasePath() {
   return window.location.origin + path + "data/";
 }
 
-const NCRP_APP_VERSION = '5.3';
+const NCRP_APP_VERSION = '5.4';
+
+let currentSelectedYear = '2026';
+window.currentSelectedYear = '2026';
+
+function selectYearFilter(yr, btnEl) {
+  currentSelectedYear = yr;
+  const selectEl = document.getElementById('filterYear');
+  if (selectEl) selectEl.value = yr;
+
+  document.querySelectorAll('.year-pill').forEach(btn => btn.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  loadKPISummary();
+  loadStations();
+  loadPetitions(1);
+}
+window.selectYearFilter = selectYearFilter;
+
+function onYearChange() {
+  const selectEl = document.getElementById('filterYear');
+  currentSelectedYear = selectEl ? selectEl.value : '2026';
+
+  document.querySelectorAll('.year-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-year') === currentSelectedYear);
+  });
+
+  loadKPISummary();
+  loadStations();
+  loadPetitions(1);
+}
+window.onYearChange = onYearChange;
 
 // Clear obsolete or corrupted localStorage caches on app version upgrade
 try {
@@ -289,8 +340,13 @@ async function handleStaticApi(url, options = {}) {
 
   // 4. Stations
   if (pathname === '/api/stations') {
+    const year = searchParams.get('year') || currentSelectedYear || '2026';
+    let petsForStations = staticPetitions;
+    if (year && year !== 'all') {
+      petsForStations = petsForStations.filter(p => getPetitionYear(p) === String(year));
+    }
     const stationsWithCounts = staticStations.map(st => {
-      const psPets = staticPetitions.filter(p => p.ps_name === st.name);
+      const psPets = petsForStations.filter(p => p.ps_name === st.name);
       return {
         ...st,
         petition_count: psPets.length,
@@ -301,13 +357,41 @@ async function handleStaticApi(url, options = {}) {
         total_hold: psPets.reduce((acc, p) => acc + (p.hold_amount || 0), 0)
       };
     });
-    return { stations: stationsWithCounts };
+
+    // Also include any historical stations in this year that might not be in staticStations (e.g. Palakonda)
+    const existingNames = new Set(staticStations.map(s => s.name.toLowerCase()));
+    const extraStations = [];
+    petsForStations.forEach(p => {
+      if (p.ps_name && !existingNames.has(p.ps_name.toLowerCase())) {
+        existingNames.add(p.ps_name.toLowerCase());
+        const psPets = petsForStations.filter(item => item.ps_name === p.ps_name);
+        extraStations.push({
+          id: 9900 + extraStations.length,
+          name: p.ps_name,
+          circle: p.circle_name || (p.ps_name + ' Circle'),
+          sub_division: p.sub_division || 'Srikakulam District',
+          sl_no: staticStations.length + extraStations.length + 1,
+          petition_count: psPets.length,
+          fir_count: psPets.filter(item => item.status === 'FIR Registered').length,
+          closed_count: psPets.filter(item => item.status === 'Closed').length,
+          under_process_count: psPets.filter(item => item.status === 'Under Process').length,
+          total_lost: psPets.reduce((acc, item) => acc + (item.lost_amount || 0), 0),
+          total_hold: psPets.reduce((acc, item) => acc + (item.hold_amount || 0), 0)
+        });
+      }
+    });
+
+    return { stations: [...stationsWithCounts, ...extraStations] };
   }
 
   // 5. KPI
   if (pathname === '/api/reports/kpi') {
     const savedUser = JSON.parse(localStorage.getItem('ncrp_session_user') || '{}');
+    const year = searchParams.get('year') || currentSelectedYear || '2026';
     let pets = staticPetitions;
+    if (year && year !== 'all') {
+      pets = pets.filter(p => getPetitionYear(p) === String(year));
+    }
     if (savedUser.role === 'station') {
       pets = pets.filter(p => p.ps_name === savedUser.psName);
     }
@@ -334,6 +418,11 @@ async function handleStaticApi(url, options = {}) {
   if (pathname === '/api/petitions' && method === 'GET') {
     const savedUser = JSON.parse(localStorage.getItem('ncrp_session_user') || '{}');
     let pets = [...staticPetitions];
+
+    const year = searchParams.get('year') || currentSelectedYear || '2026';
+    if (year && year !== 'all') {
+      pets = pets.filter(p => getPetitionYear(p) === String(year));
+    }
 
     let psName = searchParams.get('ps_name') || '';
     if (savedUser.role === 'station') {
@@ -1238,14 +1327,17 @@ window.logout = logout;
 // Load Police Stations
 async function loadStations() {
   try {
-    const data = await apiFetch('/api/stations');
+    const yearEl = document.getElementById('filterYear');
+    const year = yearEl ? yearEl.value : (currentSelectedYear || '2026');
+    const data = await apiFetch('/api/stations?year=' + encodeURIComponent(year));
     allStationsList = data.stations;
 
     const filterSelect = document.getElementById('filterPS');
+    const currentVal = filterSelect ? filterSelect.value : '';
     filterSelect.innerHTML = '<option value="">All Police Stations (అన్ని స్టేషన్లు)</option>';
 
     const newPSSelect = document.getElementById('newPSSelect');
-    newPSSelect.innerHTML = '';
+    if (newPSSelect) newPSSelect.innerHTML = '';
 
     allStationsList.forEach(st => {
       const opt = document.createElement('option');
@@ -1253,12 +1345,18 @@ async function loadStations() {
       opt.textContent = `${st.sl_no}. ${st.name} (${st.circle})`;
       filterSelect.appendChild(opt);
 
-      const opt2 = opt.cloneNode(true);
-      newPSSelect.appendChild(opt2);
+      if (newPSSelect) {
+        const opt2 = opt.cloneNode(true);
+        newPSSelect.appendChild(opt2);
+      }
     });
 
+    if (currentVal && Array.from(filterSelect.options).some(o => o.value === currentVal)) {
+      filterSelect.value = currentVal;
+    }
+
     if (currentUser.role === 'station') {
-      newPSSelect.value = currentUser.psName;
+      if (newPSSelect) newPSSelect.value = currentUser.psName;
     }
   } catch (err) {
     console.error('Failed to load stations:', err);
@@ -1268,7 +1366,9 @@ async function loadStations() {
 // Load KPI Summary
 async function loadKPISummary() {
   try {
-    const data = await apiFetch('/api/reports/kpi');
+    const yearEl = document.getElementById('filterYear');
+    const year = yearEl ? yearEl.value : (currentSelectedYear || '2026');
+    const data = await apiFetch('/api/reports/kpi?year=' + encodeURIComponent(year));
     const s = data.stats;
 
     document.getElementById('kpiTotalPetitions').textContent = (s.total_petitions || 0).toLocaleString('en-IN');
@@ -1388,6 +1488,10 @@ async function loadPetitions(page = 1) {
     sort_by: currentSortColumn,
     sort_order: currentSortOrder
   });
+
+  const yearEl = document.getElementById('filterYear');
+  const yearVal = yearEl ? yearEl.value : (currentSelectedYear || '2026');
+  if (yearVal) queryParams.set('year', yearVal);
 
   if (ps) queryParams.set('ps_name', ps);
   if (portalType) queryParams.set('portal_type', portalType);
@@ -1632,6 +1736,12 @@ function resetFilters() {
 // Export CSV / Excel with All 24 Columns
 function exportCSV() {
   let pets = staticPetitions;
+  const yearEl = document.getElementById('filterYear');
+  const year = yearEl ? yearEl.value : (currentSelectedYear || '2026');
+  if (year && year !== 'all') {
+    pets = pets.filter(p => getPetitionYear(p) === String(year));
+  }
+
   if (currentUser && currentUser.role === 'station') {
     pets = pets.filter(p => p.ps_name === currentUser.psName);
   }

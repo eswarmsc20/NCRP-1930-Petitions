@@ -1782,5 +1782,46 @@ td.cell-wrap,
   transform: translateY(-1px);
 }
 
+/* Year Filter Pills */
+.year-pills-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  background: rgba(11, 30, 63, 0.04);
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+}
+
+.year-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.year-pill:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.year-pill.active {
+  background: #0b1e3f;
+  color: #ffffff;
+  border-color: #0b1e3f;
+  box-shadow: 0 2px 6px rgba(11, 30, 63, 0.25);
+}
+
+
 
 
