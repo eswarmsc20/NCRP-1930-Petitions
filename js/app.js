@@ -650,15 +650,21 @@ async function apiFetch(url, options = {}) {
       logout();
       throw new Error('Session expired, please login again');
     }
-    const data = await res.json();
+    const contentType = res.headers.get('content-type') || '';
     if (!res.ok) {
-      throw new Error(data.error || 'Server request failed');
+      if (res.status === 404 || res.status === 502 || res.status === 503 || !contentType.includes('application/json')) {
+        console.warn(`Backend returned ${res.status}, falling back to static engine...`);
+        return handleStaticApi(url, options);
+      }
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || `Server request failed with status ${res.status}`);
     }
+    const data = await res.json();
     return data;
   } catch (err) {
-    // If backend is unreachable, gracefully fall back to static engine!
-    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-      console.warn('Backend server unreachable, falling back to client-side data engine...');
+    // If backend is unreachable or JSON parse fails, gracefully fall back to static engine!
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('Load failed') || err.name === 'SyntaxError' || err.message.includes('Unexpected token')) {
+      console.warn('Backend server unreachable, falling back to client-side data engine...', err);
       return handleStaticApi(url, options);
     }
     throw err;
@@ -1013,57 +1019,53 @@ let welcomeTimer = null;
 let welcomeInterval = null;
 
 function showLoginWelcomeCard(user) {
+  // Hide login screen and prepare authenticated UI in the background
+  const login = document.getElementById('loginScreen');
+  if (login) login.style.display = 'none';
+  renderAuthenticatedUI();
+
   const modal = document.getElementById('loginWelcomeModal');
   if (!modal) {
-    renderAuthenticatedUI();
     return;
   }
 
   const greeting = getTimeBasedGreeting(user);
   const isStation = !user || user.role === 'station' || user.psName;
   const stationName = (user && (user.psName || user.displayName)) ? (user.psName || user.displayName) : 'Srikakulam Police Station';
-  const opTitle = isStation ? `E-COPS Operator, ${stationName}` : (user.displayName || 'District Administrator');
+  const opTitle = isStation ? `👮 E-COPS Operator, ${stationName}` : `👮 District Administrator (${user.displayName || 'HQ'})`;
 
   const timePill = document.getElementById('welcomeModalTimePill');
   if (timePill) timePill.textContent = `${greeting.icon} ${greeting.timeText}`;
 
   const greetTitle = document.getElementById('welcomeModalGreeting');
-  if (greetTitle) greetTitle.textContent = `${greeting.timeText} ${greeting.icon}`;
+  if (greetTitle) greetTitle.textContent = `🙏 ${greeting.timeText}! స్వాగతం / WELCOME`;
 
-  const stTitle = document.getElementById('welcomeModalStation');
+  const stTitle = document.getElementById('welcomeModalStationName') || document.getElementById('welcomeModalStation');
   if (stTitle) stTitle.textContent = opTitle;
 
   const teluguMsg = document.getElementById('welcomeModalTelugu');
-  if (teluguMsg) teluguMsg.textContent = `${greeting.timeTextTe}! ${greeting.operatorTitleTe} - శ్రీకాకుళం జిల్లా సైబర్ క్రైమ్ కమాండ్ పోర్టల్‌కు స్వాగతం!`;
+  if (teluguMsg) teluguMsg.textContent = `${greeting.timeTextTe}! ${greeting.operatorTitleTe} - శ్రీకాకుళం జిల్లా సైబర్ క్రైమ్ కమాండ్ పోర్టల్‌కు స్వాగతం! మీ స్టేషన్ లాగిన్ విజయవంతంగా పూర్తయింది.`;
 
   const countNum = document.getElementById('welcomeCountNum');
-  const progFill = document.getElementById('welcomeProgressFill');
-  if (countNum) countNum.textContent = '3';
-  if (progFill) {
-    progFill.style.transition = 'none';
-    progFill.style.width = '0%';
-    setTimeout(() => {
-      progFill.style.transition = 'width 3s linear';
-      progFill.style.width = '100%';
-    }, 50);
-  }
+  if (countNum) countNum.textContent = '5';
 
   modal.style.display = 'flex';
 
-  let remaining = 3;
+  let remaining = 5;
   if (welcomeInterval) clearInterval(welcomeInterval);
   welcomeInterval = setInterval(() => {
     remaining--;
     if (countNum) countNum.textContent = String(remaining);
     if (remaining <= 0) {
       clearInterval(welcomeInterval);
+      proceedToPortalFromWelcome();
     }
   }, 1000);
 
   if (welcomeTimer) clearTimeout(welcomeTimer);
   welcomeTimer = setTimeout(() => {
     proceedToPortalFromWelcome();
-  }, 3100);
+  }, 5200);
 }
 
 function proceedToPortalFromWelcome() {
@@ -1071,7 +1073,6 @@ function proceedToPortalFromWelcome() {
   if (welcomeInterval) clearInterval(welcomeInterval);
   const modal = document.getElementById('loginWelcomeModal');
   if (modal) modal.style.display = 'none';
-  renderAuthenticatedUI();
 }
 
 window.showLoginWelcomeCard = showLoginWelcomeCard;
