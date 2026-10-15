@@ -37,6 +37,21 @@ function showToast(message, type = 'info') {
 }
 
 // Indian Currency Formatter
+// Portal Type Helper: Ack starting with 3 -> '1930', Ack starting with 2 -> 'NCRP'
+function determinePortalType(ackNo) {
+  if (!ackNo) return 'NCRP';
+  const clean = String(ackNo).trim();
+  const digits = clean.replace(/\D/g, '');
+  if (clean.startsWith('3') || digits.startsWith('3')) {
+    return '1930';
+  }
+  if (clean.startsWith('2') || digits.startsWith('2')) {
+    return 'NCRP';
+  }
+  return 'NCRP';
+}
+window.determinePortalType = determinePortalType;
+
 function formatINR(val) {
   const num = parseFloat(val) || 0;
   if (num >= 10000000) {
@@ -104,14 +119,17 @@ async function ensureStaticData(forceRefresh = false) {
     localStorage.setItem("ncrp_local_edits", JSON.stringify(savedEdits));
 
     staticPetitions.forEach(p => {
+      p.portal_type = determinePortalType(p.ack_no);
       if (savedEdits[p.id]) {
         Object.assign(p, savedEdits[p.id]);
+        p.portal_type = determinePortalType(p.ack_no);
       }
     });
 
     // Deduplicate addedPetitions against fetched staticPetitions by ack_no or id
     const addedPetitions = JSON.parse(localStorage.getItem("ncrp_local_added") || "[]");
     const existingAckNos = new Set(staticPetitions.map(p => String(p.ack_no || p.sl_no).trim()));
+    addedPetitions.forEach(p => { p.portal_type = determinePortalType(p.ack_no); });
     const validAdded = addedPetitions.filter(p => !existingAckNos.has(String(p.ack_no || p.sl_no).trim()));
     if (validAdded.length !== addedPetitions.length) {
       localStorage.setItem("ncrp_local_added", JSON.stringify(validAdded));
@@ -261,7 +279,9 @@ async function handleStaticApi(url, options = {}) {
         under_process_count: pets.filter(p => p.status === 'Under Process').length,
         withdrawal_count: pets.filter(p => p.status === 'Withdrawal').length,
         rejected_count: pets.filter(p => p.status === 'Rejected').length,
-        hold_cases_count: pets.filter(p => p.hold_amount > 0).length
+        hold_cases_count: pets.filter(p => p.hold_amount > 0).length,
+        total_1930: pets.filter(p => determinePortalType(p.ack_no) === "1930").length,
+        total_ncrp: pets.filter(p => determinePortalType(p.ack_no) === "NCRP").length
       }
     };
   }
@@ -286,7 +306,7 @@ async function handleStaticApi(url, options = {}) {
     if (mo) pets = pets.filter(p => p.mo === mo);
 
     const portalType = searchParams.get('portal_type');
-    if (portalType) pets = pets.filter(p => p.portal_type === portalType);
+    if (portalType) pets = pets.filter(p => determinePortalType(p.ack_no) === portalType || p.portal_type === portalType);
 
     const search = (searchParams.get('search') || '').toLowerCase().trim();
     if (search) {
@@ -377,7 +397,7 @@ async function handleStaticApi(url, options = {}) {
     Object.assign(pet, {
       sl_no: body.sl_no !== undefined ? parseInt(body.sl_no) || pet.sl_no : pet.sl_no,
       petition_date: body.petition_date !== undefined ? body.petition_date : pet.petition_date,
-      portal_type: body.portal_type !== undefined ? body.portal_type : pet.portal_type,
+      portal_type: determinePortalType(body.ack_no !== undefined ? body.ack_no : pet.ack_no),
       ack_no: body.ack_no !== undefined ? String(body.ack_no).trim() : pet.ack_no,
       ps_name: body.ps_name !== undefined ? body.ps_name : pet.ps_name,
       circle_name: body.circle_name !== undefined ? body.circle_name : pet.circle_name,
@@ -438,7 +458,7 @@ async function handleStaticApi(url, options = {}) {
       ps_name: body.ps_name || 'Cyber Crime PS, Srikakulam',
       circle_name: circle,
       sub_division: subDivision,
-      portal_type: body.portal_type || 'NCRP',
+      portal_type: determinePortalType(rawAck),
       ack_no: rawAck,
       complainant_name: body.complainant_name || '',
       complainant_phone: body.complainant_phone || '',
@@ -514,7 +534,7 @@ async function handleStaticApi(url, options = {}) {
         ps_name: item.ps_name || 'Cyber Crime PS, Srikakulam',
         circle_name: circle,
         sub_division: subDivision,
-        portal_type: item.portal_type || 'NCRP',
+        portal_type: determinePortalType(rawAck),
         ack_no: rawAck,
         complainant_name: item.complainant_name || '',
         complainant_phone: item.complainant_phone || '',
@@ -925,8 +945,30 @@ function setupEventListeners() {
     }
   });
 
-  // Live duplicate checking on new Ack No input
+  // Live duplicate checking & portal_type auto-select on new Ack No input
   const newAckInput = document.getElementById('newAckNo');
+  if (newAckInput) {
+    newAckInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      const pTypeEl = document.getElementById('newPortalType');
+      if (pTypeEl && val) {
+        pTypeEl.value = determinePortalType(val);
+      }
+    });
+  }
+
+  const editAckInput = document.getElementById('editAckNo');
+  if (editAckInput) {
+    editAckInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      const pTypeEl = document.getElementById('editPortalType');
+      if (pTypeEl && val) {
+        pTypeEl.value = determinePortalType(val);
+      }
+    });
+  }
+
+  const newAckInputDup = document.getElementById('newAckNo');
   if (newAckInput) {
     newAckInput.addEventListener('input', (e) => {
       const raw = e.target.value.trim().toLowerCase();
@@ -1192,6 +1234,10 @@ async function loadKPISummary() {
     const s = data.stats;
 
     document.getElementById('kpiTotalPetitions').textContent = (s.total_petitions || 0).toLocaleString('en-IN');
+    const kpiBreak = document.getElementById('kpiPortalBreakdown');
+    if (kpiBreak) {
+      kpiBreak.textContent = `NCRP: ${(s.total_ncrp || 0).toLocaleString('en-IN')} • 1930: ${(s.total_1930 || 0).toLocaleString('en-IN')}`;
+    }
     document.getElementById('tabBadgePetitions').textContent = (s.total_petitions || 0).toLocaleString('en-IN');
     if (document.getElementById('homeKpiPetitions')) {
       document.getElementById('homeKpiPetitions').textContent = (s.total_petitions || 0).toLocaleString('en-IN');
@@ -1416,7 +1462,7 @@ function renderPetitionsTable(data) {
         <td>${p.petition_date || '-'}</td>
         <td><strong>${p.ps_name}</strong></td>
         <td style="color: #64748b;">${p.circle_name || '-'}</td>
-        <td><span class="badge" style="background:#e0e7ff; color:#3730a3; font-weight:700;">${p.portal_type || 'NCRP'}</span></td>
+        <td>${determinePortalType(p.ack_no) === '1930' ? '<span class="badge" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; font-weight:700;" title="1930 Helpline Complaint (Ack starts with 3)">📞 1930</span>' : '<span class="badge" style="background:#e0e7ff; color:#3730a3; border:1px solid #c7d2fe; font-weight:700;" title="NCRP Portal Complaint (Ack starts with 2)">🌐 NCRP</span>'}</td>
         <td><strong style="color: #0b1e3f;">${p.ack_no}</strong></td>
         <td class="cell-wrap td-complainant">
           <strong>${p.complainant_name || 'Unknown'}</strong>
@@ -1461,7 +1507,7 @@ function renderPetitionsTable(data) {
         <td style="white-space: nowrap;">${p.petition_date}</td>
         <td>
           <strong style="color: #0b1e3f;">${p.ack_no}</strong>
-          <div style="font-size: 0.72rem; color: #64748b;">${p.portal_type}</div>
+          <div style="font-size: 0.72rem; margin-top: 2px;">${determinePortalType(p.ack_no) === '1930' ? '<span class="badge" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; font-weight:700; padding:1px 6px; font-size:0.68rem;">📞 1930</span>' : '<span class="badge" style="background:#e0e7ff; color:#3730a3; border:1px solid #c7d2fe; font-weight:700; padding:1px 6px; font-size:0.68rem;">🌐 NCRP</span>'}</div>
         </td>
         <td>
           <strong>${p.ps_name}</strong>
@@ -1792,6 +1838,320 @@ function setupExcelDropzone() {
   });
 }
 
+
+// AUTO-IMPORT & DIRECT EXCEL UPLOAD ENGINE
+async function handleDirectExcelUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+
+  if (typeof XLSX === 'undefined') {
+    showToast('Excel library is initializing, please try again in a moment', 'warning');
+    return;
+  }
+
+  showToast(`⏳ Reading "${file.name}" & checking for duplicates...`, 'info');
+
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const ws = workbook.Sheets[sheetName];
+      const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      await autoImportExcelRows(rawRows, file.name);
+    } catch (err) {
+      console.error('Direct Excel upload error:', err);
+      showToast('Error reading Excel: ' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+window.handleDirectExcelUpload = handleDirectExcelUpload;
+
+async function autoImportExcelRows(matrix, fileName) {
+  fileName = fileName || 'Excel Sheet';
+  if (!matrix || matrix.length < 2) {
+    showToast('Sheet has no data rows to import', 'warning');
+    return;
+  }
+
+  let headerRowIndex = 0;
+  for (let i = 0; i < Math.min(6, matrix.length); i++) {
+    const rowStr = matrix[i].map(c => String(c).toLowerCase()).join(' ');
+    if (rowStr.includes('ack') || rowStr.includes('complain') || rowStr.includes('police') || rowStr.includes('loss') || rowStr.includes('lost')) {
+      headerRowIndex = i;
+      break;
+    }
+  }
+
+  const headers = matrix[headerRowIndex].map(h => String(h || '').trim().toLowerCase());
+  const getCol = (keywords, exclude) => {
+    exclude = exclude || [];
+    return headers.findIndex(h => keywords.some(k => h.includes(k)) && !exclude.some(ex => h.includes(ex)));
+  };
+
+  const colAck = getCol(['acknowledgement', 'ack no', 'ack', 'complaint no', 'petition no', 'reference']);
+  const colDate = getCol(['complaint date', 'petition date', 'date', 'reg date', 'incident date'], ['last action', 'action', 'dob']);
+  const colPS = getCol(['police station', 'ps name', 'station name', 'station', 'ps'], ['circle', 'sub', 'state', 'district', 'action']);
+  let colName = getCol(['complainant name', 'victim name'], ['state', 'district', 'suspect']);
+  if (colName === -1) colName = getCol(['complainant', 'victim', 'name'], ['state', 'district', 'station', 'suspect', 'police', 'circle', 'sub']);
+  const colPhone = getCol(['complainant mobile', 'complainant phone', 'mobile no', 'mobile', 'phone', 'contact'], ['suspect']);
+  const colAge = getCol(['age']);
+  const colAddress = getCol(['complainant address', 'victim address', 'address', 'village', 'native'], ['suspect', 'email', 'ip']);
+  const colCategory = getCol(['category'], ['sub']);
+  const colSubCat = getCol(['sub category', 'sub-category']);
+  const colCrimeInfo = getCol(['crime aditional', 'crime additional', 'crime info', 'additional information', 'description', 'brief']);
+  const colMO = getCol(['modus operandi', 'crime type', 'fraud type', 'case type'], ['mobile', 'model', 'mode']);
+  const colLost = getCol(['fraudulent amount', 'fraud amount', 'lost amount', 'loss amount', 'amount lost', 'lost', 'amount'], ['hold', 'freeze', 'refund']);
+  const colHold = getCol(['hold amount', 'amount hold', 'freeze amount', 'frozen amount', 'hold', 'freeze'], ['lost', 'loss', 'fraud']);
+  const colStatus = getCol(['status', 'current status'], ['timeline']);
+  const colFIR = getCol(['fir number', 'fir no', 'cr no', 'crime no', 'fir']);
+  const colAction = getCol(['action taken', 'last action', 'action', 'investigation', 'remarks']);
+
+  if (colAck === -1) {
+    showToast('Could not find "Ack Number" column in Excel sheet', 'error');
+    return;
+  }
+
+  // Deduce MO helper inside
+  const deduceMO = (text, subCat, category) => {
+    const combined = ((text || '') + ' ' + (subCat || '') + ' ' + (category || '')).toLowerCase();
+    if (combined.includes('olx') || combined.includes('quikr') || combined.includes('guitar')) return 'OLX / Fake Seller Fraud';
+    if (combined.includes('stock') || combined.includes('share market') || combined.includes('trading') || combined.includes('invest')) return 'Investment / Stock Market';
+    if (combined.includes('part time') || combined.includes('job') || combined.includes('task') || combined.includes('telegram')) return 'Job / Part Time Job Fraud';
+    if (combined.includes('digital arrest') || combined.includes('fedex') || combined.includes('cbi') || combined.includes('customs')) return 'Digital Arrest';
+    if (combined.includes('loan') || combined.includes('apk')) return 'Loan App Fraud';
+    if (combined.includes('sextortion') || combined.includes('video call') || combined.includes('nude')) return 'Sextortion';
+    if (combined.includes('credit card') || combined.includes('debit card') || combined.includes('atm')) return 'Card Fraud';
+    if (combined.includes('otp') || combined.includes('kyc') || combined.includes('sim')) return 'OTP / KYC Fraud';
+    return 'Online Financial Fraud';
+  };
+
+  const existingAcksMap = new Map();
+  staticPetitions.forEach(p => {
+    if (p.ack_no) existingAcksMap.set(String(p.ack_no).trim().toLowerCase(), p);
+  });
+
+  const batchAcksSet = new Set();
+  const newlyImported = [];
+  let dupCount = 0;
+  let count1930 = 0;
+  let countNCRP = 0;
+
+  let maxId = staticPetitions.reduce((max, p) => Math.max(max, p.id || 0), 0);
+  let maxSl = staticPetitions.reduce((max, p) => Math.max(max, p.sl_no || 0), 0);
+
+  for (let r = headerRowIndex + 1; r < matrix.length; r++) {
+    const row = matrix[r];
+    if (!row || row.length === 0 || row.every(c => c === '' || c === null || c === undefined)) continue;
+
+    const rawAck = String(row[colAck] || '').trim();
+    const cleanAck = rawAck.toLowerCase();
+    if (!rawAck || rawAck === '-' || cleanAck === 'ack no' || cleanAck === 'acknowledgement no') continue;
+
+    // Zero-Duplicate check
+    if (existingAcksMap.has(cleanAck) || batchAcksSet.has(cleanAck)) {
+      dupCount++;
+      continue;
+    }
+
+    batchAcksSet.add(cleanAck);
+
+    let ps = (colPS !== -1 && row[colPS]) ? String(row[colPS]).trim() : '';
+    if (!ps && currentUser && currentUser.role === 'station') ps = currentUser.psName;
+    if (ps) {
+      const cleanPs = ps.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const matchSt = staticStations.find(s => 
+        s.name.toLowerCase() === ps.toLowerCase() ||
+        s.name.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanPs ||
+        s.name.toLowerCase().includes(ps.toLowerCase()) ||
+        cleanPs.includes(s.name.toLowerCase().replace(/[^a-z0-9]/g, ''))
+      );
+      if (matchSt) ps = matchSt.name;
+    }
+    if (!ps) ps = 'District Police Office, Srikakulam';
+
+    const station = staticStations.find(s => s.name === ps);
+    const circle = station ? station.circle : '';
+    const subDivision = station ? station.sub_division : '';
+
+    const petitionDate = (colDate !== -1 && row[colDate]) ? String(row[colDate]).trim() : new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+    const compName = (colName !== -1 && row[colName]) ? String(row[colName]).trim() : 'Unknown';
+    const compPhone = (colPhone !== -1 && row[colPhone]) ? String(row[colPhone]).trim() : '';
+    const victimAge = (colAge !== -1 && row[colAge]) ? String(row[colAge]).trim() : '';
+    const compAddress = (colAddress !== -1 && row[colAddress]) ? String(row[colAddress]).trim() : '';
+    const category = (colCategory !== -1 && row[colCategory]) ? String(row[colCategory]).trim() : 'Online Financial Fraud';
+    const subCat = (colSubCat !== -1 && row[colSubCat]) ? String(row[colSubCat]).trim() : 'UPI Related Frauds';
+    const crimeDesc = (colCrimeInfo !== -1 && row[colCrimeInfo]) ? String(row[colCrimeInfo]).trim() : '';
+
+    let mo = (colMO !== -1 && row[colMO]) ? String(row[colMO]).trim() : '';
+    if (!mo || mo === 'Other' || /^\d+$/.test(mo)) {
+      mo = deduceMO(crimeDesc, subCat, category);
+    }
+
+    const lost = (colLost !== -1 && row[colLost]) ? (parseFloat(String(row[colLost]).replace(/[^0-9.]/g, '')) || 0) : 0;
+    const hold = (colHold !== -1 && row[colHold]) ? (parseFloat(String(row[colHold]).replace(/[^0-9.]/g, '')) || 0) : 0;
+    
+    let status = (colStatus !== -1 && row[colStatus]) ? String(row[colStatus]).trim() : 'Under Process';
+    if (status.toLowerCase() === 'registered' || status.toLowerCase() === 'open') status = 'Under Process';
+
+    const fir = (colFIR !== -1 && row[colFIR]) ? String(row[colFIR]).trim() : '';
+    const action = (colAction !== -1 && row[colAction]) ? String(row[colAction]).trim() : '';
+
+    // Enforce Portal Type based on Ack No: 3 -> 1930, 2 -> NCRP
+    const portalType = determinePortalType(rawAck);
+    if (portalType === '1930') count1930++;
+    else countNCRP++;
+
+    maxId++;
+    maxSl++;
+
+    const newPet = {
+      id: maxId,
+      sl_no: maxSl,
+      petition_date: petitionDate,
+      ps_name: ps,
+      circle_name: circle,
+      sub_division: subDivision,
+      portal_type: portalType,
+      ack_no: rawAck,
+      complainant_name: compName,
+      complainant_phone: compPhone,
+      victim_age: victimAge,
+      complainant_address: compAddress,
+      category: category,
+      sub_category: subCat,
+      lost_amount: lost,
+      hold_amount: hold,
+      refund_amount: 0,
+      status: status,
+      mo: mo,
+      action_taken: action,
+      date_of_action: '',
+      fir_number: fir,
+      court_memo_filed: 'No',
+      court_order_obtained: 'No',
+      remarks: crimeDesc,
+      no_of_days: 0,
+      timeline_status: 'Below 1 Week',
+      loss_bucket: lost >= 1000000 ? 'ABOVE 10L' : 'BELOW 10L',
+      hold_bucket: hold > 0 ? 'Hold Available' : 'No Hold',
+      created_at: new Date().toISOString()
+    };
+
+    newlyImported.push(newPet);
+  }
+
+  if (newlyImported.length > 0) {
+    // 1. Prepend to staticPetitions
+    staticPetitions = [...newlyImported, ...staticPetitions];
+
+    // 2. Persist to localStorage
+    const localAdded = JSON.parse(localStorage.getItem('ncrp_local_added') || '[]');
+    localStorage.setItem('ncrp_local_added', JSON.stringify([...newlyImported, ...localAdded]));
+
+    // 3. Immediately refresh views
+    loadPetitions(1);
+    loadKPISummary();
+    loadStations();
+    if (document.getElementById('abstractTab') && document.getElementById('abstractTab').style.display !== 'none') loadAbstractReport();
+    if (document.getElementById('holdRefundTab') && document.getElementById('holdRefundTab').style.display !== 'none') loadHoldRefundReport();
+
+    // 4. Show celebratory success modal
+    showExcelUploadSuccessModal({
+      fileName: fileName,
+      totalRead: newlyImported.length + dupCount,
+      newCount: newlyImported.length,
+      count1930: count1930,
+      countNCRP: countNCRP,
+      dupCount: dupCount,
+      totalPetitions: staticPetitions.length
+    });
+
+    showToast(`🎉 ${newlyImported.length} New Petitions added to Main Sheet! (${dupCount} duplicates skipped)`, 'success');
+  } else {
+    showExcelUploadSuccessModal({
+      fileName: fileName,
+      totalRead: dupCount,
+      newCount: 0,
+      count1930: 0,
+      countNCRP: 0,
+      dupCount: dupCount,
+      totalPetitions: staticPetitions.length
+    });
+    showToast(`⚠️ No new petitions added. All ${dupCount} were duplicates already in database.`, 'warning');
+  }
+}
+window.autoImportExcelRows = autoImportExcelRows;
+
+function showExcelUploadSuccessModal(info) {
+  const modal = document.getElementById('excelUploadSuccessModal');
+  const body = document.getElementById('excelUploadSuccessBody');
+  if (!modal || !body) return;
+
+  const isSuccess = info.newCount > 0;
+
+  body.innerHTML = `
+    <div style="text-align: center; margin-bottom: 18px;">
+      <div style="font-size: 3rem; margin-bottom: 6px;">${isSuccess ? '🎉' : '⚠️'}</div>
+      <h3 style="color: ${isSuccess ? '#15803d' : '#b45309'}; margin: 0; font-size: 1.25rem;">
+        ${isSuccess ? 'ఎక్సెల్ నుండి విజయవంతంగా మెయిన్ షీట్ లో చేర్చబడింది!' : 'డూప్లికేట్ పిటిషన్లు - ఏవీ చేర్చబడలేదు'}
+      </h3>
+      <div style="font-size: 0.82rem; color: #64748b; margin-top: 4px;">
+        📄 ఫైల్: <strong>${info.fileName}</strong>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 18px;">
+      <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 12px; text-align: center;">
+        <div style="font-size: 1.5rem; font-weight: 800; color: #15803d;">${info.newCount}</div>
+        <div style="font-size: 0.75rem; font-weight: 700; color: #166534;">🟢 New Added / చేరినవి</div>
+      </div>
+
+      <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; text-align: center;">
+        <div style="font-size: 1.5rem; font-weight: 800; color: #b45309;">${info.count1930}</div>
+        <div style="font-size: 0.75rem; font-weight: 700; color: #92400e;">📞 1930 (Starts with 3)</div>
+      </div>
+
+      <div style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px; text-align: center;">
+        <div style="font-size: 1.5rem; font-weight: 800; color: #3730a3;">${info.countNCRP}</div>
+        <div style="font-size: 0.75rem; font-weight: 700; color: #312e81;">🌐 NCRP (Starts with 2)</div>
+      </div>
+
+      <div style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px; text-align: center;">
+        <div style="font-size: 1.5rem; font-weight: 800; color: #b91c1c;">${info.dupCount}</div>
+        <div style="font-size: 0.75rem; font-weight: 700; color: #991b1b;">⚠️ Duplicates Skipped</div>
+      </div>
+    </div>
+
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 0.85rem;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+        <span style="color: #64748b;">🛡️ Zero-Duplicate Guard:</span>
+        <span style="font-weight: 700; color: #15803d;">Active (100% Verified)</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+        <span style="color: #64748b;">📊 మొత్తం ప్రస్తుత పిటిషన్లు (Total in System):</span>
+        <span style="font-weight: 800; color: #0b1e3f; font-size: 0.95rem;">${info.totalPetitions.toLocaleString('en-IN')}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span style="color: #64748b;">💾 LocalStorage Persistence:</span>
+        <span style="font-weight: 700; color: #059669;">Saved for Next Reload</span>
+      </div>
+    </div>
+  `;
+
+  modal.style.display = 'flex';
+}
+window.showExcelUploadSuccessModal = showExcelUploadSuccessModal;
+
+function closeExcelUploadSuccessModal() {
+  const m = document.getElementById('excelUploadSuccessModal');
+  if (m) m.style.display = 'none';
+}
+window.closeExcelUploadSuccessModal = closeExcelUploadSuccessModal;
+
 function handleExcelFileSelect(event) {
   const file = event.target.files[0];
   if (file) handleExcelFile(file);
@@ -1799,14 +2159,24 @@ function handleExcelFileSelect(event) {
 
 function handleExcelFile(file) {
   const nameLabel = document.getElementById('selectedFileName');
-  nameLabel.textContent = `📄 Selected File: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-  nameLabel.style.display = 'block';
+  if (nameLabel) {
+    nameLabel.textContent = `📄 Selected File: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    nameLabel.style.display = 'block';
+  }
 
-  document.getElementById('importLoading').style.display = 'block';
-  document.getElementById('importSummarySection').style.display = 'none';
+  const autoImportEl = document.getElementById('autoImportCheckbox');
+  const isAutoImport = autoImportEl ? autoImportEl.checked : true;
+
+  if (isAutoImport) {
+    closeExcelImportModal();
+    showToast(`⏳ Auto-importing "${file.name}"...`, 'info');
+  } else {
+    document.getElementById('importLoading').style.display = 'block';
+    document.getElementById('importSummarySection').style.display = 'none';
+  }
 
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = async function(e) {
     try {
       const data = new Uint8Array(e.target.result);
       if (typeof XLSX === 'undefined') {
@@ -1816,9 +2186,15 @@ function handleExcelFile(file) {
       let sheetName = workbook.SheetNames[0];
       const ws = workbook.Sheets[sheetName];
       const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-      processRawRows(rawRows);
+
+      if (isAutoImport) {
+        await autoImportExcelRows(rawRows, file.name);
+      } else {
+        processRawRows(rawRows);
+      }
     } catch (err) {
-      document.getElementById('importLoading').style.display = 'none';
+      const loading = document.getElementById('importLoading');
+      if (loading) loading.style.display = 'none';
       showToast('Error reading Excel: ' + err.message, 'error');
     }
   };
@@ -1998,8 +2374,10 @@ function processRawRows(matrix) {
     const fir = (colFIR !== -1 && row[colFIR]) ? String(row[colFIR]).trim() : '';
     const action = (colAction !== -1 && row[colAction]) ? String(row[colAction]).trim() : '';
 
+    const portalType = determinePortalType(rawAck);
     const petitionItem = {
       ack_no: rawAck,
+      portal_type: portalType,
       petition_date: petitionDate,
       ps_name: ps,
       complainant_name: compName,

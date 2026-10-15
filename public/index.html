@@ -398,7 +398,7 @@
           <div class="kpi-label">Total Petitions</div>
           <div class="kpi-telugu">మొత్తం పిటిషన్లు</div>
           <div class="kpi-value" id="kpiTotalPetitions">1,886</div>
-          <div class="kpi-sub">NCRP & 1930 Helpline</div>
+          <div class="kpi-sub" id="kpiPortalBreakdown">NCRP: 1,297 • 1930: 589</div>
         </div>
 
         <div class="kpi-card kpi-red">
@@ -520,9 +520,9 @@
             </select>
 
             <select id="filterPortalType" class="select-filter">
-              <option value="">All Portals (NCRP & 1930)</option>
-              <option value="NCRP">NCRP Portal</option>
-              <option value="1930">1930 Helpline</option>
+              <option value="">All Portals (1930 & NCRP)</option>
+              <option value="1930">📞 1930 Helpline (Ack starts with 3)</option>
+              <option value="NCRP">🌐 NCRP Portal (Ack starts with 2)</option>
             </select>
 
             <select id="filterMO" class="select-filter">
@@ -586,8 +586,12 @@
               <button class="btn-gold" onclick="openNewPetitionModal()">
                 ➕ New Complaint (కొత్త పిటిషన్)
               </button>
-              <button class="btn-primary" onclick="openExcelImportModal()" style="background: #059669; color: white;">
-                📊 Import Excel / Sheets (ఎక్సెల్ నుండి కొత్తవి చేర్చండి)
+              <button class="btn-primary" onclick="document.getElementById('directExcelFileInput').click()" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; font-weight: 700; box-shadow: 0 2px 4px rgba(5,150,105,0.25);" title="Upload Excel sheet to automatically add petitions to main sheet">
+                ⚡ Direct Upload Excel (ఆటో-అప్‌లోడ్: ఆటోమేటిక్ గా మెయిన్ షీట్ లో చేర్చండి)
+              </button>
+              <input type="file" id="directExcelFileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleDirectExcelUpload(event)">
+              <button class="btn-primary" onclick="openExcelImportModal()" style="background: #0284c7; color: white;">
+                📊 Advanced Import & Preview (ఎక్సెల్ ప్రివ్యూ)
               </button>
               <button class="btn-primary" onclick="exportExcelAllSheets()" style="background: #047857; color: white; font-weight: 700;">
                 📥 Export All Sheets (అన్ని 9 షీట్లతో కూడిన Excel)
@@ -1012,8 +1016,8 @@
             <div class="form-group">
               <label class="form-label">Portal Type (పోర్టల్) <span class="required">*</span></label>
               <select id="editPortalType" class="form-select" required>
-                <option value="NCRP">NCRP Portal</option>
-                <option value="1930">1930 Helpline</option>
+                <option value="1930">📞 1930 Helpline (Ack starts with 3)</option>
+                <option value="NCRP">🌐 NCRP Portal (Ack starts with 2)</option>
               </select>
             </div>
 
@@ -1202,10 +1206,10 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Portal Type</label>
+              <label class="form-label">Portal Type (పోర్టల్)</label>
               <select id="newPortalType" class="form-select">
-                <option value="NCRP">NCRP Portal</option>
-                <option value="1930">1930 Helpline</option>
+                <option value="1930">📞 1930 Helpline (Ack starts with 3)</option>
+                <option value="NCRP">🌐 NCRP Portal (Ack starts with 2)</option>
               </select>
             </div>
 
@@ -1311,6 +1315,11 @@
             <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleExcelFileSelect(event)">
           </div>
           <div id="selectedFileName" style="display: none; margin-top: 10px; font-weight: 600; color: #059669; font-size: 0.88rem;"></div>
+
+          <label style="display: flex; align-items: center; gap: 10px; font-size: 0.88rem; font-weight: 600; color: #065f46; background: #ecfdf5; padding: 10px 14px; border-radius: 6px; border: 1px solid #a7f3d0; margin-top: 12px; cursor: pointer;">
+            <input type="checkbox" id="autoImportCheckbox" checked style="width: 18px; height: 18px; accent-color: #059669;">
+            <span>⚡ <strong>Auto-Add to Main Sheet on Upload:</strong> ఫైల్ సెలెక్ట్ చేయగానే ప్రివ్యూతో ఆగకుండా ఆటోమేటిక్ గా మెయిన్ షీట్ లో చేర్చండి (Automatic Import).</span>
+          </label>
         </div>
 
         <!-- 2. Direct Paste Area -->
@@ -1382,6 +1391,27 @@
         <button type="button" class="btn-secondary" onclick="closeExcelImportModal()">Cancel</button>
         <button type="button" id="confirmImportBtn" class="btn-primary" style="background: #059669; color: white;" onclick="confirmAndExecuteImport()" disabled>
           ✅ Confirm & Import New Petitions (కొత్త పిటిషన్లను చేర్చండి)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2C. EXCEL UPLOAD SUCCESS SUMMARY MODAL -->
+  <div id="excelUploadSuccessModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 580px; width: 92%;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #0b1e3f 0%, #064e3b 100%); color: white;">
+        <div>
+          <h3 style="color: white; margin: 0; font-size: 1.2rem;">🎉 Excel Auto-Upload Success / ఎక్సెల్ చేర్చబడింది</h3>
+          <p style="font-size: 0.8rem; color: #a7f3d0; margin: 3px 0 0;">పిటిషన్లు విజయవంతంగా మెయిన్ షీట్ లో చేర్చబడ్డాయి</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeExcelUploadSuccessModal()" style="color: white;">&times;</button>
+      </div>
+      <div class="modal-body" id="excelUploadSuccessBody" style="padding: 20px;">
+        <!-- Injected dynamically -->
+      </div>
+      <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; justify-content: flex-end;">
+        <button type="button" class="btn-primary" onclick="closeExcelUploadSuccessModal()" style="background: #059669; color: white; font-weight: 700; padding: 8px 20px;">
+          ✓ OK / అర్థమైంది
         </button>
       </div>
     </div>
