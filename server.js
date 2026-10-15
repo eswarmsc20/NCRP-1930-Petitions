@@ -285,6 +285,13 @@ const server = http.createServer(async (req, res) => {
 
     // 5. STATIONS: Get All Stations
     if (pathname === '/api/stations' && req.method === 'GET') {
+      const year = (searchParams.get('year') || '').trim();
+      let yearFilter = '';
+      let params = [];
+      if (year && year !== 'all') {
+        yearFilter = 'AND p.year = ?';
+        params.push(parseInt(year));
+      }
       const stations = db.prepare(`
         SELECT s.*,
                COUNT(p.id) as petition_count,
@@ -294,10 +301,10 @@ const server = http.createServer(async (req, res) => {
                SUM(p.lost_amount) as total_lost,
                SUM(p.hold_amount) as total_hold
         FROM stations s
-        LEFT JOIN petitions p ON s.name = p.ps_name
+        LEFT JOIN petitions p ON s.name = p.ps_name ${yearFilter}
         GROUP BY s.id
         ORDER BY s.sl_no ASC
-      `).all();
+      `).all(...params);
 
       return sendJson(res, 200, { stations });
     }
@@ -322,6 +329,7 @@ const server = http.createServer(async (req, res) => {
       const category = (searchParams.get('category') || '').trim();
       const portalType = (searchParams.get('portal_type') || '').trim();
       const timeline = (searchParams.get('timeline') || '').trim();
+      const year = (searchParams.get('year') || '').trim();
 
       // Enforce Station RBAC: station users can only query their station's petitions!
       if (authUser.role === 'station') {
@@ -331,6 +339,10 @@ const server = http.createServer(async (req, res) => {
       let whereClauses = [];
       let params = [];
 
+      if (year && year !== 'all') {
+        whereClauses.push('year = ?');
+        params.push(parseInt(year));
+      }
       if (psName) {
         whereClauses.push('ps_name = ?');
         params.push(psName);
@@ -756,12 +768,19 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 401, { error: 'Authentication required' });
       }
 
-      let psFilter = '';
+      const year = (searchParams.get('year') || '').trim();
+      let whereClauses = [];
       let params = [];
       if (authUser.role === 'station') {
-        psFilter = 'WHERE ps_name = ?';
+        whereClauses.push('ps_name = ?');
         params.push(authUser.psName);
       }
+      if (year && year !== 'all') {
+        whereClauses.push('year = ?');
+        params.push(parseInt(year));
+      }
+
+      const psFilter = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
 
       const stats = db.prepare(`
         SELECT

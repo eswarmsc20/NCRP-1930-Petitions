@@ -138,7 +138,7 @@ function getDataBasePath() {
   return window.location.origin + path + "data/";
 }
 
-const NCRP_APP_VERSION = '5.6';
+const NCRP_APP_VERSION = '6.0';
 
 let currentSelectedYear = 'all';
 window.currentSelectedYear = 'all';
