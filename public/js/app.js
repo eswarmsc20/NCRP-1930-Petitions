@@ -70,7 +70,7 @@ function getDataBasePath() {
   return window.location.origin + path + "data/";
 }
 
-const NCRP_APP_VERSION = '4.6';
+const NCRP_APP_VERSION = '4.7';
 
 // Clear obsolete or corrupted localStorage caches on app version upgrade
 try {
