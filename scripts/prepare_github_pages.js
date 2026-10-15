@@ -27,13 +27,18 @@ copyDirSync(path.join(PUBLIC_DIR, 'js'), path.join(ROOT_DIR, 'js'));
 copyDirSync(path.join(PUBLIC_DIR, 'images'), path.join(ROOT_DIR, 'images'));
 copyDirSync(path.join(PUBLIC_DIR, 'data'), path.join(ROOT_DIR, 'data'));
 
-// 2. Copy index.html and update paths to relative ./
-let indexHtml = fs.readFileSync(path.join(PUBLIC_DIR, 'index.html'), 'utf-8');
-indexHtml = indexHtml.replace(/href="\/css\//g, 'href="./css/');
-indexHtml = indexHtml.replace(/src="\/js\//g, 'src="./js/');
-indexHtml = indexHtml.replace(/src="\/images\//g, 'src="./images/');
+// 2. Synchronize all HTML files from public/ to root with relative paths
+const htmlFiles = fs.readdirSync(PUBLIC_DIR).filter(f => f.endsWith('.html'));
 
-fs.writeFileSync(path.join(ROOT_DIR, 'index.html'), indexHtml);
-fs.writeFileSync(path.join(PUBLIC_DIR, 'index.html'), indexHtml);
+for (const htmlFile of htmlFiles) {
+  let content = fs.readFileSync(path.join(PUBLIC_DIR, htmlFile), 'utf-8');
+  content = content.replace(/href="\/css\//g, 'href="./css/');
+  content = content.replace(/src="\/js\//g, 'src="./js/');
+  content = content.replace(/src="\/images\//g, 'src="./images/');
+
+  fs.writeFileSync(path.join(ROOT_DIR, htmlFile), content);
+  fs.writeFileSync(path.join(PUBLIC_DIR, htmlFile), content);
+  console.log(`Synchronized ${htmlFile} to root.`);
+}
 
 console.log('Synchronized root files for GitHub Pages compatibility.');

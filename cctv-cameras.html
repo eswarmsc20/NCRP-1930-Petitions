@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="te-IN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>CCTV Surveillance Cameras Project | Srikakulam District Police</title>
+  <link rel="stylesheet" href="./css/style.css?v=4.8">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="./js/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --cctv-navy: #0b1e3f;
+      --cctv-blue: #1e3a8a;
+      --cctv-cyan: #0284c7;
+      --cctv-teal: #0d9488;
+      --cctv-emerald: #059669;
+      --cctv-amber: #d97706;
+      --cctv-purple: #7c3aed;
+    }
+
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Executive Top Bar */
+    .cctv-header {
+      background: linear-gradient(135deg, #0b1e3f 0%, #1e3a8a 60%, #0369a1 100%);
+      color: white;
+      padding: 18px 24px 14px;
+      border-bottom: 4px solid #38bdf8;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    }
+
+    .cctv-header-content {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .cctv-header-main-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .cctv-brand-emblem {
+      height: 64px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 8px rgba(0,0,0,0.4));
+      transition: transform 0.2s;
+    }
+    .cctv-brand-emblem:hover {
+      transform: scale(1.06);
+    }
+
+    .cctv-titles-middle {
+      text-align: center;
+      flex: 1;
+    }
+
+    .cctv-titles-middle h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .cctv-tag {
+      background: rgba(56, 189, 248, 0.25);
+      border: 1px solid #38bdf8;
+      color: #bae6fd;
+      font-size: 0.72rem;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .cctv-telugu-sub {
+      font-size: 0.88rem;
+      color: #e0f2fe;
+      font-weight: 500;
+      margin-top: 4px;
+    }
+
+    .cctv-meta-sub {
+      font-size: 0.76rem;
+      color: #93c5fd;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    /* Actions bar */
+    .cctv-actions-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      border-top: 1px solid rgba(255,255,255,0.14);
+      padding-top: 10px;
+    }
+
+    .cctv-user-pill {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      color: #fde047;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cctv-nav-btns {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn-cctv-action {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-cctv-action:hover {
+      background: rgba(255, 255, 255, 0.24);
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+
+    .btn-cctv-primary {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .btn-cctv-primary:hover {
+      background: #0369a1;
+    }
+
+    /* DSR Notice Banner */
+    .dsr-notice-banner {
+      max-width: 1440px;
+      margin: 16px auto 0;
+      padding: 0 20px;
+    }
+
+    .dsr-notice-box {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 1px solid #7dd3fc;
+      border-left: 6px solid #0284c7;
+      border-radius: 8px;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .dsr-notice-text {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dsr-notice-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #0369a1;
+      margin: 0;
+    }
+
+    .dsr-notice-sub {
+      font-size: 0.8rem;
+      color: #0c4a6e;
+      margin: 2px 0 0;
+    }
+
+    /* KPI Ribbon */
+    .cctv-kpi-container {
+      max-width: 1440px;
+      margin: 16px auto 0;
+      padding: 0 20px;
+    }
+
+    .cctv-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+    }
+
+    .cctv-kpi-card {
+      background: white;
+      border-radius: 10px;
+      padding: 16px 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid #e2e8f0;
+      border-left: 5px solid #0284c7;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .cctv-kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+
+    .cctv-kpi-card.kpi-blue { border-left-color: #1e3a8a; }
+    .cctv-kpi-card.kpi-green { border-left-color: #059669; }
+    .cctv-kpi-card.kpi-amber { border-left-color: #d97706; }
+    .cctv-kpi-card.kpi-purple { border-left-color: #7c3aed; }
+    .cctv-kpi-card.kpi-cyan { border-left-color: #0284c7; }
+    .cctv-kpi-card.kpi-teal { border-left-color: #0d9488; }
+
+    .cctv-kpi-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.5px;
+    }
+
+    .cctv-kpi-telugu {
+      font-size: 0.78rem;
+      color: #b45309;
+      font-weight: 600;
+      margin-top: 1px;
+    }
+
+    .cctv-kpi-val {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 8px 0 2px;
+      line-height: 1.1;
+    }
+
+    .cctv-kpi-sub {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    /* Main Container & Tabs */
+    .cctv-main-container {
+      max-width: 1440px;
+      margin: 20px auto 40px;
+      padding: 0 20px;
+    }
+
+    .cctv-nav-tabs {
+      display: flex;
+      gap: 10px;
+      border-bottom: 2px solid #cbd5e1;
+      padding-bottom: 0;
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+
+    .cctv-tab-btn {
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
+      border-bottom: none;
+      padding: 10px 20px;
+      border-radius: 8px 8px 0 0;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #475569;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .cctv-tab-btn:hover {
+      background: #f1f5f9;
+      color: #1e3a8a;
+    }
+    .cctv-tab-btn.active {
+      background: white;
+      border-color: #38bdf8;
+      border-bottom: 3px solid #0284c7;
+      color: #0369a1;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
+    }
+
+    /* Filter & Search Bar */
+    .cctv-filter-bar {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .cctv-filter-group {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .cctv-search-input {
+      padding: 8px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      min-width: 240px;
+      outline: none;
+    }
+    .cctv-search-input:focus {
+      border-color: #0284c7;
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+    }
+
+    .cctv-select {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      outline: none;
+      background: white;
+    }
+
+    /* Table Styling */
+    .cctv-table-card {
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 24px;
+    }
+
+    .cctv-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      text-align: left;
+    }
+
+    .cctv-table th {
+      background: #0b1e3f;
+      color: #ffffff;
+      padding: 12px 14px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+      border-bottom: 2px solid #38bdf8;
+    }
+
+    .cctv-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+      vertical-align: middle;
+    }
+
+    .cctv-table tr:hover td {
+      background-color: #f8fafc;
+    }
+
+    .cctv-subdiv-row td {
+      background: #f1f5f9;
+      font-weight: 800;
+      color: #0369a1;
+      border-top: 2px solid #cbd5e1;
+      border-bottom: 2px solid #cbd5e1;
+    }
+
+    .cctv-grand-total td {
+      background: #0b1e3f;
+      color: #ffffff !important;
+      font-weight: 800;
+      font-size: 0.95rem;
+      border-top: 3px solid #38bdf8;
+    }
+
+    /* Progress bar in cell */
+    .cctv-progress-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 110px;
+    }
+
+    .cctv-progress-bg {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .cctv-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0284c7 0%, #059669 100%);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .cctv-progress-fill.surpassed {
+      background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+    }
+
+    .cctv-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    .badge-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .badge-warning { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .badge-info { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+
+    /* Highlight current PS */
+    .row-highlight-ps td {
+      background-color: #fefce8 !important;
+      border-top: 2px solid #f59e0b !important;
+      border-bottom: 2px solid #f59e0b !important;
+      font-weight: 700;
+    }
+
+    /* Charts Container */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .chart-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 18px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0b1e3f;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-sub {
+      font-size: 0.76rem;
+      color: #64748b;
+      margin-bottom: 14px;
+    }
+
+    /* Printable statement */
+    @media print {
+      body { background: white !important; }
+      .cctv-header, .cctv-actions-bar, .dsr-notice-banner, .cctv-nav-tabs, .cctv-filter-bar, .no-print {
+        display: none !important;
+      }
+      .cctv-main-container { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
+      .cctv-table-card { border: none !important; box-shadow: none !important; }
+      .cctv-table th { background: #f1f5f9 !important; color: #000 !important; border: 1px solid #000 !important; font-size: 8pt !important; }
+      .cctv-table td { border: 1px solid #000 !important; font-size: 8pt !important; color: #000 !important; }
+      .print-header { display: block !important; }
+    }
+
+    .print-header {
+      display: none;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== EXECUTIVE HEADER ==================== -->
+  <header class="cctv-header">
+    <div class="cctv-header-content">
+      <div class="cctv-header-main-row">
+        <img src="./images/ap_police_logo.png" alt="AP Police" class="cctv-brand-emblem" title="Andhra Pradesh Police">
+        
+        <div class="cctv-titles-middle">
+          <h1>
+            SRIKAKULAM DISTRICT POLICE
+            <span class="cctv-tag">CCTV SURVEILLANCE COMMAND PROJECT</span>
+          </h1>
+          <div class="cctv-telugu-sub">శ్రీకాకుళం జిల్లా పోలీస్ - నూతన సీసీటీవీ కెమెరాల పర్యవేక్షణ & రిపోర్టింగ్ వ్యవస్థ</div>
+          <div class="cctv-meta-sub">Police-Initiated CCTV Installation Monitoring &bull; DSR On 14.10.2026 (From 06-06-2024 to Current Date)</div>
+        </div>
+
+        <img src="./images/srikakulam_police_logo.png" alt="Srikakulam Police" class="cctv-brand-emblem" title="Srikakulam District Police">
+      </div>
+
+      <!-- Actions Bar -->
+      <div class="cctv-actions-bar">
+        <div class="cctv-user-pill" id="cctvUserIdentity">
+          👮‍♂️ Dear Admin (District Police Office, Srikakulam)
+        </div>
+
+        <div class="cctv-nav-btns">
+          <a href="index.html#home" class="btn-cctv-action">
+            🏠 Portal Home
+          </a>
+          <a href="index.html#ncrp" class="btn-cctv-action">
+            📋 NCRP Petitions
+          </a>
+          <a href="court-refunds.html" class="btn-cctv-action">
+            ⚖️ Court Refunds
+          </a>
+          <a href="high-value-frauds.html" class="btn-cctv-action">
+            🚨 ₹10L+ Frauds
+          </a>
+          <button type="button" class="btn-cctv-action btn-cctv-primary" onclick="exportCCTVToExcel()">
+            📥 Export Excel
+          </button>
+          <button type="button" class="btn-cctv-action" onclick="window.print()">
+            🖨️ Print Statement
+          </button>
+          <button type="button" class="btn-cctv-action" onclick="cctvLogout()" style="color: #fca5a5; border-color: rgba(239,68,68,0.4);">
+            ⏻ Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== DSR NOTICE BANNER ==================== -->
+  <div class="dsr-notice-banner no-print">
+    <div class="dsr-notice-box">
+      <div class="dsr-notice-text">
+        <span style="font-size: 1.6rem;">📹</span>
+        <div>
+          <div class="dsr-notice-title">DSR ON 14.10.2026 &bull; DAILY PROGRESS REPORT (DSR) STATUS</div>
+          <div class="dsr-notice-sub">
+            "Please update Google Sheet every day night by 10:00 PM without fail. If data not updated daily, pending list sent to respective unit officers."
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="cctv-badge badge-info" style="font-size: 0.8rem; padding: 6px 12px;">
+          📅 Effective Period: 06-06-2024 to 14-10-2026
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== KPI RIBBON ==================== -->
+  <div class="cctv-kpi-container no-print">
+    <div class="cctv-kpi-grid">
+      <!-- 1. District PS Target -->
+      <div class="cctv-kpi-card kpi-blue">
+        <div>
+          <div class="cctv-kpi-label">District PS Target</div>
+          <div class="cctv-kpi-telugu">పోలీస్ స్టేషన్ల లక్ష్యం</div>
+        </div>
+        <div class="cctv-kpi-val" style="color: #1e3a8a;">5,800</div>
+        <div class="cctv-kpi-sub">Across 34 Police Stations</div>
+      </div>
+
+      <!-- 2. Cameras Installed in PS -->
+      <div class="cctv-kpi-card kpi-green">
+        <div>
+          <div class="cctv-kpi-label">Installed in Police Stations</div>
+          <div class="cctv-kpi-telugu">స్టేషన్లలో ఇన్‌స్టాల్ అయినవి</div>
+        </div>
+        <div class="cctv-kpi-val" style="color: #059669;">1,676</div>
+        <div class="cctv-kpi-sub">Cumulative upto 14.10.2026</div>
+      </div>
+
+      <!-- 3. Traffic PS Cameras -->
+      <div class="cctv-kpi-card kpi-cyan">
+        <div>
+          <div class="cctv-kpi-label">Traffic PS CCTVs</div>
+          <div class="cctv-kpi-telugu">ట్రాఫిక్ పోలీస్ కెమెరాలు</div>
+        </div>
+        <div class="cctv-kpi-val" style="color: #0284c7;">1,324</div>
+        <div class="cctv-kpi-sub">Total District = 3,000 CCTVs</div>
+      </div>
+
+      <!-- 4. Balance Pending -->
+      <div class="cctv-kpi-card kpi-amber">
+        <div>
+          <div class="cctv-kpi-label">Balance to Complete</div>
+          <div class="cctv-kpi-telugu">ఇంకా మిగిలిన లక్ష్యం</div>
+        </div>
+        <div class="cctv-kpi-val" style="color: #d97706;">4,139</div>
+        <div class="cctv-kpi-sub">Target Pending Completion</div>
+      </div>
+
+      <!-- 5. Connected Villages -->
+      <div class="cctv-kpi-card kpi-teal">
+        <div>
+          <div class="cctv-kpi-label">Villages Connected</div>
+          <div class="cctv-kpi-telugu">అనుసంధానమైన గ్రామాలు/పట్టణాలు</div>
+        </div>
+        <div class="cctv-kpi-val" style="color: #0d9488;">214</div>
+        <div class="cctv-kpi-sub">In Srikakulam District</div>
+      </div>
+
+      <!-- 6. State Achievement -->
+      <div class="cctv-kpi-card kpi-purple">
+        <div>
+          <div class="cctv-kpi-label">AP State Progress</div>
+          <div class="cctv-kpi-telugu">ఆంధ్రప్రదేశ్ రాష్ట్ర సమగ్ర ప్రగతి</div>
+        </div>
+        <div class="cctv-kpi-val" style="color: #7c3aed;">112,772</div>
+        <div class="cctv-kpi-sub">Target 106,000 &bull; <strong>106.4% Done</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN CONTENT & TABS ==================== -->
+  <main class="cctv-main-container">
+    <!-- Nav Tabs -->
+    <div class="cctv-nav-tabs no-print">
+      <button type="button" class="cctv-tab-btn active" id="tabBtnStations" onclick="switchTab('stations')">
+        🏢 Srikakulam PS-wise Status (పోలీస్ స్టేషన్ల నివేదిక)
+      </button>
+      <button type="button" class="cctv-tab-btn" id="tabBtnState" onclick="switchTab('state')">
+        🌐 AP State-wide Comparison (రాష్ట్ర వ్యాప్త జిల్లాల నివేదిక)
+      </button>
+      <button type="button" class="cctv-tab-btn" id="tabBtnAnalytics" onclick="switchTab('analytics')">
+        📊 Visual Analytics & Charts (విశ్లేషణ & చార్టులు)
+      </button>
+    </div>
+
+    <!-- Print Only Header -->
+    <div class="print-header">
+      <div style="font-size: 1.1rem; font-weight: 800;">GOVERNMENT OF ANDHRA PRADESH &bull; POLICE DEPARTMENT</div>
+      <div style="font-size: 1.3rem; font-weight: 900; color: #0b1e3f; margin-top: 4px;">SRIKAKULAM DISTRICT POLICE</div>
+      <div style="font-size: 0.9rem; font-weight: 700; color: #b45309;">Abstract of Newly Installed CCTV Cameras in each Police Station, Initiated by Police</div>
+      <div style="font-size: 0.8rem; color: #475569;">Effective Period: 06-06-2024 to 14-10-2026 &bull; DSR Date: 14.10.2026</div>
+      <hr style="margin: 10px 0; border: none; border-top: 1px solid #000;">
+    </div>
+
+    <!-- TAB 1: SRIKAKULAM DISTRICT POLICE STATIONS -->
+    <div id="tabStationsContent">
+      <!-- Filter Bar -->
+      <div class="cctv-filter-bar no-print">
+        <div class="cctv-filter-group">
+          <input type="text" id="searchPSInput" class="cctv-search-input" placeholder="🔍 Search Police Station (స్టేషన్ పేరుతో వెతకండి)..." oninput="filterStationsTable()">
+          
+          <select id="filterSubDiv" class="cctv-select" onchange="filterStationsTable()">
+            <option value="">All Sub-Divisions (అన్ని సబ్-డివిజన్లు)</option>
+            <option value="Srikakulam Sub-Division">Srikakulam Sub-Division</option>
+            <option value="Tekkali Sub-Division">Tekkali Sub-Division</option>
+            <option value="Kasibugga Sub-Division">Kasibugga Sub-Division</option>
+            <option value="Special Units">Special Units / District Units</option>
+          </select>
+
+          <select id="filterStatus" class="cctv-select" onchange="filterStationsTable()">
+            <option value="">All Progress Status (అన్ని స్థితులు)</option>
+            <option value="surpassed">Target Completed / Surpassed (&ge;100%)</option>
+            <option value="above50">Good Progress (&ge;50%)</option>
+            <option value="below50">Pending (&lt;50%)</option>
+          </select>
+        </div>
+
+        <div style="font-size: 0.82rem; color: #64748b; font-weight: 600;" id="stationsTableCountText">
+          Showing 37 Police Stations & Units
+        </div>
+      </div>
+
+      <!-- Stations Table Card -->
+      <div class="cctv-table-card">
+        <div style="overflow-x: auto;">
+          <table class="cctv-table" id="stationsCctvTable">
+            <thead>
+              <tr>
+                <th style="width: 50px;">S.No</th>
+                <th>Name of the Police Station</th>
+                <th>Sub-Division</th>
+                <th style="text-align: right;">Target</th>
+                <th style="text-align: right;">Cumulative Installed</th>
+                <th style="text-align: right;">Installed Today</th>
+                <th style="width: 140px;">Progress (%)</th>
+                <th style="text-align: right;">Balance Pending</th>
+                <th style="text-align: center;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="stationsTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: AP STATEWIDE COMPARISON -->
+    <div id="tabStateContent" style="display: none;">
+      <!-- State Filter Bar -->
+      <div class="cctv-filter-bar no-print">
+        <div class="cctv-filter-group">
+          <input type="text" id="searchStateInput" class="cctv-search-input" placeholder="🔍 Search District / Unit (జిల్లా పేరుతో వెతకండి)..." oninput="filterStateTable()">
+          
+          <select id="filterStateProgress" class="cctv-select" onchange="filterStateTable()">
+            <option value="">All Progress (అన్ని జిల్లాలు)</option>
+            <option value="completed">Target Achieved (&ge;100%)</option>
+            <option value="pending">Target In-Progress (&lt;100%)</option>
+          </select>
+        </div>
+
+        <div style="font-size: 0.82rem; color: #64748b; font-weight: 600;" id="stateTableCountText">
+          Showing 26 AP Police Districts & Units
+        </div>
+      </div>
+
+      <!-- State Table Card -->
+      <div class="cctv-table-card">
+        <div style="overflow-x: auto;">
+          <table class="cctv-table" id="stateCctvTable">
+            <thead>
+              <tr>
+                <th style="width: 50px;">S.No</th>
+                <th>Unit / District Name</th>
+                <th style="text-align: right;">Apportioned Target</th>
+                <th style="text-align: right;">Installed by 08.07.26</th>
+                <th style="text-align: right;">Installed on DSR</th>
+                <th style="text-align: right;">Cumulative Installed</th>
+                <th style="width: 140px;">Progress (%)</th>
+                <th style="text-align: right;">Balance to Complete</th>
+                <th style="text-align: right;">Villages/Cities Connected</th>
+                <th style="text-align: center;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="stateTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: ANALYTICS & CHARTS -->
+    <div id="tabAnalyticsContent" style="display: none;">
+      <div class="charts-grid">
+        <!-- Chart 1: Sub-Divisions Target vs Installed -->
+        <div class="chart-card">
+          <div class="chart-title">🏢 Sub-Divisions: Target vs Installed CCTVs</div>
+          <div class="chart-sub">Srikakulam, Tekkali, and Kasibugga Sub-Divisions comparison</div>
+          <div style="position: relative; height: 320px;">
+            <canvas id="subDivChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Top Police Stations in Srikakulam -->
+        <div class="chart-card">
+          <div class="chart-title">🏆 Top Police Stations with Highest CCTV Installations</div>
+          <div class="chart-sub">Stations leading in community & police-initiated cameras</div>
+          <div style="position: relative; height: 320px;">
+            <canvas id="topStationsChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3: AP Statewide Top Units -->
+        <div class="chart-card" style="grid-column: 1 / -1;">
+          <div class="chart-title">🌐 Andhra Pradesh Statewide CCTV Installations Leaderboard</div>
+          <div class="chart-sub">Total CCTV Cameras Installed across all units (Visakhapatnam, NTR Vijayawada, Tirupathi, Srikakulam, etc.)</div>
+          <div style="position: relative; height: 340px;">
+            <canvas id="statewideChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ==================== FRONTEND CONTROLLER JAVASCRIPT ==================== -->
+  <script>
+    let rawStations = [];
+    let rawState = [];
+    let currentUser = null;
+
+    // Hardcoded Master Datasets (Fallback & Offline)
+    const EMBEDDED_CCTV_STATIONS = [
+      {"sl_no": 1, "ps_name": "Srikakulam I Town", "target": 300, "prev_installed": 221, "installed_today": 0, "total_installed": 221, "balance": 79, "sub_division": "Srikakulam Sub-Division", "pct_achieved": 73.7},
+      {"sl_no": 2, "ps_name": "Srikakulam Rural", "target": 250, "prev_installed": 95, "installed_today": 0, "total_installed": 95, "balance": 155, "sub_division": "Srikakulam Sub-Division", "pct_achieved": 38.0},
+      {"sl_no": 3, "ps_name": "Gara", "target": 150, "prev_installed": 76, "installed_today": 0, "total_installed": 76, "balance": 74, "sub_division": "Srikakulam Sub-Division", "pct_achieved": 50.7},
+      {"sl_no": 4, "ps_name": "Srikakulam II Town", "target": 300, "prev_installed": 40, "installed_today": 0, "total_installed": 40, "balance": 260, "sub_division": "Srikakulam Sub-Division", "pct_achieved": 13.3},
+      {"sl_no": 5, "ps_name": "Amadalavalasa", "target": 200, "prev_installed": 65, "installed_today": 0, "total_installed": 65, "balance": 135, "sub_division": "Srikakulam Sub-Division", "pct_achieved": 32.5},
+      {"sl_no": 6, "ps_name": "Sarubujjili", "target": 100, "prev_installed": 44, "installed_today": 0, "total_installed": 44, "balance": 56, "sub_division": "Srikakulam Sub-Division", "pct_achieved": 44.0},
+      {"sl_no": 7, "ps_name": "Burja", "target": 100, "prev_installed": 13, "installed_today": 0, "total_installed": 13, "balance": 87, "sub_division": "Srikakulam Sub-Division", "pct_achieved": 13.0},
+      {"sl_no": 8, "ps_name": "Ponduru", "target": 100, "prev_installed": 27, "installed_today": 0, "total_installed": 27, "balance": 73, "sub_division": "Srikakulam Sub-Division", "pct_achieved": 27.0},
+      {"sl_no": 9, "ps_name": "J.R.Puram", "target": 250, "prev_installed": 37, "installed_today": 0, "total_installed": 37, "balance": 213, "sub_division": "Srikakulam Sub-Division", "pct_achieved": 14.8},
+      {"sl_no": 10, "ps_name": "Etcherla", "target": 250, "prev_installed": 46, "installed_today": 0, "total_installed": 46, "balance": 204, "sub_division": "Srikakulam Sub-Division", "pct_achieved": 18.4},
+      {"sl_no": 11, "ps_name": "Laveru", "target": 100, "prev_installed": 65, "installed_today": 0, "total_installed": 65, "balance": 35, "sub_division": "Srikakulam Sub-Division", "pct_achieved": 65.0},
+      {"sl_no": 12, "ps_name": "G. Sigadam", "target": 100, "prev_installed": 35, "installed_today": 0, "total_installed": 35, "balance": 65, "sub_division": "Srikakulam Sub-Division", "pct_achieved": 35.0},
+      {"sl_no": 13, "ps_name": "Tekkali PS", "target": 250, "prev_installed": 110, "installed_today": 0, "total_installed": 110, "balance": 140, "sub_division": "Tekkali Sub-Division", "pct_achieved": 44.0},
+      {"sl_no": 14, "ps_name": "Kotabommali", "target": 200, "prev_installed": 28, "installed_today": 0, "total_installed": 28, "balance": 172, "sub_division": "Tekkali Sub-Division", "pct_achieved": 14.0},
+      {"sl_no": 15, "ps_name": "Santhabommali", "target": 100, "prev_installed": 35, "installed_today": 0, "total_installed": 35, "balance": 65, "sub_division": "Tekkali Sub-Division", "pct_achieved": 35.0},
+      {"sl_no": 16, "ps_name": "Naupada", "target": 100, "prev_installed": 15, "installed_today": 0, "total_installed": 15, "balance": 85, "sub_division": "Tekkali Sub-Division", "pct_achieved": 15.0},
+      {"sl_no": 17, "ps_name": "Nandigam", "target": 150, "prev_installed": 11, "installed_today": 0, "total_installed": 11, "balance": 139, "sub_division": "Tekkali Sub-Division", "pct_achieved": 7.3},
+      {"sl_no": 18, "ps_name": "Narasannapeta", "target": 250, "prev_installed": 7, "installed_today": 0, "total_installed": 7, "balance": 243, "sub_division": "Tekkali Sub-Division", "pct_achieved": 2.8},
+      {"sl_no": 19, "ps_name": "Jalumuru", "target": 100, "prev_installed": 40, "installed_today": 0, "total_installed": 40, "balance": 60, "sub_division": "Tekkali Sub-Division", "pct_achieved": 40.0},
+      {"sl_no": 20, "ps_name": "Polaki", "target": 100, "prev_installed": 31, "installed_today": 0, "total_installed": 31, "balance": 69, "sub_division": "Tekkali Sub-Division", "pct_achieved": 31.0},
+      {"sl_no": 21, "ps_name": "Saravakota", "target": 100, "prev_installed": 67, "installed_today": 0, "total_installed": 67, "balance": 33, "sub_division": "Tekkali Sub-Division", "pct_achieved": 67.0},
+      {"sl_no": 22, "ps_name": "Kothuru", "target": 100, "prev_installed": 47, "installed_today": 0, "total_installed": 47, "balance": 53, "sub_division": "Tekkali Sub-Division", "pct_achieved": 47.0},
+      {"sl_no": 23, "ps_name": "Hiramandalam", "target": 100, "prev_installed": 9, "installed_today": 0, "total_installed": 9, "balance": 91, "sub_division": "Tekkali Sub-Division", "pct_achieved": 9.0},
+      {"sl_no": 24, "ps_name": "Pathapatnam", "target": 250, "prev_installed": 30, "installed_today": 0, "total_installed": 30, "balance": 220, "sub_division": "Tekkali Sub-Division", "pct_achieved": 12.0},
+      {"sl_no": 25, "ps_name": "Meliaputti", "target": 100, "prev_installed": 30, "installed_today": 0, "total_installed": 30, "balance": 70, "sub_division": "Tekkali Sub-Division", "pct_achieved": 30.0},
+      {"sl_no": 26, "ps_name": "Kasibugga", "target": 250, "prev_installed": 124, "installed_today": 0, "total_installed": 124, "balance": 126, "sub_division": "Kasibugga Sub-Division", "pct_achieved": 49.6},
+      {"sl_no": 27, "ps_name": "Vajrapukothuru", "target": 100, "prev_installed": 103, "installed_today": 0, "total_installed": 103, "balance": -3, "sub_division": "Kasibugga Sub-Division", "pct_achieved": 103.0},
+      {"sl_no": 28, "ps_name": "Mandasa", "target": 200, "prev_installed": 29, "installed_today": 0, "total_installed": 29, "balance": 171, "sub_division": "Kasibugga Sub-Division", "pct_achieved": 14.5},
+      {"sl_no": 29, "ps_name": "Sompeta", "target": 250, "prev_installed": 33, "installed_today": 0, "total_installed": 33, "balance": 217, "sub_division": "Kasibugga Sub-Division", "pct_achieved": 13.2},
+      {"sl_no": 30, "ps_name": "Kanchili", "target": 200, "prev_installed": 25, "installed_today": 0, "total_installed": 25, "balance": 175, "sub_division": "Kasibugga Sub-Division", "pct_achieved": 12.5},
+      {"sl_no": 31, "ps_name": "Baruva", "target": 200, "prev_installed": 36, "installed_today": 0, "total_installed": 36, "balance": 164, "sub_division": "Kasibugga Sub-Division", "pct_achieved": 18.0},
+      {"sl_no": 32, "ps_name": "Itchapuram Town", "target": 250, "prev_installed": 61, "installed_today": 0, "total_installed": 61, "balance": 189, "sub_division": "Kasibugga Sub-Division", "pct_achieved": 24.4},
+      {"sl_no": 33, "ps_name": "Itchapuram Rural", "target": 150, "prev_installed": 28, "installed_today": 0, "total_installed": 28, "balance": 122, "sub_division": "Kasibugga Sub-Division", "pct_achieved": 18.7},
+      {"sl_no": 34, "ps_name": "Kaviti", "target": 100, "prev_installed": 13, "installed_today": 0, "total_installed": 13, "balance": 87, "sub_division": "Kasibugga Sub-Division", "pct_achieved": 13.0},
+      {"sl_no": 35, "ps_name": "Traffic PS", "target": 0, "prev_installed": 1324, "installed_today": 0, "total_installed": 1324, "balance": -1324, "sub_division": "Special Units", "pct_achieved": 100.0},
+      {"sl_no": 36, "ps_name": "Mahila PS", "target": 0, "prev_installed": 0, "installed_today": 0, "total_installed": 0, "balance": 0, "sub_division": "Special Units", "pct_achieved": 0.0},
+      {"sl_no": 37, "ps_name": "CCS", "target": 0, "prev_installed": 0, "installed_today": 0, "total_installed": 0, "balance": 0, "sub_division": "Special Units", "pct_achieved": 0.0}
+    ];
+
+    const EMBEDDED_CCTV_STATE = [
+      {"sl_no": 1, "unit": "SRIKAKULAM", "target": 3000, "installed_by_july": 1676, "prev_installed": 1606, "installed_today": 0, "total_installed": 1676, "balance": 1324, "villages_connected": 214, "pct_achieved": 55.9},
+      {"sl_no": 2, "unit": "VIZIANAGARAM", "target": 3000, "installed_by_july": 3471, "prev_installed": 3471, "installed_today": 10, "total_installed": 3481, "balance": -481, "villages_connected": 202, "pct_achieved": 116.0},
+      {"sl_no": 3, "unit": "PVP MANYAM", "target": 1500, "installed_by_july": 1325, "prev_installed": 3522, "installed_today": 0, "total_installed": 1325, "balance": 175, "villages_connected": 0, "pct_achieved": 88.3},
+      {"sl_no": 4, "unit": "ALLURI SEETHA RAMA RAJU", "target": 1000, "installed_by_july": 556, "prev_installed": 1325, "installed_today": 0, "total_installed": 556, "balance": 444, "villages_connected": 0, "pct_achieved": 55.6},
+      {"sl_no": 5, "unit": "VISAKHAPATNAM", "target": 10000, "installed_by_july": 13596, "prev_installed": 13596, "installed_today": 0, "total_installed": 13596, "balance": -3596, "villages_connected": 1, "pct_achieved": 136.0},
+      {"sl_no": 6, "unit": "ANAKAPALLI", "target": 5000, "installed_by_july": 3482, "prev_installed": 3482, "installed_today": 0, "total_installed": 3482, "balance": 1518, "villages_connected": 998, "pct_achieved": 69.6},
+      {"sl_no": 7, "unit": "KAKINADA", "target": 3500, "installed_by_july": 3650, "prev_installed": 3462, "installed_today": 0, "total_installed": 3650, "balance": -150, "villages_connected": 160, "pct_achieved": 104.3},
+      {"sl_no": 8, "unit": "KONASEEMA", "target": 3000, "installed_by_july": 2138, "prev_installed": 2138, "installed_today": 0, "total_installed": 2138, "balance": 862, "villages_connected": 283, "pct_achieved": 71.3},
+      {"sl_no": 9, "unit": "EAST GODAVARI", "target": 5000, "installed_by_july": 5835, "prev_installed": 5450, "installed_today": 0, "total_installed": 5835, "balance": -835, "villages_connected": 252, "pct_achieved": 116.7},
+      {"sl_no": 10, "unit": "WEST GODAVARI", "target": 3000, "installed_by_july": 3742, "prev_installed": 3742, "installed_today": 0, "total_installed": 3742, "balance": -742, "villages_connected": 302, "pct_achieved": 124.7},
+      {"sl_no": 11, "unit": "ELURU", "target": 5000, "installed_by_july": 5082, "prev_installed": 5082, "installed_today": 0, "total_installed": 5082, "balance": -82, "villages_connected": 269, "pct_achieved": 101.6},
+      {"sl_no": 12, "unit": "KRISHNA", "target": 3000, "installed_by_july": 4433, "prev_installed": 4433, "installed_today": 0, "total_installed": 4433, "balance": -1433, "villages_connected": 260, "pct_achieved": 147.8},
+      {"sl_no": 13, "unit": "VIJAYAWADA (NTR)", "target": 10000, "installed_by_july": 9173, "prev_installed": 9173, "installed_today": 0, "total_installed": 9173, "balance": 827, "villages_connected": 417, "pct_achieved": 91.7},
+      {"sl_no": 14, "unit": "GUNTUR", "target": 5000, "installed_by_july": 4544, "prev_installed": 4544, "installed_today": 0, "total_installed": 4544, "balance": 456, "villages_connected": 231, "pct_achieved": 90.9},
+      {"sl_no": 15, "unit": "PALNADU", "target": 3000, "installed_by_july": 3564, "prev_installed": 0, "installed_today": 0, "total_installed": 3564, "balance": -564, "villages_connected": 0, "pct_achieved": 118.8},
+      {"sl_no": 16, "unit": "BAPATLA", "target": 3500, "installed_by_july": 3723, "prev_installed": 3723, "installed_today": 0, "total_installed": 3723, "balance": -223, "villages_connected": 289, "pct_achieved": 106.4},
+      {"sl_no": 17, "unit": "PRAKASAM", "target": 5000, "installed_by_july": 5774, "prev_installed": 5774, "installed_today": 0, "total_installed": 5774, "balance": -774, "villages_connected": 529, "pct_achieved": 115.5},
+      {"sl_no": 18, "unit": "S.P.S.R. NELLORE", "target": 5000, "installed_by_july": 5168, "prev_installed": 5168, "installed_today": 0, "total_installed": 5168, "balance": -168, "villages_connected": 450, "pct_achieved": 103.4},
+      {"sl_no": 19, "unit": "KURNOOL", "target": 5000, "installed_by_july": 5005, "prev_installed": 5005, "installed_today": 0, "total_installed": 5005, "balance": -5, "villages_connected": 145, "pct_achieved": 100.1},
+      {"sl_no": 20, "unit": "NANDYAL", "target": 3000, "installed_by_july": 3598, "prev_installed": 3598, "installed_today": 0, "total_installed": 3598, "balance": -598, "villages_connected": 281, "pct_achieved": 119.9},
+      {"sl_no": 21, "unit": "YSR KADAPA", "target": 3000, "installed_by_july": 1244, "prev_installed": 1244, "installed_today": 0, "total_installed": 1244, "balance": 1756, "villages_connected": 127, "pct_achieved": 41.5},
+      {"sl_no": 22, "unit": "ANNAMAYYA", "target": 3000, "installed_by_july": 3059, "prev_installed": 3059, "installed_today": 0, "total_installed": 3059, "balance": -59, "villages_connected": 154, "pct_achieved": 102.0},
+      {"sl_no": 23, "unit": "ANANTHAPURAMU", "target": 3500, "installed_by_july": 4205, "prev_installed": 4205, "installed_today": 0, "total_installed": 4205, "balance": -705, "villages_connected": 354, "pct_achieved": 120.1},
+      {"sl_no": 24, "unit": "SRI SATYA SAI", "target": 3000, "installed_by_july": 3024, "prev_installed": 0, "installed_today": 0, "total_installed": 3024, "balance": -24, "villages_connected": 0, "pct_achieved": 100.8},
+      {"sl_no": 25, "unit": "CHITTOOR", "target": 3000, "installed_by_july": 3213, "prev_installed": 3213, "installed_today": 0, "total_installed": 3213, "balance": -213, "villages_connected": 76, "pct_achieved": 107.1},
+      {"sl_no": 26, "unit": "TIRUPATHI", "target": 5000, "installed_by_july": 8482, "prev_installed": 8482, "installed_today": 0, "total_installed": 8482, "balance": -3482, "villages_connected": 0, "pct_achieved": 169.6}
+    ];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initUserSession();
+      await loadCctvData();
+      renderStationsTable();
+      renderStateTable();
+      initCharts();
+    });
+
+    function initUserSession() {
+      try {
+        const saved = localStorage.getItem('ncrp_session_user');
+        if (saved) {
+          currentUser = JSON.parse(saved);
+          const isAdmin = currentUser.role === 'admin' || currentUser.username === 'admin';
+          const label = document.getElementById('cctvUserIdentity');
+          if (label) {
+            label.textContent = isAdmin 
+              ? '👮‍♂️ Dear Admin (District Police Office, Srikakulam)'
+              : `👮 E-COPS Operator, ${currentUser.psName || currentUser.displayName || 'Srikakulam PS'}`;
+          }
+        }
+      } catch (e) {
+        console.warn('Session load note:', e);
+      }
+    }
+
+    async function loadCctvData() {
+      try {
+        const [stRes, stateRes] = await Promise.all([
+          fetch('./data/cctv_stations.json?v=4.8').then(r => r.json()).catch(() => EMBEDDED_CCTV_STATIONS),
+          fetch('./data/cctv_state.json?v=4.8').then(r => r.json()).catch(() => EMBEDDED_CCTV_STATE)
+        ]);
+        rawStations = stRes || EMBEDDED_CCTV_STATIONS;
+        rawState = stateRes || EMBEDDED_CCTV_STATE;
+      } catch (err) {
+        rawStations = EMBEDDED_CCTV_STATIONS;
+        rawState = EMBEDDED_CCTV_STATE;
+      }
+    }
+
+    function switchTab(tab) {
+      document.getElementById('tabStationsContent').style.display = (tab === 'stations') ? 'block' : 'none';
+      document.getElementById('tabStateContent').style.display = (tab === 'state') ? 'block' : 'none';
+      document.getElementById('tabAnalyticsContent').style.display = (tab === 'analytics') ? 'block' : 'none';
+
+      document.getElementById('tabBtnStations').classList.toggle('active', tab === 'stations');
+      document.getElementById('tabBtnState').classList.toggle('active', tab === 'state');
+      document.getElementById('tabBtnAnalytics').classList.toggle('active', tab === 'analytics');
+
+      if (tab === 'analytics') {
+        setTimeout(initCharts, 100);
+      }
+    }
+
+    // Render Police Stations Table
+    function renderStationsTable() {
+      const q = (document.getElementById('searchPSInput')?.value || '').toLowerCase().trim();
+      const selSubDiv = document.getElementById('filterSubDiv')?.value || '';
+      const selStatus = document.getElementById('filterStatus')?.value || '';
+
+      const tbody = document.getElementById('stationsTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let filtered = rawStations.filter(s => {
+        if (q && !s.ps_name.toLowerCase().includes(q) && !s.sub_division.toLowerCase().includes(q)) return false;
+        if (selSubDiv && s.sub_division !== selSubDiv) return false;
+        if (selStatus === 'surpassed' && s.pct_achieved < 100) return false;
+        if (selStatus === 'above50' && (s.pct_achieved < 50 || s.pct_achieved >= 100)) return false;
+        if (selStatus === 'below50' && s.pct_achieved >= 50) return false;
+        return true;
+      });
+
+      const countEl = document.getElementById('stationsTableCountText');
+      if (countEl) countEl.textContent = `Showing ${filtered.length} Police Stations & Units`;
+
+      let curSubDiv = null;
+      let subDivTotal = { target: 0, prev: 0, today: 0, total: 0, balance: 0, count: 0 };
+      let grandTotal = { target: 0, prev: 0, today: 0, total: 0, balance: 0, count: 0 };
+
+      function flushSubTotal(title) {
+        if (!title || subDivTotal.count === 0) return;
+        const pct = subDivTotal.target > 0 ? (subDivTotal.total / subDivTotal.target * 100).toFixed(1) : 100;
+        const tr = document.createElement('tr');
+        tr.className = 'cctv-subdiv-row';
+        tr.innerHTML = `
+          <td>&bull;</td>
+          <td>${title} Total (${subDivTotal.count} Stations)</td>
+          <td>${title}</td>
+          <td style="text-align: right;">${subDivTotal.target.toLocaleString('en-IN')}</td>
+          <td style="text-align: right;">${subDivTotal.prev.toLocaleString('en-IN')}</td>
+          <td style="text-align: right;">${subDivTotal.today.toLocaleString('en-IN')}</td>
+          <td>
+            <div class="cctv-progress-cell">
+              <span style="font-size: 0.76rem; font-weight: 700; color: #0284c7;">${pct}%</span>
+              <div class="cctv-progress-bg">
+                <div class="cctv-progress-fill ${pct >= 100 ? 'surpassed' : ''}" style="width: ${Math.min(pct, 100)}%;"></div>
+              </div>
+            </div>
+          </td>
+          <td style="text-align: right; color: ${subDivTotal.balance <= 0 ? '#15803d' : '#b45309'};">${subDivTotal.balance.toLocaleString('en-IN')}</td>
+          <td style="text-align: center;"><span class="cctv-badge ${pct >= 50 ? 'badge-success' : 'badge-warning'}">Sub-Total</span></td>
+        `;
+        tbody.appendChild(tr);
+        subDivTotal = { target: 0, prev: 0, today: 0, total: 0, balance: 0, count: 0 };
+      }
+
+      filtered.forEach((st, idx) => {
+        // Group by Sub-Division when not filtering by search
+        if (!q && !selSubDiv && curSubDiv !== st.sub_division) {
+          if (curSubDiv) flushSubTotal(curSubDiv);
+          curSubDiv = st.sub_division;
+        }
+
+        subDivTotal.target += st.target;
+        subDivTotal.prev += st.prev_installed;
+        subDivTotal.today += st.installed_today;
+        subDivTotal.total += st.total_installed;
+        subDivTotal.balance += st.balance;
+        subDivTotal.count++;
+
+        grandTotal.target += st.target;
+        grandTotal.prev += st.prev_installed;
+        grandTotal.today += st.installed_today;
+        grandTotal.total += st.total_installed;
+        grandTotal.balance += st.balance;
+        grandTotal.count++;
+
+        const isUserStation = currentUser && currentUser.psName && currentUser.psName.toLowerCase().replace(/[^a-z0-9]/g, '').includes(st.ps_name.toLowerCase().replace(/[^a-z0-9]/g, ''));
+        const tr = document.createElement('tr');
+        if (isUserStation) tr.className = 'row-highlight-ps';
+
+        const pct = st.pct_achieved;
+        let badge = '<span class="cctv-badge badge-danger">In Progress</span>';
+        if (pct >= 100) badge = '<span class="cctv-badge badge-success">✓ 100% Achieved</span>';
+        else if (pct >= 50) badge = '<span class="cctv-badge badge-info">Halfway (&ge;50%)</span>';
+        else if (pct >= 25) badge = '<span class="cctv-badge badge-warning">Moderate</span>';
+
+        tr.innerHTML = `
+          <td style="color: #64748b; font-weight: 600;">${st.sl_no}</td>
+          <td>
+            <div style="font-weight: 700; color: #0b1e3f;">
+              ${st.ps_name}
+              ${isUserStation ? ' <span class="cctv-badge badge-warning" style="margin-left: 6px;">📍 YOUR PS</span>' : ''}
+            </div>
+          </td>
+          <td><span style="font-size: 0.8rem; color: #475569;">${st.sub_division}</span></td>
+          <td style="text-align: right; font-weight: 700;">${st.target > 0 ? st.target.toLocaleString('en-IN') : '-'}</td>
+          <td style="text-align: right; color: #0284c7; font-weight: 700;">${st.total_installed.toLocaleString('en-IN')}</td>
+          <td style="text-align: right; color: ${st.installed_today > 0 ? '#15803d' : '#64748b'}; font-weight: 600;">${st.installed_today}</td>
+          <td>
+            <div class="cctv-progress-cell">
+              <span style="font-size: 0.75rem; font-weight: 700; color: ${pct >= 100 ? '#15803d' : '#0284c7'};">${pct}%</span>
+              <div class="cctv-progress-bg">
+                <div class="cctv-progress-fill ${pct >= 100 ? 'surpassed' : ''}" style="width: ${Math.min(pct, 100)}%;"></div>
+              </div>
+            </div>
+          </td>
+          <td style="text-align: right; font-weight: 700; color: ${st.balance <= 0 ? '#15803d' : '#d97706'};">
+            ${st.balance <= 0 && st.target > 0 ? `+${Math.abs(st.balance)} Surplus` : st.balance.toLocaleString('en-IN')}
+          </td>
+          <td style="text-align: center;">${badge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (!q && !selSubDiv && curSubDiv) {
+        flushSubTotal(curSubDiv);
+      }
+
+      // Grand Total Row
+      const grandPct = grandTotal.target > 0 ? (grandTotal.total / grandTotal.target * 100).toFixed(1) : 100;
+      const gTr = document.createElement('tr');
+      gTr.className = 'cctv-grand-total';
+      gTr.innerHTML = `
+        <td>&bull;</td>
+        <td>DISTRICT TOTAL (${grandTotal.count} STATIONS & UNITS)</td>
+        <td>SRIKAKULAM DIST.</td>
+        <td style="text-align: right;">${grandTotal.target.toLocaleString('en-IN')}</td>
+        <td style="text-align: right;">${grandTotal.prev.toLocaleString('en-IN')}</td>
+        <td style="text-align: right;">${grandTotal.today.toLocaleString('en-IN')}</td>
+        <td>
+          <div class="cctv-progress-cell">
+            <span style="font-size: 0.78rem; font-weight: 800; color: #fde047;">${grandPct}%</span>
+            <div class="cctv-progress-bg">
+              <div class="cctv-progress-fill surpassed" style="width: ${Math.min(grandPct, 100)}%;"></div>
+            </div>
+          </div>
+        </td>
+        <td style="text-align: right; color: #fde047;">${grandTotal.balance.toLocaleString('en-IN')}</td>
+        <td style="text-align: center;"><span class="cctv-badge badge-warning">DISTRICT TOTAL</span></td>
+      `;
+      tbody.appendChild(gTr);
+    }
+
+    function filterStationsTable() {
+      renderStationsTable();
+    }
+
+    // Render AP State Table
+    function renderStateTable() {
+      const q = (document.getElementById('searchStateInput')?.value || '').toLowerCase().trim();
+      const selProg = document.getElementById('filterStateProgress')?.value || '';
+
+      const tbody = document.getElementById('stateTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let filtered = rawState.filter(u => {
+        if (q && !u.unit.toLowerCase().includes(q)) return false;
+        if (selProg === 'completed' && u.pct_achieved < 100) return false;
+        if (selProg === 'pending' && u.pct_achieved >= 100) return false;
+        return true;
+      });
+
+      const countEl = document.getElementById('stateTableCountText');
+      if (countEl) countEl.textContent = `Showing ${filtered.length} AP Police Districts & Units`;
+
+      let totalTarget = 0, totalInstJuly = 0, totalInstToday = 0, totalInst = 0, totalBal = 0, totalVillages = 0;
+
+      filtered.forEach(u => {
+        totalTarget += u.target;
+        totalInstJuly += u.installed_by_july;
+        totalInstToday += u.installed_today;
+        totalInst += u.total_installed;
+        totalBal += u.balance;
+        totalVillages += (u.villages_connected || 0);
+
+        const isSklm = u.unit === 'SRIKAKULAM';
+        const tr = document.createElement('tr');
+        if (isSklm) tr.className = 'row-highlight-ps';
+
+        const pct = u.pct_achieved;
+        let badge = '<span class="cctv-badge badge-danger">In Progress</span>';
+        if (pct >= 100) badge = '<span class="cctv-badge badge-success">✓ 100% Achieved</span>';
+        else if (pct >= 50) badge = '<span class="cctv-badge badge-info">&ge;50% Done</span>';
+
+        tr.innerHTML = `
+          <td style="font-weight: 600; color: #64748b;">${u.sl_no}</td>
+          <td>
+            <div style="font-weight: 800; color: ${isSklm ? '#b45309' : '#0b1e3f'};">
+              ${u.unit}
+              ${isSklm ? ' <span class="cctv-badge badge-warning" style="margin-left: 6px;">📍 OUR DISTRICT</span>' : ''}
+            </div>
+          </td>
+          <td style="text-align: right; font-weight: 700;">${u.target.toLocaleString('en-IN')}</td>
+          <td style="text-align: right;">${u.installed_by_july.toLocaleString('en-IN')}</td>
+          <td style="text-align: right; color: ${u.installed_today > 0 ? '#15803d' : '#64748b'};">${u.installed_today}</td>
+          <td style="text-align: right; color: #0284c7; font-weight: 700;">${u.total_installed.toLocaleString('en-IN')}</td>
+          <td>
+            <div class="cctv-progress-cell">
+              <span style="font-size: 0.75rem; font-weight: 700; color: ${pct >= 100 ? '#15803d' : '#0284c7'};">${pct}%</span>
+              <div class="cctv-progress-bg">
+                <div class="cctv-progress-fill ${pct >= 100 ? 'surpassed' : ''}" style="width: ${Math.min(pct, 100)}%;"></div>
+              </div>
+            </div>
+          </td>
+          <td style="text-align: right; font-weight: 700; color: ${u.balance <= 0 ? '#15803d' : '#d97706'};">
+            ${u.balance <= 0 ? `+${Math.abs(u.balance)} Surplus` : u.balance.toLocaleString('en-IN')}
+          </td>
+          <td style="text-align: right; font-weight: 700; color: #0d9488;">
+            ${u.villages_connected ? u.villages_connected.toLocaleString('en-IN') : '-'}
+          </td>
+          <td style="text-align: center;">${badge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Total row
+      const statePct = totalTarget > 0 ? (totalInst / totalTarget * 100).toFixed(1) : 100;
+      const gTr = document.createElement('tr');
+      gTr.className = 'cctv-grand-total';
+      gTr.innerHTML = `
+        <td>&bull;</td>
+        <td>ANDHRA PRADESH STATE TOTAL</td>
+        <td style="text-align: right;">${totalTarget.toLocaleString('en-IN')}</td>
+        <td style="text-align: right;">${totalInstJuly.toLocaleString('en-IN')}</td>
+        <td style="text-align: right;">${totalInstToday.toLocaleString('en-IN')}</td>
+        <td style="text-align: right; color: #fde047;">${totalInst.toLocaleString('en-IN')}</td>
+        <td>
+          <div class="cctv-progress-cell">
+            <span style="font-size: 0.78rem; font-weight: 800; color: #fde047;">${statePct}%</span>
+            <div class="cctv-progress-bg">
+              <div class="cctv-progress-fill surpassed" style="width: ${Math.min(statePct, 100)}%;"></div>
+            </div>
+          </div>
+        </td>
+        <td style="text-align: right; color: #fde047;">${totalBal.toLocaleString('en-IN')}</td>
+        <td style="text-align: right; color: #86efac;">${totalVillages.toLocaleString('en-IN')}</td>
+        <td style="text-align: center;"><span class="cctv-badge badge-warning">STATE TOTAL</span></td>
+      `;
+      tbody.appendChild(gTr);
+    }
+
+    function filterStateTable() {
+      renderStateTable();
+    }
+
+    // Interactive Analytics Charts
+    let subDivChartInstance = null;
+    let topStationsChartInstance = null;
+    let statewideChartInstance = null;
+
+    function initCharts() {
+      // 1. Sub-Division Target vs Installed
+      const ctx1 = document.getElementById('subDivChart')?.getContext('2d');
+      if (ctx1) {
+        if (subDivChartInstance) subDivChartInstance.destroy();
+        subDivChartInstance = new Chart(ctx1, {
+          type: 'bar',
+          data: {
+            labels: ['Srikakulam Sub-Div', 'Tekkali Sub-Div', 'Kasibugga Sub-Div', 'Special Units (Traffic)'],
+            datasets: [
+              {
+                label: 'Apportioned Target',
+                data: [2200, 1900, 1700, 0],
+                backgroundColor: 'rgba(30, 58, 138, 0.75)',
+                borderColor: '#1e3a8a',
+                borderWidth: 1
+              },
+              {
+                label: 'Cameras Installed',
+                data: [764, 460, 452, 1324],
+                backgroundColor: 'rgba(2, 132, 199, 0.85)',
+                borderColor: '#0284c7',
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top' }
+            },
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      }
+
+      // 2. Top Stations in Srikakulam
+      const ctx2 = document.getElementById('topStationsChart')?.getContext('2d');
+      if (ctx2) {
+        if (topStationsChartInstance) topStationsChartInstance.destroy();
+        const topPs = [...rawStations]
+          .filter(s => s.target > 0)
+          .sort((a, b) => b.total_installed - a.total_installed)
+          .slice(0, 8);
+
+        topStationsChartInstance = new Chart(ctx2, {
+          type: 'bar',
+          data: {
+            labels: topPs.map(s => s.ps_name),
+            datasets: [{
+              label: 'Installed Cameras',
+              data: topPs.map(s => s.total_installed),
+              backgroundColor: 'rgba(5, 150, 105, 0.85)',
+              borderColor: '#059669',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: { beginAtZero: true }
+            }
+          }
+        });
+      }
+
+      // 3. Statewide Top Units
+      const ctx3 = document.getElementById('statewideChart')?.getContext('2d');
+      if (ctx3) {
+        if (statewideChartInstance) statewideChartInstance.destroy();
+        const topState = [...rawState]
+          .sort((a, b) => b.total_installed - a.total_installed)
+          .slice(0, 12);
+
+        statewideChartInstance = new Chart(ctx3, {
+          type: 'bar',
+          data: {
+            labels: topState.map(u => u.unit),
+            datasets: [
+              {
+                label: 'Target',
+                data: topState.map(u => u.target),
+                backgroundColor: 'rgba(148, 163, 184, 0.65)',
+                borderColor: '#94a3b8',
+                borderWidth: 1
+              },
+              {
+                label: 'Installed Cameras',
+                data: topState.map(u => u.total_installed),
+                backgroundColor: topState.map(u => u.unit === 'SRIKAKULAM' ? 'rgba(217, 119, 6, 0.95)' : 'rgba(14, 165, 233, 0.85)'),
+                borderColor: topState.map(u => u.unit === 'SRIKAKULAM' ? '#b45309' : '#0284c7'),
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top' }
+            },
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      }
+    }
+
+    // Export to Excel
+    function exportCCTVToExcel() {
+      if (typeof XLSX === 'undefined') {
+        alert('Excel library loading... please try again in a second.');
+        return;
+      }
+      const wb = XLSX.utils.book_new();
+
+      // Sheet 1: Srikakulam PS
+      const psData = rawStations.map(s => ({
+        'S.No': s.sl_no,
+        'Police Station': s.ps_name,
+        'Sub-Division': s.sub_division,
+        'Apportioned Target': s.target,
+        'Cumulative Installed': s.total_installed,
+        'Installed Today (14.10.2026)': s.installed_today,
+        'Progress (%)': s.pct_achieved + '%',
+        'Balance Pending Target': s.balance
+      }));
+      const ws1 = XLSX.utils.json_to_sheet(psData);
+      XLSX.utils.book_append_sheet(wb, ws1, 'Srikakulam PS CCTV');
+
+      // Sheet 2: AP State
+      const stateData = rawState.map(u => ({
+        'S.No': u.sl_no,
+        'District / Unit': u.unit,
+        'Apportioned Target': u.target,
+        'Installed by 08.07.2026': u.installed_by_july,
+        'Installed on DSR Date': u.installed_today,
+        'Total Installed': u.total_installed,
+        'Progress (%)': u.pct_achieved + '%',
+        'Balance to Complete': u.balance,
+        'Villages/Cities Connected': u.villages_connected || 0
+      }));
+      const ws2 = XLSX.utils.json_to_sheet(stateData);
+      XLSX.utils.book_append_sheet(wb, ws2, 'AP State-wide CCTV');
+
+      XLSX.writeFile(wb, 'Srikakulam_AP_CCTV_Surveillance_DSR_14_10_2026.xlsx');
+    }
+
+    function cctvLogout() {
+      localStorage.removeItem('ncrp_token');
+      localStorage.removeItem('ncrp_session_user');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

@@ -813,6 +813,8 @@ function openPortalModule(mod) {
     window.location.href = 'court-refunds.html';
   } else if (mod === 'high-value-frauds') {
     window.location.href = 'high-value-frauds.html';
+  } else if (mod === 'cctv-cameras') {
+    window.location.href = 'cctv-cameras.html';
   }
 }
 
