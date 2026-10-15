@@ -118,7 +118,7 @@ function getDataBasePath() {
   return window.location.origin + path + "data/";
 }
 
-const NCRP_APP_VERSION = '4.9';
+const NCRP_APP_VERSION = '5.1';
 
 // Clear obsolete or corrupted localStorage caches on app version upgrade
 try {
@@ -159,11 +159,22 @@ async function ensureStaticData(forceRefresh = false) {
       }
     });
 
-    // Deduplicate addedPetitions against fetched staticPetitions by ack_no or id
+    // Deduplicate addedPetitions against fetched staticPetitions by ack_no, phone, or name
     const addedPetitions = JSON.parse(localStorage.getItem("ncrp_local_added") || "[]");
-    const existingAckNos = new Set(staticPetitions.map(p => String(p.ack_no || p.sl_no).trim()));
-    addedPetitions.forEach(p => { p.portal_type = determinePortalType(p.ack_no); });
-    const validAdded = addedPetitions.filter(p => !existingAckNos.has(String(p.ack_no || p.sl_no).trim()));
+    const existingAckNos = new Set(staticPetitions.map(p => String(p.ack_no || p.sl_no).trim().toLowerCase()));
+    const existingPhones = new Set(staticPetitions.map(p => String(p.complainant_phone || '').replace(/\D/g, '')).filter(ph => ph.length === 10));
+
+    const validAdded = addedPetitions.filter(p => {
+      const ack = String(p.ack_no || '').trim().toLowerCase();
+      // Drop scientific notation or corrupted numbers (e.g. 2.02103E+13)
+      if (/[eE]\+?/.test(ack) || ack.includes('.')) return false;
+      if (existingAckNos.has(ack)) return false;
+      const ph = String(p.complainant_phone || '').replace(/\D/g, '');
+      if (ph.length === 10 && existingPhones.has(ph)) return false;
+      return true;
+    });
+
+    validAdded.forEach(p => { p.portal_type = determinePortalType(p.ack_no); });
     if (validAdded.length !== addedPetitions.length) {
       localStorage.setItem("ncrp_local_added", JSON.stringify(validAdded));
     }
@@ -1978,8 +1989,18 @@ async function autoImportExcelRows(matrix, fileName) {
     const cleanAck = rawAck.toLowerCase();
     if (!rawAck || rawAck === '-' || cleanAck === 'ack no' || cleanAck === 'acknowledgement no') continue;
 
-    // Zero-Duplicate check
-    if (existingAcksMap.has(cleanAck) || batchAcksSet.has(cleanAck)) {
+    const compName = (colName !== -1 && row[colName]) ? String(row[colName]).trim() : 'Unknown';
+    const compPhone = (colPhone !== -1 && row[colPhone]) ? String(row[colPhone]).trim() : '';
+    const cleanPhone = compPhone.replace(/\D/g, '');
+    const cleanCompName = compName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const isScientific = /[eE]\+?/.test(rawAck) || rawAck.includes('.');
+
+    // Zero-Duplicate check: by Ack No, by 10-digit Phone, or by Name if Ack is corrupted
+    const isDupAck = existingAcksMap.has(cleanAck) || batchAcksSet.has(cleanAck);
+    const isDupPhone = cleanPhone.length === 10 && staticPetitions.some(p => String(p.complainant_phone || '').replace(/\D/g, '') === cleanPhone);
+    const isDupCorrupt = isScientific && cleanCompName && staticPetitions.some(p => String(p.complainant_name || '').toLowerCase().replace(/[^a-z0-9]/g, '') === cleanCompName);
+
+    if (isDupAck || isDupPhone || isDupCorrupt) {
       dupCount++;
       continue;
     }
@@ -2005,8 +2026,6 @@ async function autoImportExcelRows(matrix, fileName) {
     const subDivision = station ? station.sub_division : '';
 
     const petitionDate = (colDate !== -1 && row[colDate]) ? String(row[colDate]).trim() : new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-    const compName = (colName !== -1 && row[colName]) ? String(row[colName]).trim() : 'Unknown';
-    const compPhone = (colPhone !== -1 && row[colPhone]) ? String(row[colPhone]).trim() : '';
     const victimAge = (colAge !== -1 && row[colAge]) ? String(row[colAge]).trim() : '';
     const compAddress = (colAddress !== -1 && row[colAddress]) ? String(row[colAddress]).trim() : '';
     const category = (colCategory !== -1 && row[colCategory]) ? String(row[colCategory]).trim() : 'Online Financial Fraud';
