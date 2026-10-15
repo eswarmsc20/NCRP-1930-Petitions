@@ -1383,8 +1383,9 @@ td.cell-wrap,
 .modal-thankyou-card {
   max-width: 680px;
   width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
   border-radius: 16px;
-  overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.45);
   border: 1px solid #cbd5e1;
   background: #ffffff;

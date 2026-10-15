@@ -70,7 +70,7 @@ function getDataBasePath() {
   return window.location.origin + path + "data/";
 }
 
-const NCRP_APP_VERSION = '3.9';
+const NCRP_APP_VERSION = '4.5';
 
 // Clear obsolete or corrupted localStorage caches on app version upgrade
 try {
@@ -1018,10 +1018,11 @@ function setupEventListeners() {
 let welcomeTimer = null;
 let welcomeInterval = null;
 
-function showLoginWelcomeCard(user) {
+function showLoginWelcomeCard(user, autoDirect = true) {
   // Hide login screen and prepare authenticated UI in the background
   const login = document.getElementById('loginScreen');
   if (login) login.style.display = 'none';
+  if (!currentUser && user) currentUser = user;
   renderAuthenticatedUI();
 
   const modal = document.getElementById('loginWelcomeModal');
@@ -1029,10 +1030,11 @@ function showLoginWelcomeCard(user) {
     return;
   }
 
-  const greeting = getTimeBasedGreeting(user);
-  const isStation = !user || user.role === 'station' || user.psName;
-  const stationName = (user && (user.psName || user.displayName)) ? (user.psName || user.displayName) : 'Srikakulam Police Station';
-  const opTitle = isStation ? `👮 E-COPS Operator, ${stationName}` : `👮 District Administrator (${user.displayName || 'HQ'})`;
+  const targetUser = user || currentUser;
+  const greeting = getTimeBasedGreeting(targetUser);
+  const isStation = !targetUser || targetUser.role === 'station' || targetUser.psName;
+  const stationName = (targetUser && (targetUser.psName || targetUser.displayName)) ? (targetUser.psName || targetUser.displayName) : 'Srikakulam Police Station';
+  const opTitle = isStation ? `👮 E-COPS Operator, ${stationName}` : `👮 District Administrator (${targetUser.displayName || 'HQ'})`;
 
   const timePill = document.getElementById('welcomeModalTimePill');
   if (timePill) timePill.textContent = `${greeting.icon} ${greeting.timeText}`;
@@ -1046,26 +1048,34 @@ function showLoginWelcomeCard(user) {
   const teluguMsg = document.getElementById('welcomeModalTelugu');
   if (teluguMsg) teluguMsg.textContent = `${greeting.timeTextTe}! ${greeting.operatorTitleTe} - శ్రీకాకుళం జిల్లా సైబర్ క్రైమ్ కమాండ్ పోర్టల్‌కు స్వాగతం! మీ స్టేషన్ లాగిన్ విజయవంతంగా పూర్తయింది.`;
 
-  const countNum = document.getElementById('welcomeCountNum');
-  if (countNum) countNum.textContent = '5';
+  const btn = document.getElementById('btnEnterPortalNow');
 
   modal.style.display = 'flex';
 
-  let remaining = 5;
-  if (welcomeInterval) clearInterval(welcomeInterval);
-  welcomeInterval = setInterval(() => {
-    remaining--;
-    if (countNum) countNum.textContent = String(remaining);
-    if (remaining <= 0) {
-      clearInterval(welcomeInterval);
-      proceedToPortalFromWelcome();
-    }
-  }, 1000);
-
   if (welcomeTimer) clearTimeout(welcomeTimer);
-  welcomeTimer = setTimeout(() => {
-    proceedToPortalFromWelcome();
-  }, 5200);
+  if (welcomeInterval) clearInterval(welcomeInterval);
+
+  if (autoDirect) {
+    let remaining = 8;
+    if (btn) btn.innerHTML = `👉 Enter Portal / పోర్టల్‌లోకి ప్రవేశించండి (<span id="welcomeCountNum">${remaining}</span>s)`;
+
+    welcomeInterval = setInterval(() => {
+      remaining--;
+      const countNum = document.getElementById('welcomeCountNum');
+      if (countNum) countNum.textContent = String(remaining);
+      if (remaining <= 0) {
+        clearInterval(welcomeInterval);
+        proceedToPortalFromWelcome();
+      }
+    }, 1000);
+
+    welcomeTimer = setTimeout(() => {
+      proceedToPortalFromWelcome();
+    }, 8200);
+  } else {
+    // Opened manually via header button - keep open until dismissed!
+    if (btn) btn.innerHTML = `👉 Return to Portal / పోర్టల్‌కు వెళ్ళండి`;
+  }
 }
 
 function proceedToPortalFromWelcome() {

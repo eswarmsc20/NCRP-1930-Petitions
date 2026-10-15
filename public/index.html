@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Srikakulam District Police | NCRP & 1930 Management System</title>
-  <link rel="stylesheet" href="./css/style.css?v=4.3">
+  <link rel="stylesheet" href="./css/style.css?v=4.5">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="./js/xlsx.full.min.js"></script>
 </head>
@@ -79,6 +79,9 @@
             <span id="homeUserDisplayName">Srikakulam I Town PS</span>
             <span id="homeUserCircleLabel" style="font-size: 0.72rem; color: #fde047;">(Srikakulam Rural Circle)</span>
           </div>
+          <button class="btn-header" onclick="showLoginWelcomeCard(currentUser)" style="background: rgba(16, 185, 129, 0.2); border-color: #34d399; color: #a7f3d0; font-weight: 600;" title="Cyber Cell Technical Support Helpdesk / సాంకేతిక సహాయం">
+            📞 Cyber Support
+          </button>
           <button class="btn-header" onclick="openChangePasswordModal()">
             🔑 Password
           </button>
@@ -269,6 +272,9 @@
           </button>
           <button class="btn-header" onclick="openStationStatementModal()" style="background: rgba(197, 155, 39, 0.25); border-color: var(--accent-gold); color: #fde047; font-weight: 600;">
             📄 Statement (PDF/ప్రింట్)
+          </button>
+          <button class="btn-header" onclick="showLoginWelcomeCard(currentUser)" style="background: rgba(16, 185, 129, 0.2); border-color: #34d399; color: #a7f3d0; font-weight: 600;" title="Cyber Cell Technical Support Helpdesk / సాంకేతిక సహాయం">
+            📞 Cyber Support (హెల్ప్‌డెస్క్)
           </button>
           <button class="btn-header" onclick="openChangePasswordModal()">
             🔑 Password
@@ -1305,6 +1311,8 @@
         </div>
       </form>
     </div>
+  </div>
+
   <!-- 4. OFFICIAL STATION STATEMENT MODAL (PRINT & PDF) -->
   <div id="stationStatementModal" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-width: 950px; width: 95%;">
@@ -1433,7 +1441,8 @@
 
   <!-- Login Welcome & Cyber Cell Helpdesk Card Modal -->
   <div id="loginWelcomeModal" class="modal-overlay" style="display: none; z-index: 100000;">
-    <div class="modal-thankyou-card">
+    <div class="modal-thankyou-card" style="position: relative;">
+      <button type="button" onclick="proceedToPortalFromWelcome()" style="position: absolute; top: 14px; right: 16px; background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.45); color: white; border-radius: 50%; width: 34px; height: 34px; font-size: 1.25rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 20; line-height: 1;" title="Close & Enter / మూసివేసి ప్రవేశించండి">&times;</button>
       <div class="thankyou-header" style="background: linear-gradient(135deg, #0b1e3f 0%, #1e3a8a 60%, #065f46 100%);">
         <div class="thankyou-logos">
           <img src="./images/ap_police_logo.png" alt="AP Police" class="thankyou-logo-img" title="Andhra Pradesh Police">
@@ -1691,6 +1700,6 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="./js/app.js?v=4.3"></script>
+  <script src="./js/app.js?v=4.5"></script>
 </body>
 </html>
