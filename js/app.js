@@ -747,6 +747,8 @@ function openPortalModule(mod) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (mod === 'court-refunds') {
     window.location.href = 'court-refunds.html';
+  } else if (mod === 'high-value-frauds') {
+    window.location.href = 'high-value-frauds.html';
   }
 }
 

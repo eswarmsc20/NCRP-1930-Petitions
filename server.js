@@ -1063,6 +1063,93 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
+    // 16. HIGH-VALUE FRAUDS (₹10 LAKHS & ABOVE) API
+    if (pathname.startsWith('/api/high-value-frauds')) {
+      const hvJsonPath = path.join(__dirname, 'data', 'high_value_frauds.json');
+      const publicHvJsonPath = path.join(PUBLIC_DIR, 'data', 'high_value_frauds.json');
+
+      const readHvData = () => {
+        if (fs.existsSync(hvJsonPath)) {
+          return JSON.parse(fs.readFileSync(hvJsonPath, 'utf8'));
+        } else if (fs.existsSync(publicHvJsonPath)) {
+          return JSON.parse(fs.readFileSync(publicHvJsonPath, 'utf8'));
+        }
+        return null;
+      };
+
+      const writeHvData = (data) => {
+        const str = JSON.stringify(data, null, 2);
+        try { fs.writeFileSync(hvJsonPath, str, 'utf8'); } catch (e) {}
+        try { fs.writeFileSync(publicHvJsonPath, str, 'utf8'); } catch (e) {}
+      };
+
+      if (pathname === '/api/high-value-frauds' && req.method === 'GET') {
+        const data = readHvData();
+        return sendJson(res, 200, data || {});
+      }
+
+      if (pathname === '/api/high-value-frauds' && req.method === 'POST') {
+        const body = await parseJsonBody(req);
+        const data = readHvData();
+        if (data && Array.isArray(data.cases)) {
+          if (!body.sl_no) {
+            body.sl_no = data.cases.length + 1;
+          }
+          data.cases.push(body);
+          const totalLost = data.cases.reduce((sum, c) => sum + (Number(c.amount_lost) || 0), 0);
+          const totalFrozen = data.cases.reduce((sum, c) => sum + (Number(c.amount_frozen) || 0), 0);
+          data.summary.total_cases = data.cases.length;
+          data.summary.total_amount_lost = totalLost;
+          data.summary.total_amount_frozen = Math.round(totalFrozen * 100) / 100;
+          data.summary.frozen_percentage = totalLost > 0 ? Math.round((totalFrozen / totalLost) * 10000) / 100 : 0;
+          writeHvData(data);
+          return sendJson(res, 201, { success: true, case: body, summary: data.summary });
+        }
+        return sendJson(res, 400, { error: 'Failed to save case' });
+      }
+
+      const matchHvId = pathname.match(/^\/api\/high-value-frauds\/([^/]+)$/);
+      if (matchHvId && req.method === 'PUT') {
+        const id = matchHvId[1];
+        const body = await parseJsonBody(req);
+        const data = readHvData();
+        if (data && Array.isArray(data.cases)) {
+          const idx = data.cases.findIndex(c => String(c.sl_no) === String(id));
+          if (idx !== -1) {
+            data.cases[idx] = { ...data.cases[idx], ...body };
+          } else {
+            data.cases.push(body);
+          }
+          const totalLost = data.cases.reduce((sum, c) => sum + (Number(c.amount_lost) || 0), 0);
+          const totalFrozen = data.cases.reduce((sum, c) => sum + (Number(c.amount_frozen) || 0), 0);
+          data.summary.total_cases = data.cases.length;
+          data.summary.total_amount_lost = totalLost;
+          data.summary.total_amount_frozen = Math.round(totalFrozen * 100) / 100;
+          data.summary.frozen_percentage = totalLost > 0 ? Math.round((totalFrozen / totalLost) * 10000) / 100 : 0;
+          writeHvData(data);
+          return sendJson(res, 200, { success: true, case: data.cases[idx !== -1 ? idx : data.cases.length - 1], summary: data.summary });
+        }
+        return sendJson(res, 404, { error: 'Case not found' });
+      }
+
+      if (matchHvId && req.method === 'DELETE') {
+        const id = matchHvId[1];
+        const data = readHvData();
+        if (data && Array.isArray(data.cases)) {
+          data.cases = data.cases.filter(c => String(c.sl_no) !== String(id));
+          const totalLost = data.cases.reduce((sum, c) => sum + (Number(c.amount_lost) || 0), 0);
+          const totalFrozen = data.cases.reduce((sum, c) => sum + (Number(c.amount_frozen) || 0), 0);
+          data.summary.total_cases = data.cases.length;
+          data.summary.total_amount_lost = totalLost;
+          data.summary.total_amount_frozen = Math.round(totalFrozen * 100) / 100;
+          data.summary.frozen_percentage = totalLost > 0 ? Math.round((totalFrozen / totalLost) * 10000) / 100 : 0;
+          writeHvData(data);
+          return sendJson(res, 200, { success: true, summary: data.summary });
+        }
+        return sendJson(res, 404, { error: 'Case not found' });
+      }
+    }
+
     // Default: Serve frontend static files
     serveStatic(req, res, pathname);
 
